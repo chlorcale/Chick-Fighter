@@ -1,0 +1,228 @@
+extends RefCounted
+
+const AttackCatalogScript = preload("res://core/combat/attack_catalog.gd")
+const HitboxScript = preload("res://core/combat/hitbox_component.gd")
+const HurtboxScript = preload("res://core/combat/hurtbox_component.gd")
+
+var _passed: int = 0
+var _failed: int = 0
+var _signal_count: int = 0
+
+
+func run(tree: SceneTree) -> Dictionary:
+	_passed = 0
+	_failed = 0
+	_signal_count = 0
+	await _test_collision_layers_and_owner(tree)
+	await _test_crouch_hurtbox(tree)
+	await _test_clone_existing_collider(tree)
+	_test_active_tick_windows()
+	await _test_hit_registration(tree)
+	await _test_real_area_overlap(tree)
+	return {"passed": _passed, "failed": _failed}
+
+
+func _check(condition: bool, label: String) -> void:
+	if condition:
+		_passed += 1
+		print("[PASS] ", label)
+	else:
+		_failed += 1
+		push_error("[FAIL] " + label)
+
+
+func _make_hurtbox(owner_id: StringName, size: Vector2 = Vector2(48.0, 80.0)) -> Area2D:
+	var hurtbox: Area2D = HurtboxScript.new() as Area2D
+	hurtbox.call("set_owner_fighter_id", owner_id)
+	var collision := CollisionShape2D.new()
+	var rectangle := RectangleShape2D.new()
+	rectangle.size = size
+	collision.shape = rectangle
+	hurtbox.add_child(collision)
+	return hurtbox
+
+
+func _make_hitbox(owner_id: StringName, instance_id: int, attack_data: Resource, size: Vector2 = Vector2(64.0, 40.0)) -> Area2D:
+	var hitbox: Area2D = HitboxScript.new() as Area2D
+	var collision := CollisionShape2D.new()
+	var rectangle := RectangleShape2D.new()
+	rectangle.size = size
+	collision.shape = rectangle
+	hitbox.add_child(collision)
+	hitbox.call("configure", owner_id, instance_id, attack_data)
+	return hitbox
+
+
+func _test_collision_layers_and_owner(tree: SceneTree) -> void:
+	var hurtbox := _make_hurtbox(&"p2")
+	var hitbox := _make_hitbox(&"p1", 1, AttackCatalogScript.get_attack(&"light"))
+	tree.root.add_child(hurtbox)
+	tree.root.add_child(hitbox)
+	await tree.process_frame
+
+	_check(hurtbox.collision_layer == HurtboxScript.HURTBOX_COLLISION_LAYER, "Hurtbox uses dedicated Layer 4")
+	_check(hurtbox.collision_mask == 0 and hurtbox.monitorable, "Hurtbox is monitorable but does not monitor other areas")
+	_check(hitbox.collision_layer == HitboxScript.HITBOX_COLLISION_LAYER, "Hitbox uses dedicated Layer 3")
+	_check(hitbox.collision_mask == HurtboxScript.HURTBOX_COLLISION_LAYER, "Hitbox detects Hurtbox Layer 4 only")
+	_check(StringName(hurtbox.call("get_owner_fighter_id")) == &"p2", "Hurtbox exposes stable owner fighter ID")
+
+	hurtbox.queue_free()
+	hitbox.queue_free()
+	await tree.process_frame
+
+
+func _test_crouch_hurtbox(tree: SceneTree) -> void:
+	var hurtbox := _make_hurtbox(&"p1", Vector2(50.0, 100.0))
+	tree.root.add_child(hurtbox)
+	await tree.process_frame
+	var collision := hurtbox.call("get_collision_node") as CollisionShape2D
+	_check(bool(hurtbox.call("has_collision_shape")), "Hurtbox caches its CollisionShape2D")
+	_check(is_equal_approx(float(hurtbox.call("get_base_height")), 100.0), "Hurtbox reads the base collision height")
+	_check(bool(hurtbox.call("set_crouched", true)), "Crouch mode can be enabled")
+	_check(is_equal_approx(collision.scale.y, 0.6), "Crouch reduces hurtbox height by 40 percent")
+	_check(is_equal_approx(collision.position.y, 20.0), "Crouch keeps the lower edge approximately anchored")
+	_check(bool(hurtbox.call("is_crouched")), "Hurtbox reports crouched state")
+	_check(bool(hurtbox.call("set_crouched", false)), "Standing mode can be restored")
+	_check(is_equal_approx(collision.scale.y, 1.0) and is_equal_approx(collision.position.y, 0.0), "Standing restores original hurtbox transform")
+	hurtbox.queue_free()
+	await tree.process_frame
+
+
+func _test_clone_existing_collider(tree: SceneTree) -> void:
+	var source_shape := CollisionShape2D.new()
+	var rectangle := RectangleShape2D.new()
+	rectangle.size = Vector2(90.0, 120.0)
+	source_shape.shape = rectangle
+	source_shape.position = Vector2(24.0, 35.0)
+	source_shape.scale = Vector2(-1.0, -1.0)
+
+	var hurtbox: Area2D = HurtboxScript.new() as Area2D
+	hurtbox.call("set_owner_fighter_id", &"p2")
+	_check(bool(hurtbox.call("copy_collision_from", source_shape)), "Hurtbox can clone an existing CollisionShape2D")
+	tree.root.add_child(hurtbox)
+	await tree.process_frame
+	var copied_shape := hurtbox.call("get_collision_node") as CollisionShape2D
+	_check(copied_shape != null and copied_shape.shape != source_shape.shape, "Cloned shape uses an independent Shape2D resource")
+	_check(copied_shape != null and copied_shape.position == source_shape.position, "Cloned CollisionShape2D preserves local offset")
+	var transform_preserved := copied_shape != null and copied_shape.transform.x.is_equal_approx(source_shape.transform.x) and copied_shape.transform.y.is_equal_approx(source_shape.transform.y) and copied_shape.transform.origin.is_equal_approx(source_shape.transform.origin)
+	_check(transform_preserved, "Cloned CollisionShape2D preserves full local transform")
+
+	var polygon_source := CollisionPolygon2D.new()
+	polygon_source.polygon = PackedVector2Array([
+		Vector2(-20.0, -40.0), Vector2(20.0, -40.0),
+		Vector2(25.0, 40.0), Vector2(-25.0, 40.0)
+	])
+	polygon_source.position = Vector2(7.0, 11.0)
+	var polygon_hurtbox: Area2D = HurtboxScript.new() as Area2D
+	polygon_hurtbox.call("set_owner_fighter_id", &"p3")
+	_check(bool(polygon_hurtbox.call("copy_collision_from", polygon_source)), "Hurtbox can clone existing CollisionPolygon2D")
+	tree.root.add_child(polygon_hurtbox)
+	await tree.process_frame
+	var copied_polygon := polygon_hurtbox.call("get_collision_node") as CollisionPolygon2D
+	_check(copied_polygon != null and copied_polygon.polygon.size() == 4, "Cloned CollisionPolygon2D preserves polygon vertices")
+	_check(copied_polygon != null and copied_polygon.position == polygon_source.position, "Cloned CollisionPolygon2D preserves local offset")
+
+	hurtbox.queue_free()
+	polygon_hurtbox.queue_free()
+	source_shape.free()
+	polygon_source.free()
+	await tree.process_frame
+
+
+func _test_active_tick_windows() -> void:
+	var cases := [
+		{"id": &"light", "startup": 5, "active": 3},
+		{"id": &"heavy", "startup": 14, "active": 4},
+		{"id": &"special", "startup": 20, "active": 6},
+	]
+	for item in cases:
+		var attack: Resource = AttackCatalogScript.get_attack(item["id"])
+		var hitbox: Area2D = HitboxScript.new() as Area2D
+		var configured: bool = bool(hitbox.call("configure", &"p1", 100 + int(item["startup"]), attack))
+		_check(configured, "%s hitbox accepts its AttackData" % String(item["id"]))
+		_check(not hitbox.call("set_elapsed_attack_tick", int(item["startup"]) - 1), "%s hitbox remains off during last Startup tick" % String(item["id"]))
+		_check(hitbox.call("set_elapsed_attack_tick", int(item["startup"])), "%s hitbox activates at first Active tick" % String(item["id"]))
+		_check(hitbox.call("set_elapsed_attack_tick", int(item["startup"]) + int(item["active"]) - 1), "%s hitbox remains active through final Active tick" % String(item["id"]))
+		_check(not hitbox.call("set_elapsed_attack_tick", int(item["startup"]) + int(item["active"])), "%s hitbox disables at first Recovery tick" % String(item["id"]))
+		hitbox.free()
+
+
+func _test_hit_registration(tree: SceneTree) -> void:
+	var attack: Resource = AttackCatalogScript.get_attack(&"light")
+	var hitbox: Area2D = HitboxScript.new() as Area2D
+	hitbox.call("configure", &"p1", 501, attack)
+	hitbox.connect("hit_confirmed", Callable(self, "_on_hit_confirmed"))
+	var self_hurtbox := _make_hurtbox(&"p1")
+	var enemy_hurtbox := _make_hurtbox(&"p2")
+	var second_enemy_hurtbox := _make_hurtbox(&"p2")
+	var invalid_area := Area2D.new()
+	tree.root.add_child(self_hurtbox)
+	tree.root.add_child(enemy_hurtbox)
+	tree.root.add_child(second_enemy_hurtbox)
+	tree.root.add_child(invalid_area)
+	tree.root.add_child(hitbox)
+	await tree.process_frame
+
+	_check(int(hitbox.call("try_register_hurtbox", enemy_hurtbox)) == HitboxScript.RegisterResult.INACTIVE, "Inactive hitbox cannot register a hit")
+	hitbox.call("set_elapsed_attack_tick", 5)
+	_check(int(hitbox.call("try_register_hurtbox", invalid_area)) == HitboxScript.RegisterResult.INVALID_HURTBOX, "Non-Hurtbox Area2D is rejected")
+	_check(int(hitbox.call("try_register_hurtbox", self_hurtbox)) == HitboxScript.RegisterResult.SELF_HIT, "Self-hit is rejected")
+	_check(int(hitbox.call("try_register_hurtbox", enemy_hurtbox)) == HitboxScript.RegisterResult.REGISTERED, "Opposing Hurtbox registers one hit")
+	_check(int(hitbox.call("try_register_hurtbox", second_enemy_hurtbox)) == HitboxScript.RegisterResult.DUPLICATE_TARGET, "Multiple Hurtboxes for one fighter cannot double-register")
+	_check(int(hitbox.call("get_hit_target_count")) == 1 and bool(hitbox.call("has_hit_target", &"p2")), "One attack instance records a target by fighter ID")
+	_check(_signal_count == 1, "One hit confirmation signal is emitted")
+
+	hitbox.call("configure", &"p1", 502, attack)
+	hitbox.call("set_elapsed_attack_tick", 5)
+	_check(int(hitbox.call("try_register_hurtbox", enemy_hurtbox)) == HitboxScript.RegisterResult.REGISTERED, "A new attack instance receives a fresh hit ledger")
+	_check(int(hitbox.call("get_attack_instance_id")) == 502, "Hitbox exposes the new attack instance ID")
+	_check(_signal_count == 2, "New attack instance emits its own hit confirmation")
+
+	hitbox.call("finish_attack")
+	_check(not bool(hitbox.call("is_active")), "Finishing an attack disables its hitbox")
+	_check(int(hitbox.call("try_register_hurtbox", enemy_hurtbox)) == HitboxScript.RegisterResult.NOT_CONFIGURED, "Finished attack rejects further registration")
+
+	self_hurtbox.queue_free()
+	enemy_hurtbox.queue_free()
+	second_enemy_hurtbox.queue_free()
+	invalid_area.queue_free()
+	hitbox.queue_free()
+	await tree.process_frame
+
+
+func _test_real_area_overlap(tree: SceneTree) -> void:
+	var stage := Node2D.new()
+	stage.name = "M6PhysicsOverlapTest"
+	var hurtbox := _make_hurtbox(&"p2", Vector2(80.0, 80.0))
+	var hitbox := _make_hitbox(&"p1", 9001, AttackCatalogScript.get_attack(&"light"), Vector2(80.0, 80.0))
+
+	hitbox.hit_confirmed.connect(_on_hit_confirmed)
+
+	stage.add_child(hurtbox)
+	stage.add_child(hitbox)
+	tree.root.add_child(stage)
+	await tree.process_frame
+
+	_signal_count = 0
+	_check(not bool(hitbox.call("is_active")), "Physics hitbox starts inactive before its Active window")
+	await tree.physics_frame
+	await tree.physics_frame
+	_check(int(hitbox.call("get_hit_target_count")) == 0, "Overlapping areas do not register before Active ticks")
+
+	hitbox.call("set_elapsed_attack_tick", 5)
+	await tree.physics_frame
+	await tree.physics_frame
+	await tree.physics_frame
+	_check(int(hitbox.call("get_hit_target_count")) == 1, "Area2D detects opposing Hurtbox during Active ticks")
+	_check(_signal_count == 1, "Physics overlap emits exactly one hit confirmation")
+
+	hitbox.call("set_elapsed_attack_tick", 8)
+	await tree.physics_frame
+	_check(not bool(hitbox.call("is_active")), "Area2D stops monitoring after Active window")
+	_check(int(hitbox.call("get_hit_target_count")) == 1, "Recovery cannot add a second hit from the same attack")
+	stage.queue_free()
+	await tree.process_frame
+
+
+func _on_hit_confirmed(_attacker_id: StringName, _instance_id: int, _attack_data: Resource, _hurtbox: Area2D) -> void:
+	_signal_count += 1

@@ -1,0 +1,182 @@
+class_name HitboxComponent
+extends Area2D
+
+## Active-tick hit detection only. Emits confirmation; never applies damage.
+## AttackData.attack_id identifies the move definition. attack_instance_id identifies
+## one execution, so a target can be registered at most once per execution.
+
+const HITBOX_COLLISION_LAYER: int = 1 << 2 # Layer 3
+const HURTBOX_COLLISION_LAYER: int = 1 << 3 # Layer 4
+
+signal hit_confirmed(
+	attacker_fighter_id: StringName,
+	attack_instance_id: int,
+	attack_data: Resource,
+	hurtbox: Area2D
+)
+
+enum RegisterResult {
+	REGISTERED,
+	INACTIVE,
+	INVALID_HURTBOX,
+	SELF_HIT,
+	DUPLICATE_TARGET,
+	NOT_CONFIGURED,
+}
+
+var _attacker_fighter_id: StringName = &""
+var _attack_instance_id: int = 0
+var _attack_data: Resource
+var _configured: bool = false
+var _active: bool = false
+var _hit_targets: Dictionary = {}
+var _debug_draw_enabled: bool = false
+
+
+func _ready() -> void:
+	collision_layer = HITBOX_COLLISION_LAYER
+	collision_mask = HURTBOX_COLLISION_LAYER
+	monitoring = false
+	monitorable = false
+	area_entered.connect(_on_area_entered)
+	set_physics_process(true)
+
+
+func configure(
+	attacker_fighter_id: StringName,
+	attack_instance_id: int,
+	attack_data: Resource
+) -> bool:
+	if attacker_fighter_id == &"":
+		push_error("HitboxComponent.configure(): attacker_fighter_id cannot be empty")
+		return false
+	if attack_instance_id <= 0:
+		push_error("HitboxComponent.configure(): attack_instance_id must be positive")
+		return false
+	if attack_data == null or not attack_data.has_method("is_valid") or not attack_data.has_method("is_active_tick"):
+		push_error("HitboxComponent.configure(): valid AttackData resource is required")
+		return false
+	if not bool(attack_data.call("is_valid")):
+		push_error("HitboxComponent.configure(): AttackData validation failed")
+		return false
+
+	set_attack_inactive()
+	_attacker_fighter_id = attacker_fighter_id
+	_attack_instance_id = attack_instance_id
+	_attack_data = attack_data
+	_hit_targets.clear()
+	_configured = true
+	return true
+
+
+## Supply the zero-based attack elapsed tick from the future attack-state driver.
+## Hitbox monitoring is enabled only for AttackData's [startup, startup + active) interval.
+func set_elapsed_attack_tick(elapsed_tick: int) -> bool:
+	if not _configured or _attack_data == null:
+		return false
+	var should_be_active: bool = bool(_attack_data.call("is_active_tick", elapsed_tick))
+	_set_active(should_be_active)
+	return _active
+
+
+func finish_attack() -> void:
+	set_attack_inactive()
+	_configured = false
+
+
+func set_attack_inactive() -> void:
+	_set_active(false)
+
+
+func is_active() -> bool:
+	return _active
+
+
+func get_attack_instance_id() -> int:
+	return _attack_instance_id
+
+
+func get_attacker_fighter_id() -> StringName:
+	return _attacker_fighter_id
+
+
+func get_attack_data() -> Resource:
+	return _attack_data
+
+
+func get_hit_target_count() -> int:
+	return _hit_targets.size()
+
+
+func has_hit_target(target_fighter_id: StringName) -> bool:
+	return _hit_targets.has(target_fighter_id)
+
+
+## Public registration point used by overlap callbacks and deterministic tests.
+func try_register_hurtbox(hurtbox: Area2D) -> int:
+	if not _configured or _attack_data == null or _attacker_fighter_id == &"" or _attack_instance_id <= 0:
+		return RegisterResult.NOT_CONFIGURED
+	if not _active:
+		return RegisterResult.INACTIVE
+	if not is_instance_valid(hurtbox) or not hurtbox.has_method("get_owner_fighter_id"):
+		return RegisterResult.INVALID_HURTBOX
+
+	var target_id: StringName = StringName(hurtbox.call("get_owner_fighter_id"))
+	if target_id == &"":
+		return RegisterResult.INVALID_HURTBOX
+	if target_id == _attacker_fighter_id:
+		return RegisterResult.SELF_HIT
+	if _hit_targets.has(target_id):
+		return RegisterResult.DUPLICATE_TARGET
+
+	_hit_targets[target_id] = true
+	hit_confirmed.emit(_attacker_fighter_id, _attack_instance_id, _attack_data, hurtbox)
+	return RegisterResult.REGISTERED
+
+
+func set_debug_draw_enabled(enabled: bool) -> void:
+	_debug_draw_enabled = enabled
+	queue_redraw()
+
+
+func _set_active(value: bool) -> void:
+	_active = value
+	if is_inside_tree():
+		set_deferred("monitoring", value)
+	else:
+		monitoring = value
+	queue_redraw()
+
+
+func _on_area_entered(area: Area2D) -> void:
+	try_register_hurtbox(area)
+
+
+func _physics_process(_delta: float) -> void:
+	if not _active or not monitoring:
+		return
+	for area in get_overlapping_areas():
+		try_register_hurtbox(area)
+
+
+func _draw() -> void:
+	if not _debug_draw_enabled:
+		return
+	var debug_color := Color(1.0, 0.25, 0.2, 0.9)
+	for child in get_children():
+		if child is CollisionShape2D:
+			var shape_node := child as CollisionShape2D
+			if shape_node.shape != null:
+				draw_set_transform(shape_node.position, shape_node.rotation, shape_node.scale)
+				draw_rect(shape_node.shape.get_rect(), debug_color, false, 2.0)
+		elif child is CollisionPolygon2D:
+			var polygon_node := child as CollisionPolygon2D
+			draw_set_transform(polygon_node.position, polygon_node.rotation, polygon_node.scale)
+			draw_polyline(_closed_polygon(polygon_node.polygon), debug_color, 2.0)
+
+
+func _closed_polygon(points: PackedVector2Array) -> PackedVector2Array:
+	var result := points.duplicate()
+	if result.size() >= 3:
+		result.append(result[0])
+	return result

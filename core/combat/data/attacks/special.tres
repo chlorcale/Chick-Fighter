@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AttackData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/combat/attack_data.gd" id="1_attack_data"]
+
+[resource]
+script = ExtResource("1_attack_data")
+attack_id = &"special"
+display_name = "Special (L) — Cước Sấm"
+attack_kind = 2
+input_bit = 6
+hit_level = 0
+base_damage = 30
+startup_ticks = 20
+active_ticks = 6
+recovery_ticks = 30
+base_knockback_px = 200.0
+balance_status = "PROVISIONAL — PLAYTEST BASELINE — OWNER REVIEW REQUIRED"
+hitstun_ticks = -1
+blockstun_ticks = -1
+down_duration_ticks = 48
+hitstop_ticks = 10
+special_cost_bars = 1
+combo_limit = 0

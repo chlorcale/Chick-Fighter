@@ -1,0 +1,16 @@
+{
+  "mcp": {
+    "godot": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@shin2344234/godot-mcp@0.1.2",
+        "--project",
+        "C:\\Users\\Admin\\OneDrive\\Desktop\\Huyền Thoại Đá Gà - Chick Fighter\\test-godot"
+      ],
+      "environment": {},
+      "enabled": true
+    }
+  }
+}

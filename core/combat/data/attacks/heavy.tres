@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AttackData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/combat/attack_data.gd" id="1_attack_data"]
+
+[resource]
+script = ExtResource("1_attack_data")
+attack_id = &"heavy"
+display_name = "Heavy (K)"
+attack_kind = 1
+input_bit = 5
+hit_level = 1
+base_damage = 18
+startup_ticks = 14
+active_ticks = 4
+recovery_ticks = 22
+base_knockback_px = 120.0
+balance_status = "PROVISIONAL — PLAYTEST BASELINE — OWNER REVIEW REQUIRED"
+hitstun_ticks = 20
+blockstun_ticks = 14
+down_duration_ticks = -1
+hitstop_ticks = 6
+special_cost_bars = 0
+combo_limit = 0

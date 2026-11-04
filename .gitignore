@@ -1,0 +1,31 @@
+# Godot generated cache
+.godot/
+.import/
+*.translation
+.mono/
+
+# Local export data
+export.cfg
+
+# Local backups and temporary files
+*.bak
+*.tmp
+*.old
+*.orig
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Milestone backups
+*.m3backup
+*.m5backup
+*.m6backup
+*.m9bak
+m9_api_fix_backup/
+m8_integration_backup_clean/
+
+# Temporary diagnostics
+m8_parse_diagnostic.txt
+tests/m4/debug_facing.gd
