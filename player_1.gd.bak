@@ -1,0 +1,52 @@
+extends CharacterBody2D
+
+@export var speed: float = 250.0
+@export var jump_force: float = 1200.0
+@export var gravity: float = 5000.0
+
+@onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
+
+
+func _ready() -> void:
+	# Player 1 mặc định nhìn sang phải
+	animated_sprite.flip_h = false
+
+
+func _physics_process(delta: float) -> void:
+	# Gravity
+	if not is_on_floor():
+		velocity.y += gravity * delta
+
+	# Di chuyển trái / phải
+	var direction := Input.get_axis("p1_left", "p1_right")
+
+	velocity.x = direction * speed
+
+	# Nhảy
+	if Input.is_action_just_pressed("p1_jump") and is_on_floor():
+		velocity.y = -jump_force
+
+	# Di chuyển
+	move_and_slide()
+
+	# Cập nhật animation
+	update_animation(direction)
+
+
+func update_animation(direction: float) -> void:
+	# Đang ở trên không
+	if not is_on_floor():
+		animated_sprite.play("walk")
+		return
+
+	# Đứng yên
+	if direction == 0:
+		animated_sprite.play("idle")
+
+	# Đang di chuyển
+	else:
+		animated_sprite.play("walk")
+
+	# Quay mặt
+	if direction != 0:
+		animated_sprite.flip_h = direction < 0
