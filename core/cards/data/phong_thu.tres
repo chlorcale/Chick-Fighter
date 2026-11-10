@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://core/cards/card_data.gd" id="1_card"]
+[ext_resource type="Script" path="res://core/cards/card_effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_1"]
+script = ExtResource("2_effect")
+effect_id = &"block_gauge_bonus"
+magnitude = 0.4
+duration_ticks = 300
+trigger_id = &"on_activate"
+
+[sub_resource type="Resource" id="Effect_2"]
+script = ExtResource("2_effect")
+effect_id = &"incoming_damage_reduction"
+magnitude = 0.2
+duration_ticks = 300
+trigger_id = &"on_activate"
+
+[resource]
+script = ExtResource("1_card")
+card_id = &"phong_thu"
+display_name = "Phòng Thủ"
+description = "Tăng 40% Block Gauge và giảm 20% sát thương nhận vào trong 5 giây."
+cost = 1
+content_group = &"phase1"
+is_proposed = false
+effects = Array[ExtResource("2_effect")]([SubResource("Effect_1"), SubResource("Effect_2")])

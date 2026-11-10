@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://core/cards/card_data.gd" id="1_card"]
+[ext_resource type="Script" path="res://core/cards/card_effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_1"]
+script = ExtResource("2_effect")
+effect_id = &"opponent_speed_reduction"
+magnitude = 0.2
+duration_ticks = 300
+trigger_id = &"on_activate"
+
+[resource]
+script = ExtResource("1_card")
+card_id = &"mua_chieu"
+display_name = "Mưa Chiều"
+description = "Giảm 20% tốc độ đối thủ trong 5 giây."
+cost = 2
+content_group = &"phase1"
+is_proposed = true
+effects = Array[ExtResource("2_effect")]([SubResource("Effect_1")])
