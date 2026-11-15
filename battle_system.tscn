@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://x2fqwisxpa3x"]
+[gd_scene load_steps=39 format=3 uid="uid://x2fqwisxpa3x"]
 
 [ext_resource type="Texture2D" uid="uid://bqkcp4ydqshpj" path="res://Images/bg.png" id="1_n13d2"]
 [ext_resource type="Script" uid="uid://c80gwumqeqvp2" path="res://player_2.gd" id="2_6s7hf"]
@@ -9,7 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://cyfrmxd7m3v1y" path="res://Images/Idle_custom-walk_forward_rooster_stalking_east-ezgif.com-gif-to-sprite-converter.png" id="5_6juf6"]
 [ext_resource type="Texture2D" uid="uid://bdfguxpoe6jhi" path="res://Images/idle_1/idle_3.png" id="5_kvydq"]
 [ext_resource type="Texture2D" uid="uid://odydhjxryn6e" path="res://Images/idle_1/idle_4.png" id="6_6y7jj"]
-[ext_resource type="Script" uid="uid://cw3b5u2c8t85b" path="res://hud_reference_layer.gd" id="6_bt7nf"]
+[ext_resource type="Script" path="res://hud_reference_layer.gd" id="6_bt7nf"]
 [ext_resource type="Texture2D" uid="uid://q56f3qf2xhtf" path="res://Images/HP_Timer.png" id="7_bt7nf"]
 [ext_resource type="Texture2D" uid="uid://cd7pwb7ptmhbq" path="res://Images/HUD_Block_Gauge.png" id="8_oq8fx"]
 [ext_resource type="Texture2D" uid="uid://drygc4e7adaqb" path="res://Images/HUD_Deck_Card.png" id="9_he5vb"]
@@ -63,7 +63,7 @@ animations = [{
 "duration": 1.0,
 "texture": ExtResource("6_6y7jj")
 }],
-"loop": 1,
+"loop": true,
 "name": &"idle",
 "speed": 8.0
 }, {
@@ -71,7 +71,7 @@ animations = [{
 "duration": 1.0,
 "texture": ExtResource("4_6juf6")
 }],
-"loop": 1,
+"loop": true,
 "name": &"new_animation",
 "speed": 5.0
 }, {
@@ -100,7 +100,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_huqqm")
 }],
-"loop": 1,
+"loop": true,
 "name": &"walk",
 "speed": 5.0
 }]
@@ -169,7 +169,7 @@ animations = [{
 "duration": 1.0,
 "texture": ExtResource("6_6y7jj")
 }],
-"loop": 1,
+"loop": true,
 "name": &"idle",
 "speed": 8.0
 }, {
@@ -198,82 +198,82 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_gy7sn")
 }],
-"loop": 1,
+"loop": true,
 "name": &"walk",
 "speed": 8.0
 }]
 
-[node name="Battle_System" type="Node2D" unique_id=1513646132]
+[node name="Battle_System" type="Node2D"]
 
-[node name="bg" type="Sprite2D" parent="." unique_id=772368405]
+[node name="bg" type="Sprite2D" parent="."]
 position = Vector2(576, 324.00006)
 scale = Vector2(1.0434784, 1.0434785)
 texture = ExtResource("1_n13d2")
 
-[node name="player2" type="CharacterBody2D" parent="." unique_id=771891049]
+[node name="player2" type="CharacterBody2D" parent="."]
 position = Vector2(905, 363)
 scale = Vector2(0.3, 0.3)
 script = ExtResource("2_6s7hf")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="player2" unique_id=2048387813]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="player2"]
 position = Vector2(53.333374, -56.666626)
 scale = Vector2(-11.943442, 13.640133)
 sprite_frames = SubResource("SpriteFrames_qbdty")
 animation = &"idle"
 frame_progress = 0.30815205
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="player2" unique_id=418620947]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="player2"]
 position = Vector2(53.333374, -40)
 rotation = -3.1415925
 shape = SubResource("RectangleShape2D_8vrlf")
 
-[node name="Left_Wall" type="StaticBody2D" parent="." unique_id=2040943402]
+[node name="Left_Wall" type="StaticBody2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Left_Wall" unique_id=1526669425]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Left_Wall"]
 shape = SubResource("SegmentShape2D_1vivr")
 
-[node name="Right_Wall" type="StaticBody2D" parent="." unique_id=1317801769]
+[node name="Right_Wall" type="StaticBody2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Right_Wall" unique_id=1526187002]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Right_Wall"]
 position = Vector2(1, 0)
 shape = SubResource("SegmentShape2D_8vrlf")
 
-[node name="Ground_Border" type="StaticBody2D" parent="." unique_id=1263812744]
+[node name="Ground_Border" type="StaticBody2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground_Border" unique_id=1514487223]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground_Border"]
 position = Vector2(1, -14)
 shape = SubResource("SegmentShape2D_v5gy4")
 
-[node name="Cell" type="StaticBody2D" parent="." unique_id=1583676192]
+[node name="Cell" type="StaticBody2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Cell" unique_id=1369948473]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Cell"]
 shape = SubResource("WorldBoundaryShape2D_1vivr")
 
-[node name="player1" type="CharacterBody2D" parent="." unique_id=408002228]
+[node name="player1" type="CharacterBody2D" parent="."]
 script = ExtResource("3_juha5")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="player1" unique_id=1693689069]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="player1"]
 position = Vector2(347, 341)
 scale = Vector2(3.5917978, 3.801759)
 sprite_frames = SubResource("SpriteFrames_1vivr")
 animation = &"idle"
 frame_progress = 0.499404
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="player1" unique_id=479428138]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="player1"]
 position = Vector2(-231.1768, -319.5639)
 scale = Vector2(1.9058646, 1.6735531)
 polygon = PackedVector2Array(311, 336, 340, 336, 348, 372, 352, 408, 339, 428, 343, 436, 328, 443, 319, 434, 308, 434, 308, 439, 316, 443, 317, 452, 301, 457, 289, 440, 297, 435, 271, 414, 273, 393, 301, 370, 313, 368, 314, 360, 308, 351)
 
-[node name="HUD_ReferenceLayer" type="CanvasLayer" parent="." unique_id=218073951]
+[node name="HUD_ReferenceLayer" type="CanvasLayer" parent="."]
 script = ExtResource("6_bt7nf")
 
-[node name="HUD_HP_Timer" type="TextureRect" parent="HUD_ReferenceLayer" unique_id=1454006252]
+[node name="HUD_HP_Timer" type="TextureRect" parent="HUD_ReferenceLayer"]
 offset_right = 1407.0
 offset_bottom = 151.0
 texture = ExtResource("7_bt7nf")
 expand_mode = 1
 
-[node name="HUD_Block_Gauge" type="TextureRect" parent="HUD_ReferenceLayer" unique_id=1330791054]
+[node name="HUD_Block_Gauge" type="TextureRect" parent="HUD_ReferenceLayer"]
 offset_left = 40.0
 offset_top = 14.0
 offset_right = 582.0
@@ -281,7 +281,7 @@ offset_bottom = 195.0
 texture = ExtResource("8_oq8fx")
 expand_mode = 1
 
-[node name="HUD_Deck_Card" type="TextureRect" parent="HUD_ReferenceLayer" unique_id=784075136]
+[node name="HUD_Deck_Card" type="TextureRect" parent="HUD_ReferenceLayer"]
 offset_left = 388.0
 offset_top = 485.0
 offset_right = 1134.0
@@ -289,7 +289,7 @@ offset_bottom = 648.0
 texture = ExtResource("9_he5vb")
 expand_mode = 1
 
-[node name="HUD_Special_Gauge" type="TextureRect" parent="HUD_ReferenceLayer" unique_id=816483304]
+[node name="HUD_Special_Gauge" type="TextureRect" parent="HUD_ReferenceLayer"]
 offset_left = -40.0
 offset_top = 437.0
 offset_right = 516.0
@@ -297,7 +297,7 @@ offset_bottom = 618.0
 texture = ExtResource("10_7hrjk")
 expand_mode = 1
 
-[node name="HUD_Button" type="TextureRect" parent="HUD_ReferenceLayer" unique_id=1218659892]
+[node name="HUD_Button" type="TextureRect" parent="HUD_ReferenceLayer"]
 offset_left = -75.0
 offset_top = 530.0
 offset_right = 508.0

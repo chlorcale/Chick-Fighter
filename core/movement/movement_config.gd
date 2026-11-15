@@ -6,6 +6,7 @@ extends RefCounted
 enum Breed {
 	GA_NOI,
 	GA_TRE,
+	GA_DONG_TAO, # Owner-approved tank preset (Gà Đông Tảo movelist: walk speed 70% of Gà nòi).
 }
 
 const JUMP_IMPULSE: float = 600.0
@@ -38,6 +39,8 @@ func _init(p_breed: int) -> void:
 			_speed = 200.0
 		Breed.GA_TRE:
 			_speed = 260.0
+		Breed.GA_DONG_TAO:
+			_speed = 140.0
 		_:
 			_breed = -1
 			_speed = 0.0

@@ -25,8 +25,8 @@ const DASH_GROUNDED_AND_AIRBORNE: int = 2
 @export var opponent_path: NodePath
 @export_range(1, 999999, 1) var health_max_hp: int = 100
 @export_enum(
-    "Disabled — eligibility pending owner decision:0",
-    "Grounded only — provisional:1",
+	"Disabled — eligibility pending owner decision:0",
+	"Grounded only — provisional:1",
     "Ground + air — provisional:2"
 )
 var dash_policy: int = DASH_DISABLED
@@ -46,395 +46,436 @@ var _combat_resolution_controller: RefCounted
 var _hit_reaction_controller: RefCounted
 var _last_locomotion_state: int = LocomotionStateMachine.State.NEUTRAL
 
+## Set by the battle layer while an attack is executing; blocks movement input only.
+var movement_locked: bool = false
+var _knockback_velocity: float = 0.0
+var _knockback_decel: float = 0.0
+var _knockback_ticks: int = 0
+var _launch_speed: float = 0.0
+
 
 func _ready() -> void:
-    _animated_sprite = get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
-    _setup_hurtbox_from_existing_collider()
-    _ensure_health_component()
-    _combat_resolution_controller = CombatResolutionScript.new() as RefCounted
+	_animated_sprite = get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
+	_setup_hurtbox_from_existing_collider()
+	_ensure_health_component()
+	_combat_resolution_controller = CombatResolutionScript.new() as RefCounted
 
-    _movement_config = MovementConfigScript.new(breed)
-    _movement_controller = MovementControllerScript.new()
-    if not _movement_controller.configure(_movement_config):
-        set_physics_process(false)
-        return
+	_movement_config = MovementConfigScript.new(breed)
+	_movement_controller = MovementControllerScript.new()
+	if not _movement_controller.configure(_movement_config):
+		set_physics_process(false)
+		return
 
-    _facing_controller = FacingControllerScript.new(_get_initial_facing())
-    _dash_input_buffer = DashInputBufferScript.new()
-    _dash_controller = DashControllerScript.new()
-    _hit_reaction_controller = HitReactionControllerScript.new() as RefCounted
+	_facing_controller = FacingControllerScript.new(_get_initial_facing())
+	_dash_input_buffer = DashInputBufferScript.new()
+	_dash_controller = DashControllerScript.new()
+	_hit_reaction_controller = HitReactionControllerScript.new() as RefCounted
 
-    _input_source = LocalInputSourceScript.new()
-    _input_source.configure(_get_input_mapping())
-    _input_capture = LocalInputCaptureScript.new()
-    _input_capture.bind(_input_source)
-    _input_capture.name = "LocalInputCapture"
-    add_child(_input_capture)
+	_input_source = LocalInputSourceScript.new()
+	_input_source.configure(_get_input_mapping())
+	_input_capture = LocalInputCaptureScript.new()
+	_input_capture.bind(_input_source)
+	_input_capture.name = "LocalInputCapture"
+	add_child(_input_capture)
 
-    _opponent = _resolve_opponent()
-    _refresh_facing()
+	_opponent = _resolve_opponent()
+	_refresh_facing()
 
 
 func _physics_process(_delta: float) -> void:
-    if _input_source == null or _movement_controller == null or _facing_controller == null:
-        return
+	if _input_source == null or _movement_controller == null or _facing_controller == null:
+		return
 
-    var tick: int = Engine.get_physics_frames()
-    var frame: InputFrame = _input_source.sample(tick)
-    if frame == null:
-        return
+	var tick: int = Engine.get_physics_frames()
+	var frame: InputFrame = _input_source.sample(tick)
+	if frame == null:
+		return
 
-    step_with_input_frame(frame)
+	step_with_input_frame(frame)
 
 
 ## Deterministic entry point shared by live input and integration tests.
 ## The reaction timer advances after the current tick's movement.
 func step_with_input_frame(frame: InputFrame) -> int:
-    if frame == null:
-        push_error("FighterController.step_with_input_frame(): frame cannot be null")
-        return _last_locomotion_state
+	if frame == null:
+		push_error("FighterController.step_with_input_frame(): frame cannot be null")
+		return _last_locomotion_state
 
-    if _movement_controller == null or _facing_controller == null \
-            or _dash_input_buffer == null or _dash_controller == null:
-        return _last_locomotion_state
+	if _movement_controller == null or _facing_controller == null \
+			or _dash_input_buffer == null or _dash_controller == null:
+		return _last_locomotion_state
 
-    _refresh_facing()
+	_refresh_facing()
 
-    var control_locked: bool = is_control_locked()
+	var control_locked: bool = is_control_locked()
 
-    if control_locked:
-        _dash_input_buffer.clear()
-    else:
-        _try_start_dash(frame)
+	if control_locked or movement_locked:
+		_dash_input_buffer.clear()
+	else:
+		_try_start_dash(frame)
 
-    # Preserve MovementController's existing API.
-    # A neutral snapshot blocks movement/jump/crouch input while still allowing gravity.
-    var movement_frame: InputFrame = _filter_movement_input(frame, control_locked)
+	# Preserve MovementController's existing API.
+	# A neutral snapshot blocks movement/jump/crouch input while still allowing gravity.
+	var movement_frame: InputFrame = _filter_movement_input(frame, control_locked or movement_locked)
 
-    var dash_override: bool = _dash_controller.is_travelling and not control_locked
-    var dash_velocity: float = _dash_controller.get_horizontal_velocity()
+	var dash_override: bool = _dash_controller.is_travelling and not control_locked
+	var dash_velocity: float = _dash_controller.get_horizontal_velocity()
 
-    _last_locomotion_state = _movement_controller.physics_step(
-        self,
-        movement_frame,
-        _facing_controller.facing,
-        dash_override,
-        dash_velocity
-    )
+	# Knockback enters through MovementController's horizontal override channel.
+	if _knockback_ticks > 0:
+		dash_override = true
+		dash_velocity = _knockback_velocity
+		_knockback_velocity = move_toward(_knockback_velocity, 0.0, _knockback_decel)
+		_knockback_ticks -= 1
 
-    # Dash timing continues while reaction-locked, but cannot move the fighter.
-    if _dash_controller.state == DashControllerScript.State.TRAVEL \
-            or _dash_controller.state == DashControllerScript.State.RECOVERY:
-        _dash_controller.advance_tick()
+	_last_locomotion_state = _movement_controller.physics_step(
+		self,
+		movement_frame,
+		_facing_controller.facing,
+		dash_override,
+		dash_velocity
+	)
 
-    if is_instance_valid(_hurtbox):
-        _hurtbox.call(
-            "set_crouched",
-            _last_locomotion_state == LocomotionStateMachine.State.CROUCH
-        )
+	# Hất tung (launcher): kênh xung lực dọc riêng, áp một lần sau bước di chuyển thường.
+	if _launch_speed > 0.0:
+		velocity.y = -_launch_speed
+		_launch_speed = 0.0
+		move_and_slide()
 
-    if control_locked and _hit_reaction_controller != null:
-        _hit_reaction_controller.call("advance_tick")
+	# Dash timing continues while reaction-locked, but cannot move the fighter.
+	if _dash_controller.state == DashControllerScript.State.TRAVEL \
+			or _dash_controller.state == DashControllerScript.State.RECOVERY:
+		_dash_controller.advance_tick()
 
-    _update_animation()
-    _sync_facing_sprite()
-    return _last_locomotion_state
+	if is_instance_valid(_hurtbox):
+		_hurtbox.call(
+			"set_crouched",
+			_last_locomotion_state == LocomotionStateMachine.State.CROUCH
+		)
+
+	if control_locked and _hit_reaction_controller != null:
+		_hit_reaction_controller.call("advance_tick")
+
+	_update_animation()
+	_sync_facing_sprite()
+	return _last_locomotion_state
 
 
 ## Returns a neutral movement snapshot during Hitstun/Blockstun/Down.
 ## Combat input remains available to future combat systems as a separate concern.
 func _filter_movement_input(frame: InputFrame, control_locked: bool) -> InputFrame:
-    if frame == null:
-        return null
-    if control_locked:
-        return InputFrame.new(frame.tick, 0, 0, 0)
-    return frame
+	if frame == null:
+		return null
+	if control_locked:
+		return InputFrame.new(frame.tick, 0, 0, 0)
+	return frame
 
 
 func apply_hitstun(duration_ticks: int) -> bool:
-    if _hit_reaction_controller == null:
-        return false
-    return bool(_hit_reaction_controller.call("apply_hitstun", duration_ticks))
+	if _hit_reaction_controller == null:
+		return false
+	return bool(_hit_reaction_controller.call("apply_hitstun", duration_ticks))
 
 
 func apply_blockstun(duration_ticks: int) -> bool:
-    if _hit_reaction_controller == null:
-        return false
-    return bool(_hit_reaction_controller.call("apply_blockstun", duration_ticks))
+	if _hit_reaction_controller == null:
+		return false
+	return bool(_hit_reaction_controller.call("apply_blockstun", duration_ticks))
 
 
 func apply_down(duration_ticks: int) -> bool:
-    if _hit_reaction_controller == null:
-        return false
-    return bool(_hit_reaction_controller.call("apply_down", duration_ticks))
+	if _hit_reaction_controller == null:
+		return false
+	return bool(_hit_reaction_controller.call("apply_down", duration_ticks))
+
+
+## Knockback: velocity impulse decelerating evenly to 0 over duration_ticks (GDD 4.11).
+## direction is -1 (left) or +1 (right).
+func apply_knockback(distance_px: float, duration_ticks: int, direction: int) -> void:
+	if distance_px <= 0.0 or duration_ticks <= 0 or direction == 0:
+		return
+	var duration_s: float = float(duration_ticks) / 60.0
+	var speed: float = 2.0 * distance_px / duration_s
+	_knockback_velocity = speed * float(signi(direction))
+	_knockback_decel = speed / float(duration_ticks)
+	_knockback_ticks = duration_ticks
+
+
+## Hất bay lên với vận tốc dọc `vertical_speed` (px/s); trọng lực sau đó do MovementController xử lý.
+func apply_launch(vertical_speed: float) -> void:
+	_launch_speed = maxf(vertical_speed, 0.0)
+
+
+func get_input_source() -> LocalInputSource:
+	return _input_source
 
 
 func is_control_locked() -> bool:
-    if _hit_reaction_controller == null:
-        return false
-    return bool(_hit_reaction_controller.call("is_control_locked"))
+	if _hit_reaction_controller == null:
+		return false
+	return bool(_hit_reaction_controller.call("is_control_locked"))
 
 
 func clear_hit_reactions() -> void:
-    if _hit_reaction_controller != null:
-        _hit_reaction_controller.call("clear_reactions")
+	if _hit_reaction_controller != null:
+		_hit_reaction_controller.call("clear_reactions")
 
 
 ## M9: create/configure the fighter's health component.
 ## An authored HealthComponent keeps its own Inspector configuration when already initialized.
 func _ensure_health_component() -> void:
-    var existing: Node = get_node_or_null("HealthComponent")
+	var existing: Node = get_node_or_null("HealthComponent")
 
-    if is_instance_valid(existing):
-        if not existing.has_method("is_initialized") \
-                or not existing.has_method("configure") \
-                or not existing.has_method("apply_damage") \
-                or not existing.has_method("is_alive"):
-            push_error("FighterController: existing HealthComponent is invalid")
-            return
+	if is_instance_valid(existing):
+		if not existing.has_method("is_initialized") \
+				or not existing.has_method("configure") \
+				or not existing.has_method("apply_damage") \
+				or not existing.has_method("is_alive"):
+			push_error("FighterController: existing HealthComponent is invalid")
+			return
 
-        if not bool(existing.call("is_initialized")):
-            if not bool(existing.call("configure", health_max_hp, -1)):
-                push_error("FighterController: failed to configure HealthComponent")
-                return
+		if not bool(existing.call("is_initialized")):
+			if not bool(existing.call("configure", health_max_hp, -1)):
+				push_error("FighterController: failed to configure HealthComponent")
+				return
 
-        _health_component = existing
-        return
+		_health_component = existing
+		return
 
-    var health: Node = HealthComponentScript.new()
-    health.name = "HealthComponent"
+	var health: Node = HealthComponentScript.new()
+	health.name = "HealthComponent"
 
-    if not bool(health.call("configure", health_max_hp, -1)):
-        health.free()
-        push_error("FighterController: failed to initialize HealthComponent")
-        return
+	if not bool(health.call("configure", health_max_hp, -1)):
+		health.free()
+		push_error("FighterController: failed to initialize HealthComponent")
+		return
 
-    add_child(health)
-    _health_component = health
+	add_child(health)
+	_health_component = health
 
 
 func get_health_component() -> Node:
-    return _health_component
+	return _health_component
 
 
 func is_alive() -> bool:
-    if not is_instance_valid(_health_component):
-        return false
-    return bool(_health_component.call("is_alive"))
+	if not is_instance_valid(_health_component):
+		return false
+	return bool(_health_component.call("is_alive"))
 
 
 func get_control_lock_remaining() -> int:
-    if _hit_reaction_controller == null:
-        return 0
-    return int(_hit_reaction_controller.call("get_control_lock_remaining"))
+	if _hit_reaction_controller == null:
+		return 0
+	return int(_hit_reaction_controller.call("get_control_lock_remaining"))
 
 
 ## Connect an already-configured M6 Hitbox to this fighter's combat resolver.
 ## Re-registering the same Hitbox is safe and does not create duplicate callbacks.
 func register_hitbox(hitbox: Area2D) -> bool:
-    if not is_instance_valid(hitbox):
-        return false
+	if not is_instance_valid(hitbox):
+		return false
 
-    if not hitbox.has_signal(&"hit_confirmed"):
-        return false
+	if not hitbox.has_signal(&"hit_confirmed"):
+		return false
 
-    if _combat_resolution_controller == null:
-        return false
+	if _combat_resolution_controller == null:
+		return false
 
-    var callback: Callable = Callable(self, "_on_hit_confirmed")
+	var callback: Callable = Callable(self, "_on_hit_confirmed")
 
-    if hitbox.is_connected(&"hit_confirmed", callback):
-        return true
+	if hitbox.is_connected(&"hit_confirmed", callback):
+		return true
 
-    return hitbox.connect(&"hit_confirmed", callback) == OK
+	return hitbox.connect(&"hit_confirmed", callback) == OK
 
 
 func _on_hit_confirmed(
-    attacker_fighter_id: StringName,
-    attack_instance_id: int,
-    attack_data: Resource,
-    hurtbox: Area2D
+	attacker_fighter_id: StringName,
+	attack_instance_id: int,
+	attack_data: Resource,
+	hurtbox: Area2D
 ) -> void:
-    if _combat_resolution_controller == null:
-        return
+	if _combat_resolution_controller == null:
+		return
 
-    _combat_resolution_controller.call(
-        "resolve_hit",
-        self,
-        attacker_fighter_id,
-        attack_instance_id,
-        attack_data,
-        hurtbox
-    )
+	_combat_resolution_controller.call(
+		"resolve_hit",
+		self,
+		attacker_fighter_id,
+		attack_instance_id,
+		attack_data,
+		hurtbox
+	)
 
 
 ## M6: build a separate Area2D receiver by cloning the existing body collider.
 ## The CharacterBody2D pushbox remains unchanged and continues to own movement collision.
 func _setup_hurtbox_from_existing_collider() -> void:
-    var existing := get_node_or_null("HurtboxComponent") as Area2D
-    if is_instance_valid(existing):
-        _hurtbox = existing
-        return
+	var existing := get_node_or_null("HurtboxComponent") as Area2D
+	if is_instance_valid(existing):
+		_hurtbox = existing
+		return
 
-    var source_collider: Node2D = null
-    for child in get_children():
-        if child is CollisionShape2D or child is CollisionPolygon2D:
-            source_collider = child as Node2D
-            break
-    if source_collider == null:
-        # Test fixtures or future fighters may intentionally provide their own hurtbox.
-        return
+	var source_collider: Node2D = null
+	for child in get_children():
+		if child is CollisionShape2D or child is CollisionPolygon2D:
+			source_collider = child as Node2D
+			break
+	if source_collider == null:
+		# Test fixtures or future fighters may intentionally provide their own hurtbox.
+		return
 
-    var receiver: Node = HurtboxComponentScript.new()
-    receiver.name = "HurtboxComponent"
-    receiver.call("set_owner_fighter_id", StringName(name))
-    if not bool(receiver.call("copy_collision_from", source_collider)):
-        push_warning("FighterController: could not clone body collider into HurtboxComponent")
-        receiver.free()
-        return
-    add_child(receiver)
-    _hurtbox = receiver as Area2D
+	var receiver: Node = HurtboxComponentScript.new()
+	receiver.name = "HurtboxComponent"
+	receiver.call("set_owner_fighter_id", StringName(name))
+	if not bool(receiver.call("copy_collision_from", source_collider)):
+		push_warning("FighterController: could not clone body collider into HurtboxComponent")
+		receiver.free()
+		return
+	add_child(receiver)
+	_hurtbox = receiver as Area2D
 
 
 func get_hurtbox() -> Area2D:
-    return _hurtbox
+	return _hurtbox
 
 
 func _try_start_dash(frame: InputFrame) -> void:
-    var requested_direction: int = _dash_input_buffer.consume_frame(frame)
-    if requested_direction == DashInputBufferScript.NO_DASH:
-        return
-    if dash_policy == DASH_DISABLED or not _dash_controller.can_start:
-        return
-    if dash_policy == DASH_GROUNDED_ONLY and not is_on_floor():
-        return
-    _dash_controller.begin_dash(requested_direction)
+	var requested_direction: int = _dash_input_buffer.consume_frame(frame)
+	if requested_direction == DashInputBufferScript.NO_DASH:
+		return
+	if dash_policy == DASH_DISABLED or not _dash_controller.can_start:
+		return
+	if dash_policy == DASH_GROUNDED_ONLY and not is_on_floor():
+		return
+	_dash_controller.begin_dash(requested_direction)
 
 
 func _refresh_facing() -> int:
-    if _facing_controller == null:
-        return FacingControllerScript.RIGHT
-    if not is_instance_valid(_opponent):
-        _opponent = _resolve_opponent()
-    if is_instance_valid(_opponent):
-        _facing_controller.update_facing(get_facing_anchor_x(), _get_opponent_facing_anchor_x())
-    _sync_facing_sprite()
-    return _facing_controller.facing
+	if _facing_controller == null:
+		return FacingControllerScript.RIGHT
+	if not is_instance_valid(_opponent):
+		_opponent = _resolve_opponent()
+	if is_instance_valid(_opponent):
+		_facing_controller.update_facing(get_facing_anchor_x(), _get_opponent_facing_anchor_x())
+	_sync_facing_sprite()
+	return _facing_controller.facing
 
 
 func _resolve_opponent() -> CharacterBody2D:
-    if not opponent_path.is_empty():
-        return get_node_or_null(opponent_path) as CharacterBody2D
+	if not opponent_path.is_empty():
+		return get_node_or_null(opponent_path) as CharacterBody2D
 
-    # The current Battle scene has exactly two sibling CharacterBody2D fighters.
-    # An explicit opponent_path should be set if additional CharacterBody2D nodes are added.
-    var parent_node: Node = get_parent()
-    if parent_node == null:
-        return null
-    for sibling in parent_node.get_children():
-        if sibling != self and sibling is CharacterBody2D:
-            return sibling as CharacterBody2D
-    return null
+	# The current Battle scene has exactly two sibling CharacterBody2D fighters.
+	# An explicit opponent_path should be set if additional CharacterBody2D nodes are added.
+	var parent_node: Node = get_parent()
+	if parent_node == null:
+		return null
+	for sibling in parent_node.get_children():
+		if sibling != self and sibling is CharacterBody2D:
+			return sibling as CharacterBody2D
+	return null
 
 
 func get_facing_anchor_x() -> float:
-    # The current scene intentionally offsets child sprites relative to body origins.
-    # Use the visible sprite pivot as the facing anchor when available.
-    if is_instance_valid(_animated_sprite):
-        return _animated_sprite.global_position.x
-    return global_position.x
+	# The current scene intentionally offsets child sprites relative to body origins.
+	# Use the visible sprite pivot as the facing anchor when available.
+	if is_instance_valid(_animated_sprite):
+		return _animated_sprite.global_position.x
+	return global_position.x
 
 
 func _get_opponent_facing_anchor_x() -> float:
-    if not is_instance_valid(_opponent):
-        return get_facing_anchor_x()
-    if _opponent.has_method("get_facing_anchor_x"):
-        return float(_opponent.call("get_facing_anchor_x"))
-    var opponent_sprite := _opponent.get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
-    if is_instance_valid(opponent_sprite):
-        return opponent_sprite.global_position.x
-    return _opponent.global_position.x
+	if not is_instance_valid(_opponent):
+		return get_facing_anchor_x()
+	if _opponent.has_method("get_facing_anchor_x"):
+		return float(_opponent.call("get_facing_anchor_x"))
+	var opponent_sprite := _opponent.get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
+	if is_instance_valid(opponent_sprite):
+		return opponent_sprite.global_position.x
+	return _opponent.global_position.x
 
 
 func _sync_facing_sprite() -> void:
-    if not is_instance_valid(_animated_sprite) or _facing_controller == null:
-        return
+	if not is_instance_valid(_animated_sprite) or _facing_controller == null:
+		return
 
-    # flip_h mirrors the texture in the sprite's local axes. The existing Battle
-    # scene has a negative X scale on P2's AnimatedSprite2D, which already mirrors
-    # that sprite through its transform. Account for the effective global X-axis
-    # so LEFT is not mirrored twice (and rendered as RIGHT).
-    _animated_sprite.force_update_transform()
-    var transform_is_mirrored: bool = _animated_sprite.global_transform.x.x < 0.0
-    var should_face_left: bool = _facing_controller.facing == FacingControllerScript.LEFT
-    _animated_sprite.flip_h = should_face_left != transform_is_mirrored
+	# flip_h mirrors the texture in the sprite's local axes. The existing Battle
+	# scene has a negative X scale on P2's AnimatedSprite2D, which already mirrors
+	# that sprite through its transform. Account for the effective global X-axis
+	# so LEFT is not mirrored twice (and rendered as RIGHT).
+	_animated_sprite.force_update_transform()
+	var transform_is_mirrored: bool = _animated_sprite.global_transform.x.x < 0.0
+	var should_face_left: bool = _facing_controller.facing == FacingControllerScript.LEFT
+	_animated_sprite.flip_h = should_face_left != transform_is_mirrored
 
 
 func _update_animation() -> void:
-    if not is_instance_valid(_animated_sprite):
-        return
-    if _animated_sprite.sprite_frames == null:
-        return
+	if not is_instance_valid(_animated_sprite):
+		return
+	if _animated_sprite.sprite_frames == null:
+		return
 
-    var target_animation: StringName = &"idle"
-    if _last_locomotion_state == LocomotionStateMachine.State.FORWARD_WALK \
-            or _last_locomotion_state == LocomotionStateMachine.State.BACKWALK:
-        target_animation = &"walk"
+	var target_animation: StringName = &"idle"
+	if _last_locomotion_state == LocomotionStateMachine.State.FORWARD_WALK \
+			or _last_locomotion_state == LocomotionStateMachine.State.BACKWALK:
+		target_animation = &"walk"
 
-    if _animated_sprite.sprite_frames.has_animation(target_animation):
-        if _animated_sprite.animation != target_animation or not _animated_sprite.is_playing():
-            _animated_sprite.play(target_animation)
+	if _animated_sprite.sprite_frames.has_animation(target_animation):
+		if _animated_sprite.animation != target_animation or not _animated_sprite.is_playing():
+			_animated_sprite.play(target_animation)
 
 
 ## Called by the later combat FSM exactly on entry to AttackStartup.
 func begin_attack_facing_lock() -> void:
-    if _facing_controller != null:
-        _facing_controller.begin_attack_startup()
-        _sync_facing_sprite()
+	if _facing_controller != null:
+		_facing_controller.begin_attack_startup()
+		_sync_facing_sprite()
 
 
 ## Called by the later combat FSM exactly when AttackRecovery completes.
 func finish_attack_facing_recovery() -> int:
-    return _refresh_facing_after_attack()
+	return _refresh_facing_after_attack()
 
 
 func _refresh_facing_after_attack() -> int:
-    if _facing_controller == null:
-        return FacingControllerScript.RIGHT
-    var owner_x: float = get_facing_anchor_x()
-    var opponent_x: float = _get_opponent_facing_anchor_x()
-    var result: int = _facing_controller.finish_attack_recovery(owner_x, opponent_x)
-    _sync_facing_sprite()
-    return result
+	if _facing_controller == null:
+		return FacingControllerScript.RIGHT
+	var owner_x: float = get_facing_anchor_x()
+	var opponent_x: float = _get_opponent_facing_anchor_x()
+	var result: int = _facing_controller.finish_attack_recovery(owner_x, opponent_x)
+	_sync_facing_sprite()
+	return result
 
 
 func get_facing() -> int:
-    return _facing_controller.facing if _facing_controller != null else _get_initial_facing()
+	return _facing_controller.facing if _facing_controller != null else _get_initial_facing()
 
 
 func get_locomotion_state() -> int:
-    return _last_locomotion_state
+	return _last_locomotion_state
 
 
 func get_movement_config() -> MovementConfig:
-    return _movement_config
+	return _movement_config
 
 
 func get_missing_input_actions() -> Array[StringName]:
-    if _input_source == null:
-        return []
-    return _input_source.get_missing_actions()
+	if _input_source == null:
+		return []
+	return _input_source.get_missing_actions()
 
 
 func is_dashing() -> bool:
-    return _dash_controller != null and _dash_controller.is_travelling
+	return _dash_controller != null and _dash_controller.is_travelling
 
 
 ## Override in P1/P2 scripts. Only actions already present in project.godot are mapped here.
 func _get_input_mapping() -> Dictionary:
-    return {}
+	return {}
 
 
 ## P1/P2 override this only for the initial fallback before the first opponent update.
 func _get_initial_facing() -> int:
-    return FacingControllerScript.RIGHT
+	return FacingControllerScript.RIGHT
