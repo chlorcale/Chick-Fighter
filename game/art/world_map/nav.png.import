@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://5nieny56op0c"
+path="res://.godot/imported/nav.png-a53775f55ce7388148be032c79f2da19.image"
+
+[deps]
+
+source_file="res://game/art/world_map/nav.png"
+dest_files=["res://.godot/imported/nav.png-a53775f55ce7388148be032c79f2da19.image"]
+
+[params]
+

@@ -1,0 +1,176 @@
+extends RefCounted
+
+## Dữ liệu hàng xóm & quest của tầng đời sống (GDD 6 "Bạn bè & NPC – mỗi bạn mở một nghề", 9.5 "hội thoại ngắn, có
+## lịch; quest là truyện"). Logic ở game/story/story_life.gd; trạng thái (thân thiết, quest) ở game/sim/life_state.gd.
+## Mỗi NPC: name (người nói, khớp DialogBox.PORTRAITS), hours [buổi đầu, buổi cuối] (GameState.Period) – ngoài giờ
+## thì nói "away" kèm gợi ý giờ quay lại; lines: câu chuyện theo bậc thân thiết (mỗi lần ghé một câu, xoay vòng);
+## rewards: mốc thân thiết → phần thưởng (một lần): job (mở nghề), discount, item [id, số], money, quest, tip.
+## PLACEHOLDER: mọi mốc/thưởng là giá trị khởi điểm chờ playtest.
+
+const NPCS: Dictionary = {
+	&"npc_ba_lan": {"name": "Bà Lan", "hours": [0, 3],
+		"away": "Bà Lan dọn hàng về rồi. Quán cơm mở từ sáng tới tối nghen.",
+		"lines": [
+			["Ăn gì chưa con? Ngồi xuống bà cho chén cơm cháy, giòn rụm nè.",
+				"Con biết hông, cả cái chợ này chuyện gì bà cũng biết. Con nhỏ bán bánh mì mới có bồ, ông Tám thua cờ ba ván liền…",
+				"Ối, thằng Tèo hôm qua ghé đây khoe con gà tre quá trời. Bà nói: khoe vừa thôi, ăn cơm đi!"],
+			["Bán cơm ba chục năm, bà nhìn mặt là biết khách muốn ăn gì. Bán hàng là phải lanh mắt, lanh tay đó con.",
+				"Nghe đồn sới Liên tỉnh năm nay có ông Tám Cần Thơ, gà nòi lì lắm. Bà nghe khách nói hoài à.",
+				"Con nuôi gà thì nhớ cho ăn lúa đều. Gà đói thì đá như cơm nguội, mềm xèo!"],
+			["Bà coi con như cháu trong nhà rồi đó. Bữa nào rảnh phụ bà bán, bà trả công đàng hoàng.",
+				"Nè, cơm cháy chà bông bà để dành riêng cho con. Đừng nói ai nghen, tụi nó ganh.",
+				"Ông nội con hồi xưa hay ngồi chỗ này uống trà đá, kể chuyện gà chín cựa tới khuya."],
+		],
+		"rewards": {2: {"job": "job_shop", "text": "Bà Lan: «Con lanh lẹ vậy, chiều chiều ra phụ bà bán cơm đi, bà trả bảy chục một ca!»"},
+			4: {"quest": "q_com_tho_ho"},
+			6: {"item": [&"thuoc_bo", 2], "text": "Bà Lan dúi vô tay hai chai thuốc bổ gà: «Cho con gà của con, bà mua dư.»"}}},
+	&"npc_chu_bay": {"name": "Chú Bảy", "hours": [0, 3],
+		"away": "Chú Bảy đóng quán võng đi ngủ rồi. Sáng mai ghé nghen.",
+		"lines": [
+			["…Ngồi võng đi. Nghe cải lương hông?",
+				"…(Chú Bảy gật gù theo bài «Dạ cổ hoài lang», mắt nhắm lim dim.)",
+				"Hồi trẻ chú chạy ghe chợ nổi. Ghe đông như kiến, lách hổng khéo là đụng."],
+			["Sới đá gà hồi xưa nằm sau đình. Ông nội con đá con «Ô Tía», nổi tiếng nhứt miệt này.",
+				"Gà hay hổng phải gà hăng. Gà hay là gà biết chờ.",
+				"Con gà nào hay nhảy thì đứng thẳng mà đỡ. Gà lì đòn thì đánh dồn cho vỡ thủ. Chú coi đá cả đời mới biết."],
+			["Con giống ông nội lắm. Cũng ít nói, cũng hay ngó con gà hoài.",
+				"Bữa nào cải lương hay chú kêu con ra nghe. «Tô Ánh Nguyệt» đó, chú tìm cuộn băng hoài hổng có.",
+				"Chú già rồi, giờ chỉ mong coi con đá một trận Olympic cho đã con mắt."],
+		],
+		"rewards": {2: {"job": "job_boat", "text": "Chú Bảy: «…Thằng cháu chú bịnh, ghe nằm không. Con chạy ghe chở hàng giùm, một chuyến trăm ngàn.»"},
+			3: {"quest": "q_bang_cai_luong"},
+			5: {"tip": true, "text": "Chú Bảy: «Muốn biết đối thủ thì cứ hỏi chú. Mấy tay đá gà miệt này chú biết hết.»"}}},
+	&"npc_ong_tam": {"name": "Ông Tám", "hours": [1, 3],
+		"away": "Ông Tám dẹp bàn cờ rồi. Trưa tới chiều ổng mới ra đánh.",
+		"lines": [
+			["Pháo đầu! Ngồi xuống đánh một ván coi, nhỏ.",
+				"Mã nhảy… ê, đừng nhìn, đang suy nghĩ. Đánh cờ như đá gà, đi trước một nước là thắng.",
+				"Xe đi thẳng, tượng đi chéo, còn gà thì… đi đâu cũng được, miễn đá trúng!"],
+			["Con biết vì sao ông thắng hoài hông? Vì ông thí tốt. Đá gà cũng vậy, chịu ăn một đòn để phản một đòn.",
+				"Chiếu tướng! Ha ha. Con đỡ được nước này thì đỡ được đòn nhảy của gà tre.",
+				"Đối thủ đỡ hoài thì đổi nhịp: đánh thấp, rồi đánh cao. Như cờ: dụ bên này, đánh bên kia."],
+			["Ông thua bà Lan có một ván mà bả kể cả chợ nghe. Con đừng có tin nghen!",
+				"Nước cờ hay nhứt là nước biết dừng. Gà mệt thì cho nghỉ, đừng ham đá.",
+				"Chiếu bí! … Thôi được rồi, ông nhường con ván này. Nhớ ra sới đá cho ông coi."],
+		],
+		"rewards": {1: {"quest": "q_co_tuong"},
+			4: {"money": 100000, "text": "Ông Tám móc túi đưa trăm ngàn: «Tiền ông thắng cờ tuần rồi. Cầm mua đồ cho gà.»"}}},
+	&"npc_ong_sau": {"name": "Ông Sáu", "hours": [0, 2],
+		"away": "Ông Sáu xách cần câu về rồi. Sáng tới chiều ông mới ngồi ao sen.",
+		"lines": [
+			["Suỵt… cá sắp ăn. Ngồi im mà coi, con.",
+				"Câu cá cũng như nuôi gà: nóng nảy là mất mồi.",
+				"Hoa sen mọc dưới bùn mà thơm. Gà con của con cũng vậy, từ từ nó lên."],
+			["Hồi đó ông nội con có con «Ô Tía», chân vàng, cựa như hai cái móc câu. Nó đá ba năm chưa thua.",
+				"Con Ô Tía thua đúng một trận, vì ông nội con bắt nó đá lúc nó đang bịnh. Ổng ân hận tới già.",
+				"Thua hổng xấu. Bắt gà đá lúc nó yếu mới xấu. Nhớ nghen con."],
+			["Người ta nói gà chín cựa là truyện xưa. Ông thì tin. Có những thứ phải đợi đủ lâu mới thấy.",
+				"Ông câu ao này bốn chục năm, cá hổng nhiều hơn mà lòng thì yên hơn.",
+				"Bữa nào con đá Olympic, ông xách ghế đẩu đi coi."],
+		],
+		"rewards": {2: {"text": "Ông Sáu: «Ông kể con nghe chuyện con Ô Tía rồi hen. Gà của con có cái thần của nó đó.»", "tip": true},
+			3: {"quest": "q_ca_ong_sau"}}},
+	&"npc_chu_muoi": {"name": "Chú Mười", "hours": [0, 3],
+		"away": "Chú Mười đóng cổng vườn rồi. Ban ngày chú mới cho vô coi kiểng.",
+		"lines": [
+			["Coi chừng đụng cây! Cây mai chiếu thủy này chú uốn mười năm đó nghen.",
+				"Uốn kiểng cũng như nuôi gà đá: tỉa đúng chỗ, bón đúng lúc. Gà mà ăn bậy là lông xơ ngay.",
+				"Thấy cây sanh này hông? Dáng «long hổ hội». Chú đặt tên nó là Tia Chớp… à không, thằng Tèo giành tên đó rồi."],
+			["Mua đồ cho gà phải coi kỹ. Cựa đồng là phải đồng thiệt, mấy sạp ngoài chợ lắm khi đồng pha thiếc.",
+				"Chú quen bà chủ sạp đồ nghề ngoài chợ. Nói tên chú là bả bớt cho.",
+				"Gà đẹp là gà khỏe. Gà khỏe thì mới đá hay. Đẹp trước, hay sau – đó là đạo của chú."],
+			["Con có con mắt đó. Coi kiểng mà biết khen đúng chỗ, hiếm lắm.",
+				"Chú định đem chậu mai qua tặng bà Lan, mà ngại… con đem giùm chú hông?",
+				"Bữa nào gà con vô địch, chú tặng một chậu kiểng đặt trước chuồng cho oai."],
+		],
+		"rewards": {2: {"discount": "discount_market", "text": "Chú Mười: «Ra sạp đồ nghề nói tên chú, bả bớt cho con mười phần trăm.»"},
+			3: {"quest": "q_chau_kieng"}}},
+	&"co_ba": {"name": "Cô Ba", "hours": [0, 3],
+		"away": "Tiệm Cô Ba đóng cửa rồi. Sáng mai cô mở từ bảy giờ nghen.",
+		"lines": [
+			["Hồi đó tiệm cô bán đủ thứ, kim chỉ tới cựa gà. Ông nội con hay ghé mua trà.",
+				"Con biết hông, chuyện xóm mình cô kể ba ngày chưa hết. Ví dụ như chú Tư hồi trẻ…",
+				"Gà nhà ai cũng ghé tiệm cô mua lúa. Cô nhìn bao lúa là biết gà nhà đó mập ốm."],
+			["Mua đồ nhớ đem về nhà ra chuồng gắn cho gà nghen, để trong túi hổng có ích gì đâu.",
+				"Cựa sắt thì đá đau, mà Mào sắt thì chịu đòn. Con thích công hay thủ?",
+				"Tối nào cũng có đứa chạy vô mua lúa vì quên cho gà ăn. Con đừng giống tụi nó nghen."],
+		],
+		"rewards": {3: {"discount": "discount_co_ba", "text": "Cô Ba: «Mối quen rồi, từ nay mua gì cô bớt mười phần trăm!»"}}},
+	&"teo": {"name": "Tèo", "hours": [0, 4],
+		"away": "",
+		"lines": [
+			["Ê, mày vô địch Ao Làng thì sao? Liên tỉnh mới là chỗ của người lớn nghen!",
+				"Tia Chớp nhà tao mới học thêm chiêu mới. Hổng nói đâu, bí mật!",
+				"Tao đi phụ hồ mấy bữa nay, mua được Cánh lụa rồi. Mày làm gì có tiền chưa?"],
+			["Thiệt ra tao cũng muốn lên Liên tỉnh… mà gà tao chưa đủ đô. Mày ráng đá cho xóm mình nở mặt nghen.",
+				"Nghe nói ông Năm Châu Đốc có con gà tre nhảy như bay. Gặp nó thì đứng đỡ, đừng nhảy theo.",
+				"Mày mà thua Liên tỉnh là tao cười cả tuần đó!"],
+		],
+		"rewards": {4: {"item": [&"canh_lua", 1], "text": "Tèo quăng qua một bộ Cánh lụa: «Tao mua dư. Đừng có nói tao tặng nghen, quê lắm!»"}}},
+	&"fisher": {"name": "Ông câu cá", "hours": [0, 3],
+		"away": "Ông câu cá về nhà nấu cơm rồi.",
+		"lines": [
+			["Câu cả buổi chưa được con nào. Mà thôi, ngồi đây nghe gió sông cũng đã.",
+				"Hồi xưa sông này cá linh nhiều tới nỗi lấy rổ xúc cũng được.",
+				"Con đi đá gà thì đá cho đàng hoàng, đừng có ăn gian nghen."],
+		],
+		"rewards": {1: {"tip": true, "text": "Ông câu cá: «Muốn biết gà nào hay đá kiểu nào thì hỏi ông. Ngồi bến nghe người ta kể hoài.»"}}},
+	&"lottery": {"name": "Cô bán vé số", "hours": [0, 3],
+		"away": "Cô bán vé số về rồi.",
+		"lines": [
+			["Vé số đây! À, con đó hả. Nghe nói con vô địch Ao Làng, hên dữ ha!",
+				"Bà Lan ngoài chợ nói ông Tám thua cờ ba ván liền. Ổng chối quá trời.",
+				"Chợ nổi sáng nay đông dữ lắm, ghe nào cũng chở đầy dưa hấu."],
+		],
+		"rewards": {}},
+	&"cat": {"name": "Con mèo", "hours": [0, 4],
+		"away": "",
+		"lines": [
+			["Meo… (Con mèo tam thể liếc bạn rồi ngáp dài.)",
+				"Meo meo! (Nó cọ đầu vô chân bạn, rồi ngó về phía chợ.)",
+				"Mèo… ooo. (Nó nằm ngửa phơi bụng. Hình như nó nhớ ông chú mèo vừa khóc vừa cười đẩy xe khô gà ngoài chợ.)"],
+		],
+		"rewards": {2: {"text": "(Con mèo tha tới một miếng giấy dính mùi lá chanh: «LÃO GÀ KHÔ – khô gà lá chanh, mua Khô Gà giá cao. Xe đẩy ở Chợ Bình Kê».)"}}},
+}
+
+## Quest: giver (npc), name, steps [{text, target}] – target là id địa điểm/tương tác cho mũi tên chỉ đường.
+## reward: money, item [id, số], aff (cộng thân thiết người giao), text.
+const QUESTS: Dictionary = {
+	"q_com_tho_ho": {"giver": &"npc_ba_lan", "name": "Cơm trưa cho thợ hồ",
+		"offer": "Bà Lan: «Thằng cháu bà làm hồ ở công trường bên kia sông, quên đem cơm. Con đem giùm bà hộp cơm này nghen?»",
+		"steps": [{"text": "Đem hộp cơm của bà Lan cho chú thợ hồ ở Công trường (qua sông)", "target": &"site"}],
+		"done": [["Thợ hồ", "Ủa, cơm bà Lan hả? Trời ơi đói muốn xỉu! Cảm ơn con nghen."]],
+		"reward": {"money": 40000, "aff": 2, "text": "Chú thợ hồ gửi lại 40.000đ tiền cảm ơn. Bà Lan thêm quý bạn."}},
+	"q_bang_cai_luong": {"giver": &"npc_chu_bay", "name": "Cuộn băng cải lương",
+		"offer": "Chú Bảy: «…Nghe nói Lão Gà Khô ngoài chợ có bán băng cải lương cũ. Con mua giùm chú cuộn «Tô Ánh Nguyệt» được hông?»",
+		"steps": [{"text": "Mua cuộn băng cải lương ở xe khô gà Lão Gà Khô (Chợ Bình Kê)", "target": &"cat_shop"},
+			{"text": "Đem cuộn băng cải lương về cho chú Bảy ở quán võng", "target": &"npc_chu_bay"}],
+		"done": [["Chú Bảy", "…(Chú Bảy bỏ băng vô máy, nhắm mắt nghe. Một hồi lâu.) Cảm ơn con. Chú nợ con một chuyện."],
+			["Chú Bảy", "Hồi xưa ông nội con thắng trận lớn nhứt nhờ một chiêu: để gà mình đỡ ba đòn, tới đòn thứ tư mới phản. Đối thủ quen nhịp là hụt."]],
+		"reward": {"money": 60000, "aff": 2, "text": "Chú Bảy trả lại tiền băng dư dả: +60.000đ."}},
+	"q_co_tuong": {"giver": &"npc_ong_tam", "name": "Nước cờ ngoài sới",
+		"offer": "Ông Tám: «Đánh cờ với ông hoài mà chưa thấy con đá gà. Ra sới thắng một keo giao hữu rồi về kể ông nghe coi!»",
+		"steps": [{"text": "Thắng một trận giao hữu ở sới (Ao Làng, Liên tỉnh hay Olympic)", "target": &"arena"},
+			{"text": "Về kể ông Tám nghe trận thắng (bàn cờ phía nam chợ)", "target": &"npc_ong_tam"}],
+		"done": [["Ông Tám", "Thắng hả? Hay! Vậy là con biết đi trước một nước rồi đó. Nè, ông thưởng."]],
+		"reward": {"money": 50000, "item": [&"cam", 2], "aff": 2, "text": "Nhận 50.000đ và 2 bao Cám tăng lực."}},
+	"q_ca_ong_sau": {"giver": &"npc_ong_sau", "name": "Con cá cho ông Sáu",
+		"offer": "Ông Sáu: «Ao sen này cá khôn quá, ông câu hoài hổng dính. Con kéo vó ở chòi cá tra bên kia sông, đem cho ông một con nấu canh chua nghen.»",
+		"steps": [{"text": "Kéo vó bắt cá tra ở chòi cá Chú Sáu (bờ nam xóm cũ)", "target": &"fish_house"},
+			{"text": "Đem cá tra về cho ông Sáu ở ao sen", "target": &"npc_ong_sau"}],
+		"done": [["Ông Sáu", "Con cá mập ú! Tối nay ông nấu canh chua. Nè, quả trứng này ông lượm ở bụi tre, hổng biết gà gì… con ấp thử coi."]],
+		"reward": {"item": [&"trung_la", 1], "aff": 2, "text": "Nhận 1 Trứng lạ (ấp ở lò ấp trong nhà, cần Biotech)."}},
+	"q_chau_kieng": {"giver": &"npc_chu_muoi", "name": "Chậu mai chiếu thủy",
+		"offer": "Chú Mười: «Con đem chậu mai chiếu thủy này qua tặng bà Lan bán cơm giùm chú. Nhớ nói là… của một người hâm mộ.»",
+		"steps": [{"text": "Đem chậu mai chiếu thủy tặng bà Lan bán cơm", "target": &"npc_ba_lan"}],
+		"done": [["Bà Lan", "Ủa, mai chiếu thủy? Của ai vậy con? … Người hâm mộ hả? Hừ, ông Mười chứ ai! (Bà Lan đỏ mặt.)"]],
+		"reward": {"item": [&"mao_cat", 1], "aff": 2, "text": "Chú Mười nghe kể lại, mừng quá tặng bạn một bộ Mào cắt gọn."}},
+}
+
+
+static func info(id: StringName) -> Dictionary:
+	return NPCS.get(id, {})
+
+
+static func quest_info(qid: String) -> Dictionary:
+	return QUESTS.get(qid, {})

@@ -1,0 +1,2253 @@
+{
+ "version": 1,
+ "atlas": "vehicles_atlas.png",
+ "atlas_size": [
+  1024,
+  729
+ ],
+ "vehicles": [
+  {
+   "id": "bike_05",
+   "kind": "bike",
+   "model": "dream",
+   "variant": 0,
+   "type": "underbone",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      0,
+      0,
+      61,
+      57
+     ],
+     [
+      62,
+      0,
+      61,
+      57
+     ],
+     [
+      124,
+      0,
+      61,
+      57
+     ],
+     [
+      186,
+      0,
+      61,
+      57
+     ]
+    ],
+    "west": [
+     [
+      248,
+      0,
+      61,
+      57
+     ],
+     [
+      310,
+      0,
+      61,
+      57
+     ],
+     [
+      372,
+      0,
+      61,
+      57
+     ],
+     [
+      434,
+      0,
+      61,
+      57
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    32.0,
+    56.0
+   ],
+   "anchor_west": [
+    28.0,
+    56.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    61,
+    57
+   ],
+   "speed_px_s": 161.0,
+   "speed_range": [
+    150.0,
+    172.0
+   ],
+   "shadow": {
+    "east": [
+     496,
+     0,
+     52,
+     7
+    ],
+    "west": [
+     496,
+     0,
+     52,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -26,
+     -3
+    ],
+    "west": [
+     -26,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_06",
+   "kind": "bike",
+   "model": "dream",
+   "variant": 1,
+   "type": "underbone",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      549,
+      0,
+      61,
+      57
+     ],
+     [
+      611,
+      0,
+      61,
+      57
+     ],
+     [
+      673,
+      0,
+      61,
+      57
+     ],
+     [
+      735,
+      0,
+      61,
+      57
+     ]
+    ],
+    "west": [
+     [
+      797,
+      0,
+      61,
+      57
+     ],
+     [
+      859,
+      0,
+      61,
+      57
+     ],
+     [
+      921,
+      0,
+      61,
+      57
+     ],
+     [
+      0,
+      58,
+      61,
+      57
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    32.0,
+    56.0
+   ],
+   "anchor_west": [
+    28.0,
+    56.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    61,
+    57
+   ],
+   "speed_px_s": 161.0,
+   "speed_range": [
+    150.0,
+    172.0
+   ],
+   "shadow": {
+    "east": [
+     62,
+     58,
+     52,
+     7
+    ],
+    "west": [
+     62,
+     58,
+     52,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -26,
+     -3
+    ],
+    "west": [
+     -26,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_07",
+   "kind": "bike",
+   "model": "dream",
+   "variant": 2,
+   "type": "underbone",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      115,
+      58,
+      61,
+      59
+     ],
+     [
+      177,
+      58,
+      61,
+      59
+     ],
+     [
+      239,
+      58,
+      61,
+      59
+     ],
+     [
+      301,
+      58,
+      61,
+      59
+     ]
+    ],
+    "west": [
+     [
+      363,
+      58,
+      61,
+      59
+     ],
+     [
+      425,
+      58,
+      61,
+      59
+     ],
+     [
+      487,
+      58,
+      61,
+      59
+     ],
+     [
+      549,
+      58,
+      61,
+      59
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    32.0,
+    58.0
+   ],
+   "anchor_west": [
+    28.0,
+    58.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    61,
+    59
+   ],
+   "speed_px_s": 161.0,
+   "speed_range": [
+    150.0,
+    172.0
+   ],
+   "shadow": {
+    "east": [
+     611,
+     58,
+     52,
+     7
+    ],
+    "west": [
+     611,
+     58,
+     52,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -26,
+     -3
+    ],
+    "west": [
+     -26,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_08",
+   "kind": "bike",
+   "model": "scooter",
+   "variant": 0,
+   "type": "scooter",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      664,
+      58,
+      58,
+      58
+     ],
+     [
+      723,
+      58,
+      58,
+      58
+     ],
+     [
+      782,
+      58,
+      58,
+      58
+     ],
+     [
+      841,
+      58,
+      58,
+      58
+     ]
+    ],
+    "west": [
+     [
+      900,
+      58,
+      58,
+      58
+     ],
+     [
+      959,
+      58,
+      58,
+      58
+     ],
+     [
+      0,
+      118,
+      58,
+      58
+     ],
+     [
+      59,
+      118,
+      58,
+      58
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    32.0,
+    57.0
+   ],
+   "anchor_west": [
+    25.0,
+    57.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    58,
+    58
+   ],
+   "speed_px_s": 159.0,
+   "speed_range": [
+    148.0,
+    170.0
+   ],
+   "shadow": {
+    "east": [
+     118,
+     118,
+     49,
+     7
+    ],
+    "west": [
+     118,
+     118,
+     49,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -24,
+     -3
+    ],
+    "west": [
+     -24,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_09",
+   "kind": "bike",
+   "model": "scooter",
+   "variant": 1,
+   "type": "scooter",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      168,
+      118,
+      58,
+      58
+     ],
+     [
+      227,
+      118,
+      58,
+      58
+     ],
+     [
+      286,
+      118,
+      58,
+      58
+     ],
+     [
+      345,
+      118,
+      58,
+      58
+     ]
+    ],
+    "west": [
+     [
+      404,
+      118,
+      58,
+      58
+     ],
+     [
+      463,
+      118,
+      58,
+      58
+     ],
+     [
+      522,
+      118,
+      58,
+      58
+     ],
+     [
+      581,
+      118,
+      58,
+      58
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    32.0,
+    57.0
+   ],
+   "anchor_west": [
+    25.0,
+    57.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    58,
+    58
+   ],
+   "speed_px_s": 159.0,
+   "speed_range": [
+    148.0,
+    170.0
+   ],
+   "shadow": {
+    "east": [
+     640,
+     118,
+     49,
+     7
+    ],
+    "west": [
+     640,
+     118,
+     49,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -24,
+     -3
+    ],
+    "west": [
+     -24,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_10",
+   "kind": "bike",
+   "model": "scooter",
+   "variant": 2,
+   "type": "scooter",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      690,
+      118,
+      58,
+      59
+     ],
+     [
+      749,
+      118,
+      58,
+      59
+     ],
+     [
+      808,
+      118,
+      58,
+      59
+     ],
+     [
+      867,
+      118,
+      58,
+      59
+     ]
+    ],
+    "west": [
+     [
+      926,
+      118,
+      58,
+      59
+     ],
+     [
+      0,
+      178,
+      58,
+      59
+     ],
+     [
+      59,
+      178,
+      58,
+      59
+     ],
+     [
+      118,
+      178,
+      58,
+      59
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    32.0,
+    58.0
+   ],
+   "anchor_west": [
+    25.0,
+    58.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    58,
+    59
+   ],
+   "speed_px_s": 159.0,
+   "speed_range": [
+    148.0,
+    170.0
+   ],
+   "shadow": {
+    "east": [
+     177,
+     178,
+     49,
+     7
+    ],
+    "west": [
+     177,
+     178,
+     49,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -24,
+     -3
+    ],
+    "west": [
+     -24,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_11",
+   "kind": "bike",
+   "model": "cruiser",
+   "variant": 0,
+   "type": "cruiser",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      227,
+      178,
+      69,
+      57
+     ],
+     [
+      297,
+      178,
+      69,
+      57
+     ],
+     [
+      367,
+      178,
+      69,
+      57
+     ],
+     [
+      437,
+      178,
+      69,
+      57
+     ]
+    ],
+    "west": [
+     [
+      507,
+      178,
+      69,
+      57
+     ],
+     [
+      577,
+      178,
+      69,
+      57
+     ],
+     [
+      647,
+      178,
+      69,
+      57
+     ],
+     [
+      717,
+      178,
+      69,
+      57
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    35.5,
+    56.0
+   ],
+   "anchor_west": [
+    32.5,
+    56.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    69,
+    57
+   ],
+   "speed_px_s": 187.0,
+   "speed_range": [
+    176.0,
+    198.0
+   ],
+   "shadow": {
+    "east": [
+     787,
+     178,
+     59,
+     7
+    ],
+    "west": [
+     787,
+     178,
+     59,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -29,
+     -3
+    ],
+    "west": [
+     -29,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_12",
+   "kind": "bike",
+   "model": "cruiser",
+   "variant": 1,
+   "type": "cruiser",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      847,
+      178,
+      69,
+      58
+     ],
+     [
+      917,
+      178,
+      69,
+      58
+     ],
+     [
+      0,
+      238,
+      69,
+      58
+     ],
+     [
+      70,
+      238,
+      69,
+      58
+     ]
+    ],
+    "west": [
+     [
+      140,
+      238,
+      69,
+      58
+     ],
+     [
+      210,
+      238,
+      69,
+      58
+     ],
+     [
+      280,
+      238,
+      69,
+      58
+     ],
+     [
+      350,
+      238,
+      69,
+      58
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    35.5,
+    57.0
+   ],
+   "anchor_west": [
+    32.5,
+    57.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    69,
+    58
+   ],
+   "speed_px_s": 187.0,
+   "speed_range": [
+    176.0,
+    198.0
+   ],
+   "shadow": {
+    "east": [
+     420,
+     238,
+     59,
+     7
+    ],
+    "west": [
+     420,
+     238,
+     59,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -29,
+     -3
+    ],
+    "west": [
+     -29,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_13",
+   "kind": "bike",
+   "model": "cruiser",
+   "variant": 2,
+   "type": "cruiser",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      480,
+      238,
+      69,
+      57
+     ],
+     [
+      550,
+      238,
+      69,
+      57
+     ],
+     [
+      620,
+      238,
+      69,
+      57
+     ],
+     [
+      690,
+      238,
+      69,
+      57
+     ]
+    ],
+    "west": [
+     [
+      760,
+      238,
+      69,
+      57
+     ],
+     [
+      830,
+      238,
+      69,
+      57
+     ],
+     [
+      900,
+      238,
+      69,
+      57
+     ],
+     [
+      0,
+      297,
+      69,
+      57
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    35.5,
+    56.0
+   ],
+   "anchor_west": [
+    32.5,
+    56.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    69,
+    57
+   ],
+   "speed_px_s": 187.0,
+   "speed_range": [
+    176.0,
+    198.0
+   ],
+   "shadow": {
+    "east": [
+     70,
+     297,
+     59,
+     7
+    ],
+    "west": [
+     70,
+     297,
+     59,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -29,
+     -3
+    ],
+    "west": [
+     -29,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_14",
+   "kind": "bike",
+   "model": "cub",
+   "variant": 0,
+   "type": "cub",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      130,
+      297,
+      64,
+      60
+     ],
+     [
+      195,
+      297,
+      64,
+      60
+     ],
+     [
+      260,
+      297,
+      64,
+      60
+     ],
+     [
+      325,
+      297,
+      64,
+      60
+     ]
+    ],
+    "west": [
+     [
+      390,
+      297,
+      64,
+      60
+     ],
+     [
+      455,
+      297,
+      64,
+      60
+     ],
+     [
+      520,
+      297,
+      64,
+      60
+     ],
+     [
+      585,
+      297,
+      64,
+      60
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    36.0,
+    59.0
+   ],
+   "anchor_west": [
+    27.0,
+    59.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    64,
+    60
+   ],
+   "speed_px_s": 136.0,
+   "speed_range": [
+    126.0,
+    146.0
+   ],
+   "shadow": {
+    "east": [
+     650,
+     297,
+     55,
+     7
+    ],
+    "west": [
+     650,
+     297,
+     55,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -27,
+     -3
+    ],
+    "west": [
+     -27,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_15",
+   "kind": "bike",
+   "model": "cub",
+   "variant": 1,
+   "type": "cub",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      706,
+      297,
+      64,
+      60
+     ],
+     [
+      771,
+      297,
+      64,
+      60
+     ],
+     [
+      836,
+      297,
+      64,
+      60
+     ],
+     [
+      901,
+      297,
+      64,
+      60
+     ]
+    ],
+    "west": [
+     [
+      0,
+      358,
+      64,
+      60
+     ],
+     [
+      65,
+      358,
+      64,
+      60
+     ],
+     [
+      130,
+      358,
+      64,
+      60
+     ],
+     [
+      195,
+      358,
+      64,
+      60
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    36.0,
+    59.0
+   ],
+   "anchor_west": [
+    27.0,
+    59.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    64,
+    60
+   ],
+   "speed_px_s": 136.0,
+   "speed_range": [
+    126.0,
+    146.0
+   ],
+   "shadow": {
+    "east": [
+     260,
+     358,
+     55,
+     7
+    ],
+    "west": [
+     260,
+     358,
+     55,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -27,
+     -3
+    ],
+    "west": [
+     -27,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_16",
+   "kind": "bike",
+   "model": "cub",
+   "variant": 2,
+   "type": "cub",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      316,
+      358,
+      64,
+      60
+     ],
+     [
+      381,
+      358,
+      64,
+      60
+     ],
+     [
+      446,
+      358,
+      64,
+      60
+     ],
+     [
+      511,
+      358,
+      64,
+      60
+     ]
+    ],
+    "west": [
+     [
+      576,
+      358,
+      64,
+      60
+     ],
+     [
+      641,
+      358,
+      64,
+      60
+     ],
+     [
+      706,
+      358,
+      64,
+      60
+     ],
+     [
+      771,
+      358,
+      64,
+      60
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    36.0,
+    59.0
+   ],
+   "anchor_west": [
+    27.0,
+    59.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    64,
+    60
+   ],
+   "speed_px_s": 136.0,
+   "speed_range": [
+    126.0,
+    146.0
+   ],
+   "shadow": {
+    "east": [
+     836,
+     358,
+     55,
+     7
+    ],
+    "west": [
+     836,
+     358,
+     55,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -27,
+     -3
+    ],
+    "west": [
+     -27,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_17",
+   "kind": "bike",
+   "model": "family",
+   "variant": 0,
+   "type": "scooter",
+   "racer": false,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      892,
+      358,
+      62,
+      59
+     ],
+     [
+      955,
+      358,
+      62,
+      59
+     ],
+     [
+      0,
+      419,
+      62,
+      59
+     ],
+     [
+      63,
+      419,
+      62,
+      59
+     ]
+    ],
+    "west": [
+     [
+      126,
+      419,
+      62,
+      59
+     ],
+     [
+      189,
+      419,
+      62,
+      59
+     ],
+     [
+      252,
+      419,
+      62,
+      59
+     ],
+     [
+      315,
+      419,
+      62,
+      59
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    34.0,
+    58.0
+   ],
+   "anchor_west": [
+    27.0,
+    58.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    62,
+    59
+   ],
+   "speed_px_s": 138.0,
+   "speed_range": [
+    128.0,
+    148.0
+   ],
+   "shadow": {
+    "east": [
+     378,
+     419,
+     53,
+     7
+    ],
+    "west": [
+     378,
+     419,
+     53,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -26,
+     -3
+    ],
+    "west": [
+     -26,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_18",
+   "kind": "bike",
+   "model": "family",
+   "variant": 1,
+   "type": "scooter",
+   "racer": false,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      432,
+      419,
+      62,
+      59
+     ],
+     [
+      495,
+      419,
+      62,
+      59
+     ],
+     [
+      558,
+      419,
+      62,
+      59
+     ],
+     [
+      621,
+      419,
+      62,
+      59
+     ]
+    ],
+    "west": [
+     [
+      684,
+      419,
+      62,
+      59
+     ],
+     [
+      747,
+      419,
+      62,
+      59
+     ],
+     [
+      810,
+      419,
+      62,
+      59
+     ],
+     [
+      873,
+      419,
+      62,
+      59
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    34.0,
+    58.0
+   ],
+   "anchor_west": [
+    27.0,
+    58.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    62,
+    59
+   ],
+   "speed_px_s": 138.0,
+   "speed_range": [
+    128.0,
+    148.0
+   ],
+   "shadow": {
+    "east": [
+     936,
+     419,
+     53,
+     7
+    ],
+    "west": [
+     936,
+     419,
+     53,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -26,
+     -3
+    ],
+    "west": [
+     -26,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_19",
+   "kind": "bike",
+   "model": "chicken",
+   "variant": 0,
+   "type": "underbone",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      0,
+      479,
+      70,
+      56
+     ],
+     [
+      71,
+      479,
+      70,
+      56
+     ],
+     [
+      142,
+      479,
+      70,
+      56
+     ],
+     [
+      213,
+      479,
+      70,
+      56
+     ]
+    ],
+    "west": [
+     [
+      284,
+      479,
+      70,
+      56
+     ],
+     [
+      355,
+      479,
+      70,
+      56
+     ],
+     [
+      426,
+      479,
+      70,
+      56
+     ],
+     [
+      497,
+      479,
+      70,
+      56
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    42.0,
+    55.0
+   ],
+   "anchor_west": [
+    27.0,
+    55.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    70,
+    56
+   ],
+   "speed_px_s": 150.0,
+   "speed_range": [
+    140.0,
+    160.0
+   ],
+   "shadow": {
+    "east": [
+     568,
+     479,
+     60,
+     7
+    ],
+    "west": [
+     568,
+     479,
+     60,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -30,
+     -3
+    ],
+    "west": [
+     -30,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_20",
+   "kind": "bike",
+   "model": "chicken",
+   "variant": 1,
+   "type": "underbone",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      629,
+      479,
+      70,
+      61
+     ],
+     [
+      700,
+      479,
+      70,
+      61
+     ],
+     [
+      771,
+      479,
+      70,
+      61
+     ],
+     [
+      842,
+      479,
+      70,
+      61
+     ]
+    ],
+    "west": [
+     [
+      913,
+      479,
+      70,
+      61
+     ],
+     [
+      0,
+      541,
+      70,
+      61
+     ],
+     [
+      71,
+      541,
+      70,
+      61
+     ],
+     [
+      142,
+      541,
+      70,
+      61
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    42.0,
+    60.0
+   ],
+   "anchor_west": [
+    27.0,
+    60.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    70,
+    61
+   ],
+   "speed_px_s": 150.0,
+   "speed_range": [
+    140.0,
+    160.0
+   ],
+   "shadow": {
+    "east": [
+     213,
+     541,
+     60,
+     7
+    ],
+    "west": [
+     213,
+     541,
+     60,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -30,
+     -3
+    ],
+    "west": [
+     -30,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_21",
+   "kind": "bike",
+   "model": "ba_gac",
+   "variant": 0,
+   "type": "ba_gac",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      274,
+      541,
+      84,
+      60
+     ],
+     [
+      359,
+      541,
+      84,
+      60
+     ],
+     [
+      444,
+      541,
+      84,
+      60
+     ],
+     [
+      529,
+      541,
+      84,
+      60
+     ]
+    ],
+    "west": [
+     [
+      614,
+      541,
+      84,
+      60
+     ],
+     [
+      699,
+      541,
+      84,
+      60
+     ],
+     [
+      784,
+      541,
+      84,
+      60
+     ],
+     [
+      869,
+      541,
+      84,
+      60
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    46.5,
+    59.0
+   ],
+   "anchor_west": [
+    36.5,
+    59.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    84,
+    60
+   ],
+   "speed_px_s": 120.0,
+   "speed_range": [
+    110.0,
+    130.0
+   ],
+   "shadow": {
+    "east": [
+     0,
+     603,
+     72,
+     7
+    ],
+    "west": [
+     0,
+     603,
+     72,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -36,
+     -3
+    ],
+    "west": [
+     -36,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_22",
+   "kind": "bike",
+   "model": "ba_gac",
+   "variant": 1,
+   "type": "ba_gac",
+   "racer": true,
+   "silent": false,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      73,
+      603,
+      84,
+      60
+     ],
+     [
+      158,
+      603,
+      84,
+      60
+     ],
+     [
+      243,
+      603,
+      84,
+      60
+     ],
+     [
+      328,
+      603,
+      84,
+      60
+     ]
+    ],
+    "west": [
+     [
+      413,
+      603,
+      84,
+      60
+     ],
+     [
+      498,
+      603,
+      84,
+      60
+     ],
+     [
+      583,
+      603,
+      84,
+      60
+     ],
+     [
+      668,
+      603,
+      84,
+      60
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    46.5,
+    59.0
+   ],
+   "anchor_west": [
+    36.5,
+    59.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    84,
+    60
+   ],
+   "speed_px_s": 120.0,
+   "speed_range": [
+    110.0,
+    130.0
+   ],
+   "shadow": {
+    "east": [
+     753,
+     603,
+     72,
+     7
+    ],
+    "west": [
+     753,
+     603,
+     72,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -36,
+     -3
+    ],
+    "west": [
+     -36,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_23",
+   "kind": "bike",
+   "model": "bicycle",
+   "variant": 0,
+   "type": "bicycle",
+   "racer": false,
+   "silent": true,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      826,
+      603,
+      56,
+      62
+     ],
+     [
+      883,
+      603,
+      56,
+      62
+     ],
+     [
+      940,
+      603,
+      56,
+      62
+     ],
+     [
+      0,
+      666,
+      56,
+      62
+     ]
+    ],
+    "west": [
+     [
+      57,
+      666,
+      56,
+      62
+     ],
+     [
+      114,
+      666,
+      56,
+      62
+     ],
+     [
+      171,
+      666,
+      56,
+      62
+     ],
+     [
+      228,
+      666,
+      56,
+      62
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    29.5,
+    61.0
+   ],
+   "anchor_west": [
+    25.5,
+    61.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    56,
+    62
+   ],
+   "speed_px_s": 71.0,
+   "speed_range": [
+    62.0,
+    80.0
+   ],
+   "shadow": {
+    "east": [
+     285,
+     666,
+     48,
+     7
+    ],
+    "west": [
+     285,
+     666,
+     48,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -24,
+     -3
+    ],
+    "west": [
+     -24,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  },
+  {
+   "id": "bike_24",
+   "kind": "bike",
+   "model": "bicycle",
+   "variant": 1,
+   "type": "bicycle",
+   "racer": false,
+   "silent": true,
+   "atlas": "res://game/art/vehicles/vehicles_atlas.png",
+   "frames": {
+    "east": [
+     [
+      334,
+      666,
+      58,
+      62
+     ],
+     [
+      393,
+      666,
+      58,
+      62
+     ],
+     [
+      452,
+      666,
+      58,
+      62
+     ],
+     [
+      511,
+      666,
+      58,
+      62
+     ]
+    ],
+    "west": [
+     [
+      570,
+      666,
+      58,
+      62
+     ],
+     [
+      629,
+      666,
+      58,
+      62
+     ],
+     [
+      688,
+      666,
+      58,
+      62
+     ],
+     [
+      747,
+      666,
+      58,
+      62
+     ]
+    ]
+   },
+   "frame_ms": 80,
+   "anchor": [
+    31.5,
+    61.0
+   ],
+   "anchor_west": [
+    25.5,
+    61.0
+   ],
+   "frame_anchors": null,
+   "size": [
+    58,
+    62
+   ],
+   "speed_px_s": 71.0,
+   "speed_range": [
+    62.0,
+    80.0
+   ],
+   "shadow": {
+    "east": [
+     806,
+     666,
+     49,
+     7
+    ],
+    "west": [
+     806,
+     666,
+     49,
+     7
+    ]
+   },
+   "shadow_offset": {
+    "east": [
+     -24,
+     -3
+    ],
+    "west": [
+     -24,
+     -3
+    ]
+   },
+   "wake": null,
+   "wake_offset": null,
+   "wake_ms": null,
+   "mirrored": "west",
+   "source_layers": []
+  }
+ ],
+ "notes": [
+  "Xe NPC mới vẽ bằng tools/art/build_vehicles.py – cùng định dạng 'vehicles' của traffic.json, thêm atlas (đường dẫn res://), model/variant/type, racer (thách đua được), silent (không tiếng máy), speed_range [min, max] px/s."
+ ]
+}

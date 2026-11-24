@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://46im4ao0deqm"
+path="res://.godot/imported/roads.png-7a31be432778edeeb92432156af9e4c0.image"
+
+[deps]
+
+source_file="res://game/art/world_map/roads.png"
+dest_files=["res://.godot/imported/roads.png-7a31be432778edeeb92432156af9e4c0.image"]
+
+[params]
+

@@ -1,12 +1,12 @@
 {
-  "godot_version": "4.7.2.stable.official.ed1daf0bf",
+  "godot_version": "4.5.1.stable.official.f62fdbde1",
   "lsp_only": false,
   "lsp_port": 6005,
-  "pid": 41496,
+  "pid": 9744,
   "plugin_version": "0.1.2",
   "port": 6520,
-  "project_path": "C:/Users/Admin/OneDrive/Desktop/Huyền Thoại Đá Gà - Chick Fighter/test-godot",
+  "project_path": "D:/Chick_Fighter/Chick-Fighter",
   "protocol": 1,
-  "started_at": "2026-11-10T16:01:10Z",
-  "token": "a67c3100516c0b48d3e835cb025ff2435e45b7c59bb77dd18a3eede15181f0e3"
+  "started_at": "2026-11-24T07:52:35Z",
+  "token": "893c8fe8aebe5284860b6fc70a4e142c106f18395ebb1cac2e812fc0655f6e06"
 }

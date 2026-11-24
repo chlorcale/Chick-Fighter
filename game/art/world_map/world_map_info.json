@@ -1,0 +1,379 @@
+{
+ "places": {
+  "cat_shop": {
+   "pos": [
+    2968,
+    1044
+   ]
+  },
+  "arena_lien_tinh": {
+   "pos": [
+    4508,
+    1080
+   ]
+  },
+  "arena_olympic": {
+   "pos": [
+    4938,
+    1413
+   ]
+  },
+  "thpt": {
+   "pos": [
+    4540,
+    313
+   ]
+  }
+ },
+ "doors": {
+  "cat_shop": [
+   2968,
+   1044
+  ],
+  "arena_lien_tinh": [
+   4508,
+   1080
+  ],
+  "arena_olympic": [
+   4938,
+   1413
+  ]
+ },
+ "signposts": {
+  "sign_village": {
+   "pos": [
+    1296,
+    194
+   ],
+   "targets": [
+    "home",
+    "market",
+    "arena_lien_tinh"
+   ]
+  },
+  "sign_south_road": {
+   "pos": [
+    1300,
+    560
+   ],
+   "targets": [
+    "market",
+    "school",
+    "arena_olympic"
+   ]
+  },
+  "sign_market_nw": {
+   "pos": [
+    1986,
+    802
+   ],
+   "targets": [
+    "market",
+    "cat_shop",
+    "home"
+   ]
+  },
+  "sign_market_se": {
+   "pos": [
+    3186,
+    1254
+   ],
+   "targets": [
+    "arena_lien_tinh",
+    "arena_olympic",
+    "market"
+   ]
+  },
+  "sign_bridge": {
+   "pos": [
+    3648,
+    548
+   ],
+   "targets": [
+    "thpt",
+    "market",
+    "arena_lien_tinh"
+   ]
+  },
+  "sign_east": {
+   "pos": [
+    4272,
+    1072
+   ],
+   "targets": [
+    "arena_lien_tinh",
+    "arena_olympic",
+    "thpt"
+   ]
+  },
+  "sign_thpt": {
+   "pos": [
+    3975,
+    353
+   ],
+   "targets": [
+    "thpt",
+    "market",
+    "home"
+   ]
+  }
+ },
+ "check_points": {
+  "cat_shop_door": [
+   2968,
+   1044
+  ],
+  "arena_lien_tinh_door": [
+   4508,
+   1080
+  ],
+  "arena_olympic_door": [
+   4938,
+   1413
+  ],
+  "market_chicken": [
+   3124,
+   985
+  ],
+  "market_eggs": [
+   3134,
+   1050
+  ],
+  "market_food": [
+   2812,
+   1002
+  ],
+  "market_gear": [
+   2840,
+   1170
+  ],
+  "sign_village": [
+   1296,
+   194
+  ],
+  "sign_south_road": [
+   1300,
+   560
+  ],
+  "sign_market_nw": [
+   1986,
+   802
+  ],
+  "sign_market_se": [
+   3186,
+   1254
+  ],
+  "sign_bridge": [
+   3648,
+   548
+  ],
+  "sign_east": [
+   4272,
+   1072
+  ],
+  "sign_thpt": [
+   3975,
+   353
+  ],
+  "thpt_gate": [
+   4540,
+   313
+  ],
+  "npc_ba_lan": [
+   3737,
+   759
+  ],
+  "npc_chu_bay": [
+   1672,
+   351
+  ],
+  "npc_ong_tam": [
+   2180,
+   1688
+  ],
+  "npc_ong_sau": [
+   4076,
+   1658
+  ],
+  "npc_chu_muoi": [
+   4426,
+   1804
+  ]
+ },
+ "stalls": {
+  "market_chicken": {
+   "pos": [
+    3124,
+    985
+   ],
+   "rect": [
+    3096,
+    923,
+    56,
+    50
+   ]
+  },
+  "market_eggs": {
+   "pos": [
+    3134,
+    1050
+   ],
+   "rect": [
+    3106,
+    988,
+    56,
+    50
+   ]
+  },
+  "market_food": {
+   "pos": [
+    2812,
+    1002
+   ],
+   "rect": [
+    2784,
+    940,
+    56,
+    50
+   ]
+  },
+  "market_gear": {
+   "pos": [
+    2840,
+    1170
+   ],
+   "rect": [
+    2812,
+    1108,
+    56,
+    50
+   ]
+  }
+ },
+ "npcs": {
+  "npc_ba_lan": {
+   "node": "N_npc_ba_Lan_ban_com",
+   "pos": [
+    3737,
+    759
+   ]
+  },
+  "npc_chu_bay": {
+   "node": "N_npc_chu_quan_vong",
+   "pos": [
+    1672,
+    351
+   ]
+  },
+  "npc_ong_tam": {
+   "node": "N_npc_danh_co_tuong",
+   "pos": [
+    2180,
+    1688
+   ]
+  },
+  "npc_ong_sau": {
+   "node": "N_npc_ong_cau_ca_ao_sen",
+   "pos": [
+    4076,
+    1658
+   ]
+  },
+  "npc_chu_muoi": {
+   "node": "N_npc_chu_vuon_kieng",
+   "pos": [
+    4426,
+    1804
+   ]
+  }
+ },
+ "lao_ga_kho": {
+  "node": "N_lao_ga_kho_xe_kho_ga_la_chanh",
+  "box": [
+   2912,
+   922,
+   3070,
+   1026
+  ],
+  "frames": 8,
+  "frame_ms": 80,
+  "block": [
+   2916,
+   1008,
+   150,
+   18
+  ],
+  "door": [
+   2968,
+   1044
+  ],
+  "head": [
+   2990,
+   922
+  ]
+ },
+ "arenas": {
+  "arena_lien_tinh": {
+   "sign": "N_san_lien_tinh_cong_bang_ten",
+   "gate": [
+    4440,
+    1024,
+    4550,
+    1038
+   ],
+   "threshold_block": [
+    4440,
+    1038,
+    110,
+    24
+   ],
+   "interior_block": [
+    4316,
+    850,
+    356,
+    216
+   ],
+   "stand": [
+    4508,
+    1080
+   ]
+  },
+  "arena_olympic": {
+   "sign": "N_san_olympia_cong_bang_ten",
+   "gate": [
+    4880,
+    1327,
+    4998,
+    1341
+   ],
+   "threshold_block": [
+    4880,
+    1341,
+    118,
+    30
+   ],
+   "interior_block": [
+    4771,
+    1150,
+    337,
+    220
+   ],
+   "stand": [
+    4938,
+    1413
+   ]
+  }
+ },
+ "shoppers": {
+  "cell": [
+   24,
+   46
+  ],
+  "count": 30,
+  "frames": 4,
+  "foot": [
+   12,
+   45
+  ]
+ }
+}
