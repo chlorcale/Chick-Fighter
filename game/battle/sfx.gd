@@ -79,6 +79,20 @@ static func _build_all() -> void:
 		var t2: float = maxf(0.0, t - 0.16)
 		var beat2: float = sin(TAU * 46.0 * t2) * exp(-t2 * 24.0) * (1.0 if t > 0.16 else 0.0)
 		return (beat1 + beat2 * 0.8) * 0.9)
+	# Còi công an (hai tiếng tu huýt trill), còi hú xe công an, luồng gió Quạt lông.
+	_streams[&"whistle"] = _make(0.7, func(t: float, _i: int) -> float:
+		var on: float = 1.0 if fmod(t, 0.35) < 0.26 else 0.0
+		var trill: float = 2900.0 + 180.0 * signf(sin(TAU * 32.0 * t))
+		return sin(TAU * trill * t) * on * 0.22 * minf(1.0, (0.7 - t) * 10.0))
+	var siren_phase := [0.0]
+	_streams[&"siren"] = _make(1.6, func(t: float, _i: int) -> float:
+		var freq: float = 640.0 + 360.0 * (0.5 + 0.5 * sin(TAU * 1.25 * t))
+		siren_phase[0] += TAU * freq / float(RATE)
+		return signf(sin(siren_phase[0])) * 0.1 * minf(1.0, t * 8.0) * minf(1.0, (1.6 - t) * 4.0))
+	var wind := [0.0]
+	_streams[&"gust"] = _make(0.45, func(t: float, _i: int) -> float:
+		wind[0] = wind[0] * 0.85 + rng.randf_range(-1, 1) * 0.15
+		return wind[0] * 2.4 * sin(PI * t / 0.45) * (0.7 + 0.3 * sin(TAU * 9.0 * t)))
 	_streams[&"cricket"] = _make(1.2, func(t: float, _i: int) -> float:
 		var chirp: float = 1.0 if fmod(t, 0.4) < 0.12 and fmod(t * 60.0, 1.0) < 0.5 else 0.0
 		return sin(TAU * 4300.0 * t) * chirp * 0.08)

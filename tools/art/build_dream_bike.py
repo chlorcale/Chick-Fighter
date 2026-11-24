@@ -4,11 +4,15 @@ Viền 1 px màu (42,30,46) như NPC trên bản đồ.
 
 bike_side/_b/front/back/parked.png: chỉ có xe (không người).
 bike_ride_side/_b/front/back.png: người lái ngồi trên xe (ảnh ghép, cao 60 px, mép dưới = mặt đất);
-đầu lấy từ game/art/player_sheet.png thu ×0,8 NEAREST nên không đổi cỡ khi lên/xuống xe."""
+đầu + nón + vải áo lấy từ game/art/player_sheet_v2.png (nhân vật bản mới, vẽ ×1 – chạy tools/art/build_player.py
+trước) nên không đổi cỡ/kiểu khi lên/xuống xe."""
 import math
 import os
 import sys
 from PIL import Image, ImageDraw, ImageOps
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import build_player as bp  # noqa: E402
 
 OL = (42, 30, 46, 255)
 TIRE = (40, 34, 42, 255)
@@ -225,58 +229,41 @@ def build_back():
 
 
 # ---------------------------------------------------------------- người lái ngồi trên xe
-# Ảnh ghép người + xe: cao 60 (= 18 px phía trên xe cho thân và đầu + 42 px xe), gốc toạ độ ở
-# mép dưới (điểm chạm đất). Đầu lấy từ player_sheet.png thu ×0,8 (giống hệt lúc đi bộ).
+# Ảnh ghép người + xe: cao 60 (= 18 px phía trên xe cho thân và đầu + 42 px xe), gốc toạ độ ở mép dưới (điểm
+# chạm đất). Người lái là nhân vật chính bản mới (player_sheet_v2.png, vẽ ×1): đầu + nón + cổ cắt nguyên từ khung đi
+# bộ, vải áo caro lấy mẫu từ lưng áo/ngực áo trong sheet, quần jean + dép theo đúng bảng màu art; viền màu viền art.
 
 RIDE_OY = 18
-SKIN = (231, 180, 140, 255)
-SKIN_D = (201, 142, 104, 255)
-SH = (192, 40, 58, 255)        # áo sơ mi caro đỏ
-SH_M = (152, 28, 44, 255)
-SH_D = (74, 20, 24, 255)
-SH_DD = (42, 11, 14, 255)
-SH_L = (227, 36, 43, 255)
-SH_Y = (184, 149, 63, 255)
-PJ = (74, 111, 176, 255)       # quần jean
-PJ_D = (47, 74, 128, 255)
-PJ_DD = (34, 53, 94, 255)
-PJ_L = (127, 162, 214, 255)
-PSHOE = (30, 30, 36, 255)
-PSOLE = (165, 110, 80, 255)
-# màu đánh dấu tạm, được tô lại thành caro
+P = bp.PAL
+HOL = P["outline"]                      # viền của nhân vật (như art gốc)
+SKIN = P["skin"]
+SKIN_L = P["skin_l"]
+SKIN_D = P["skin_d"]
+PJ = P["jean"]
+PJ_L = P["jean_l"]
+PJ_M = P["jean_m"]
+PJ_D = P["jean_d"]
+STRAP = P["skin_dd"]
+SOLE = P["shoe"]
+# màu đánh dấu tạm → tô lại bằng vải áo lấy mẫu từ sheet
 M_SHIRT = (255, 0, 255, 255)
 M_SHIRT_D = (200, 0, 200, 255)
-
-_SHIRT_ROW_COLORS = {(74, 20, 24), (42, 11, 14), (192, 40, 58), (152, 28, 44), (163, 32, 47), (227, 36, 43)}
-
-
-def scaled_frame(sheet, f):
-    """Khung f của player_sheet thu ×0,8 kiểu NEAREST (giống Sprite2D scale 0,8): 51x51."""
-    fr = sheet.crop((f * 64, 0, f * 64 + 64, 64))
-    out = canvas(51, 51)
-    for y in range(51):
-        sy = min(63, int((y + 0.5) / 0.8))
-        for x in range(51):
-            sx = min(63, int((x + 0.5) / 0.8))
-            out.putpixel((x, y), fr.getpixel((sx, sy)))
-    return out
+_SHIRT_COLORS = {P[k][:3] for k in ("sh_l", "sh", "sh_m", "sh_d", "sh_y", "sh_w")}
+## Khung trong player_sheet_v2: nhìn thẳng (idle 1), nhìn sau (walk_up chụm chân), nhìn phải (walk_right chụm chân).
+F_FRONT, F_BACK, F_SIDE = 0, 9, 17
 
 
-def head_of(sheet, f):
-    """(ảnh đầu + cổ đã thu ×0,8, x tâm cổ, hàng cuối của cổ) — cắt trước hàng có áo."""
-    fr = sheet.crop((f * 64, 0, f * 64 + 64, 64))
+def head_of(frame):
+    """(ảnh đầu + nón + cổ, x tâm hàng cổ cuối, hàng cổ cuối) — cắt ngay trên hàng đầu tiên có vải áo."""
     shirt_row = 64
-    for y in range(24, 64):  # bỏ qua vành mũ đỏ
-        if any(fr.getpixel((x, y))[:3] in _SHIRT_ROW_COLORS and fr.getpixel((x, y))[3] > 0 for x in range(64)):
+    for y in range(26, 64):
+        if any(frame.getpixel((x, y))[3] > 0 and frame.getpixel((x, y))[:3] in _SHIRT_COLORS for x in range(64)):
             shirt_row = y
             break
-    sc = scaled_frame(sheet, f)
-    last = max(y for y in range(51) if int((y + 0.5) / 0.8) < shirt_row)
-    head = canvas(51, 51)
-    for y in range(last + 1):
-        for x in range(51):
-            head.putpixel((x, y), sc.getpixel((x, y)))
-    xs = [x for x in range(51) if head.getpixel((x, last))[3] > 0]
+    last = shirt_row - 1
+    head = canvas(64, 64)
+    head.alpha_composite(frame.crop((0, 0, 64, shirt_row)), (0, 0))
+    xs = [x for x in range(64) if head.getpixel((x, last))[3] > 0]
     return head, (min(xs) + max(xs)) / 2.0, last
 
 
@@ -286,35 +273,31 @@ def paste_head(layer, head_info, neck_x, neck_y):
     layer.alpha_composite(head, (int(round(neck_x - cx)), neck_y - last))
 
 
-def plaid(x, y, dark=False):
-    """Caro đỏ: sọc dọc mỗi 3 px, sọc ngang mỗi 4 px, chỉ vàng thưa."""
-    v = x % 3 == 0
-    h = y % 4 == 1
-    if v and h:
-        c = SH_DD
-    elif v or h:
-        c = SH_D
-    elif (x + y) % 6 == 2 and y % 4 == 3:
-        c = SH_Y
-    else:
-        c = SH
-    if dark:
-        c = {SH: SH_M, SH_D: SH_DD, SH_Y: SH_D, SH_DD: SH_DD}[c]
-    return c
+class Cloth:
+    """Mẫu vải áo caro cắt từ sheet (bỏ viền): tô vùng đánh dấu bằng mẫu này, lặp theo ô."""
+
+    def __init__(self, frame, box):
+        self.tile = frame.crop(box)
+        self.w, self.h = self.tile.size
+
+    def at(self, x, y, dark=False):
+        c = self.tile.getpixel((x % self.w, y % self.h))
+        if dark:
+            c = (int(c[0] * 0.72), int(c[1] * 0.72), int(c[2] * 0.8), 255)
+        return c
+
+    def paint(self, img, ox=0, oy=0):
+        for y in range(img.height):
+            for x in range(img.width):
+                p = img.getpixel((x, y))
+                if p == M_SHIRT:
+                    img.putpixel((x, y), self.at(x - ox, y - oy))
+                elif p == M_SHIRT_D:
+                    img.putpixel((x, y), self.at(x - ox, y - oy, True))
 
 
-def tint_shirt(img):
-    for y in range(img.height):
-        for x in range(img.width):
-            p = img.getpixel((x, y))
-            if p == M_SHIRT:
-                img.putpixel((x, y), plaid(x, y))
-            elif p == M_SHIRT_D:
-                img.putpixel((x, y), plaid(x, y, True))
-
-
-def layer_over(base, layer, ring=OL):
-    """Dán layer lên base; viền 1 px quanh layer đè lên những gì nằm dưới (tách khối như NPC)."""
+def layer_over(base, layer, ring=HOL):
+    """Dán layer lên base; viền 1 px quanh layer đè lên những gì nằm dưới (tách khối như art gốc)."""
     w, h = base.size
     la = layer.load()
     pts = []
@@ -339,46 +322,52 @@ def shifted(img, ox, oy, w, h):
     return out
 
 
-def rider_side(sheet):
-    """Người lái nhìn ngang (quay phải), toạ độ ảnh ghép 68x60: (lớp thân, lớp tay gần)."""
+def sandal(img, x0, x1, y):
+    """Bàn chân mang dép (như art: quai nâu, mu bàn chân da, đế tối): 3 hàng, mặt đế ở y + 2."""
+    rect(img, x0, y, x1, y, STRAP)
+    rect(img, x0, y + 1, x1, y + 1, SKIN_D)
+    rect(img, x0, y + 2, x1, y + 2, SOLE)
+
+
+def rider_side(frames, cloth):
+    """Người lái nhìn ngang (quay phải), toạ độ ảnh ghép 68x60: (lớp thân + đầu, lớp chân gần, lớp tay gần)."""
     W, H = 68, 42 + RIDE_OY
     body = canvas(W, H)
-    # Toạ độ ảnh ghép: mặt yên ở y=32, tay nắm x 41..43 y 24..26, sàn để chân y 45.
-    # đùi nằm trên yên (ngắn, gần ngang) ló ra dưới vạt áo, gối ngay sau yếm
-    poly(body, [(24, 28), (36, 28), (38, 29), (38, 31), (24, 31)], PJ)
-    line(body, (29, 28), (35, 28), PJ_L)
-    line(body, (24, 31), (34, 31), PJ_D)
-    # cẳng chân từ gối thả xuống sàn
-    poly(body, [(35, 30), (38, 30), (38, 33), (37, 41), (34, 41), (34, 33)], PJ)
-    line(body, (38, 31), (37, 41), PJ_D)
-    rect(body, 34, 40, 37, 41, PJ_DD)
-    # giày đặt trên sàn để chân
-    rect(body, 33, 42, 39, 43, PSHOE)
-    px(body, 40, 43, PSHOE)
-    rect(body, 33, 44, 39, 44, PSOLE)
-    # thân áo: hông trên yên, vai đổ nhẹ về trước
-    poly(body, [(21, 30), (22, 23), (24, 20), (26, 19), (31, 19), (33, 21), (33, 24), (30, 28), (29, 30)], M_SHIRT)
-    line(body, (21, 30), (22, 23), M_SHIRT_D)
-    line(body, (21, 30), (29, 30), M_SHIRT_D)
-    tint_shirt(body)
-    # cổ + đầu (giống lúc đi bộ)
-    paste_head(body, head_of(sheet, 18), 29, 19)
+    # Toạ độ ảnh ghép: mặt yên y=32, tay nắm x 41..43 y 24..26, sàn để chân y 45.
+    # thân áo: hông trên yên, lưng hơi chồm tới tay lái như NPC chạy xe (rộng 9–10 px như dáng đi bộ)
+    poly(body, [(22, 31), (23, 24), (25, 21), (27, 19), (33, 19), (35, 21), (35, 25), (32, 29), (31, 31)], M_SHIRT)
+    line(body, (22, 31), (23, 24), M_SHIRT_D)
+    line(body, (22, 31), (31, 31), M_SHIRT_D)
+    cloth.paint(body)
+    paste_head(body, head_of(frames[F_SIDE]), 31, 19)
+    # chân gần nằm TRƯỚC thân: đùi ngang trên yên (gối ngay sau yếm), cẳng chân thả xuống sàn để chân
+    leg = canvas(W, H)
+    poly(leg, [(24, 28), (36, 28), (39, 29), (39, 32), (24, 32)], PJ)
+    line(leg, (25, 28), (36, 28), PJ_L)
+    line(leg, (24, 32), (34, 32), PJ_M)
+    poly(leg, [(35, 31), (39, 31), (39, 33), (38, 41), (34, 41), (34, 33)], PJ)
+    line(leg, (39, 32), (38, 41), PJ_M)
+    rect(leg, 34, 41, 38, 41, PJ_D)                    # gấu quần
+    sandal(leg, 33, 40, 42)
     arm = canvas(W, H)
-    # tay gần: vai -> khuỷu -> tay nắm
-    line(arm, (29, 21), (34, 24), M_SHIRT, 3)
-    line(arm, (34, 24), (37, 25), M_SHIRT, 3)
-    tint_shirt(arm)
-    rect(arm, 38, 24, 40, 26, SKIN)
-    px(arm, 38, 26, SKIN_D)
-    return body, arm
+    # tay gần: vai -> khuỷu -> tay nắm (tay áo dài caro, cổ tay da)
+    line(arm, (31, 21), (35, 24), M_SHIRT, 3)
+    line(arm, (35, 24), (38, 25), M_SHIRT, 3)
+    line(arm, (32, 23), (37, 26), M_SHIRT_D, 1)
+    cloth.paint(arm)
+    rect(arm, 39, 24, 41, 26, SKIN)
+    px(arm, 39, 24, SKIN_L)
+    px(arm, 39, 26, SKIN_D)
+    return body, leg, arm
 
 
-def build_ride_side(sheet, phase):
+def build_ride_side(frames, cloth, phase):
     W, H = 68, 42 + RIDE_OY
     im = canvas(W, H)
     layer_over(im, shifted(build_side(phase), 0, RIDE_OY, W, H), None)
-    body, arm = rider_side(sheet)
+    body, leg, arm = rider_side(frames, cloth)
     layer_over(im, body)
+    layer_over(im, leg)
     layer_over(im, arm)
     return im
 
@@ -387,49 +376,50 @@ def _sleeve(img, a, b):
     line(img, a, b, M_SHIRT, 3)
 
 
-def rider_front(sheet):
+def rider_front(frames, chest):
     """Người lái nhìn từ trước, ảnh ghép 30x60: (lớp sau xe = thân + đầu, lớp trước xe = tay + chân)."""
     W, H = 30, 42 + RIDE_OY
     back = canvas(W, H)
-    # thân (phần lớn khuất sau đèn pha / yếm)
-    poly(back, [(9, 31), (9, 22), (11, 19), (19, 19), (21, 22), (21, 31)], M_SHIRT)
-    line(back, (15, 19), (15, 31), SH_DD)              # nẹp áo
-    tint_shirt(back)
-    paste_head(back, head_of(sheet, 0), 15, 19)
+    # thân (phần lớn khuất sau đèn pha / yếm): ngực áo cắt nguyên từ khung idle (nẹp nút ở giữa)
+    poly(back, [(8, 31), (8, 22), (10, 19), (20, 19), (22, 22), (22, 31)], M_SHIRT)
+    chest.paint(back, 15 - chest.w // 2, 19)
+    paste_head(back, head_of(frames[F_FRONT]), 15, 19)
     front = canvas(W, H)
     # tay: vai -> tay nắm hai bên
-    for sx, gx in ((10, 4), (20, 25)):
+    for sx, gx in ((9, 4), (21, 25)):
         _sleeve(front, (sx, 21), ((sx + gx) // 2, 25))
         _sleeve(front, ((sx + gx) // 2, 25), (gx, 27))
-    tint_shirt(front)
+    chest.paint(front, 3, 2)
     rect(front, 3, 27, 5, 29, SKIN)
     rect(front, 24, 27, 26, 29, SKIN)
-    # gối chĩa ra hai bên yếm, cẳng chân chụm vào trong, giày trên sàn (vẽ bên trái rồi lật)
+    px(front, 3, 27, SKIN_L)
+    px(front, 26, 27, SKIN_L)
+    # gối chĩa ra hai bên yếm, cẳng chân chụm vào trong, dép trên sàn (vẽ bên trái rồi lật)
     leg = canvas(W, H)
     poly(leg, [(2, 33), (3, 31), (7, 31), (8, 33), (8, 35), (2, 35)], PJ)
     line(leg, (3, 31), (6, 31), PJ_L)
-    line(leg, (2, 35), (8, 35), PJ_D)
-    poly(leg, [(3, 36), (7, 36), (8, 41), (5, 41)], PJ)
-    line(leg, (7, 36), (8, 41), PJ_D)
-    rect(leg, 4, 42, 9, 43, PSHOE)
-    rect(leg, 5, 42, 8, 42, (68, 60, 78, 255))
+    line(leg, (2, 35), (8, 35), PJ_M)
+    poly(leg, [(3, 36), (7, 36), (8, 40), (5, 40)], PJ)
+    line(leg, (7, 36), (8, 40), PJ_M)
+    rect(leg, 5, 40, 8, 40, PJ_D)
+    sandal(leg, 4, 9, 41)
     front.alpha_composite(leg)
     front.alpha_composite(ImageOps.mirror(leg))
     return back, front
 
 
-def build_ride_front(sheet):
+def build_ride_front(frames, chest):
     W, H = 30, 42 + RIDE_OY
     im = canvas(W, H)
-    back, front = rider_front(sheet)
+    back, front = rider_front(frames, chest)
     layer_over(im, back)
     layer_over(im, shifted(build_front_layers(), 0, RIDE_OY, W, H))
     layer_over(im, front)
     return im
 
 
-def rider_back(sheet):
-    """Người lái nhìn từ sau, ảnh ghép 30x60: một lớp (đầu, lưng, tay, chân) nằm giữa tay lái và đuôi xe."""
+def rider_back(frames, cloth):
+    """Người lái nhìn từ sau, ảnh ghép 30x60: (lớp thân + đầu + chân, lớp tay) nằm giữa tay lái và đuôi xe."""
     W, H = 30, 42 + RIDE_OY
     body = canvas(W, H)
     # chân ôm hai bên đuôi xe, cẳng chân chụm vào gác chân (vẽ bên trái rồi lật)
@@ -437,33 +427,33 @@ def rider_back(sheet):
     poly(leg, [(3, 31), (5, 29), (9, 29), (9, 34), (4, 34)], PJ)
     line(leg, (5, 29), (8, 29), PJ_L)
     poly(leg, [(4, 35), (8, 35), (9, 39), (6, 39)], PJ)
-    line(leg, (4, 35), (8, 35), PJ_D)
-    line(leg, (4, 35), (6, 39), PJ_D)
-    rect(leg, 5, 40, 9, 41, PSHOE)
-    rect(leg, 5, 42, 9, 42, PSOLE)
+    line(leg, (4, 35), (8, 35), PJ_M)
+    line(leg, (4, 35), (6, 39), PJ_M)
+    sandal(leg, 5, 9, 40)
     body.alpha_composite(leg)
     body.alpha_composite(ImageOps.mirror(leg))
     rect(body, 9, 28, 20, 31, PJ)                        # mông trên yên
+    rect(body, 9, 31, 20, 31, PJ_M)
     # lưng áo
     poly(body, [(8, 29), (8, 22), (10, 19), (20, 19), (22, 22), (22, 29)], M_SHIRT)
-    tint_shirt(body)
+    cloth.paint(body, 9, 19)
     # tay giang ra hai tay nắm
     arm = canvas(W, H)
     _sleeve(arm, (9, 21), (5, 24))
     _sleeve(arm, (21, 21), (25, 24))
-    tint_shirt(arm)
+    cloth.paint(arm, 1, 1)
     rect(arm, 2, 23, 4, 25, SKIN)
     rect(arm, 25, 23, 27, 25, SKIN)
-    paste_head(body, head_of(sheet, 10), 15, 19)
+    paste_head(body, head_of(frames[F_BACK]), 15, 19)
     return body, arm
 
 
-def build_ride_back(sheet):
+def build_ride_back(frames, cloth):
     W, H = 30, 42 + RIDE_OY
     far, near = build_back_layers()
     im = canvas(W, H)
     layer_over(im, shifted(far, 0, RIDE_OY, W, H))
-    body, arm = rider_back(sheet)
+    body, arm = rider_back(frames, cloth)
     layer_over(im, body)
     layer_over(im, arm)
     layer_over(im, shifted(near, 0, RIDE_OY, W, H))
@@ -472,7 +462,10 @@ def build_ride_back(sheet):
 
 def main(root):
     art = os.path.join(root, "game", "art")
-    sheet = Image.open(os.path.join(art, "player_sheet.png")).convert("RGBA")
+    frames, _shadows, _meta = bp.load_frames()
+    # vải áo: lưng áo (walk_up chụm chân, hàng 34..41, cột 25..36) và ngực áo có nẹp nút (idle, hàng 33..44)
+    back_cloth = Cloth(frames[F_BACK], (25, 34, 37, 42))
+    chest = Cloth(frames[F_FRONT], (25, 33, 37, 45))
     # xe không người (xe đỗ / lớp xe)
     build_side(0.0).save(os.path.join(art, "bike_side.png"))
     build_side(math.pi / 6).save(os.path.join(art, "bike_side_b.png"))
@@ -480,10 +473,10 @@ def main(root):
     build_front().save(os.path.join(art, "bike_front.png"))
     build_back().save(os.path.join(art, "bike_back.png"))
     # người + xe
-    build_ride_side(sheet, 0.0).save(os.path.join(art, "bike_ride_side.png"))
-    build_ride_side(sheet, math.pi / 6).save(os.path.join(art, "bike_ride_side_b.png"))
-    build_ride_front(sheet).save(os.path.join(art, "bike_ride_front.png"))
-    build_ride_back(sheet).save(os.path.join(art, "bike_ride_back.png"))
+    build_ride_side(frames, back_cloth, 0.0).save(os.path.join(art, "bike_ride_side.png"))
+    build_ride_side(frames, back_cloth, math.pi / 6).save(os.path.join(art, "bike_ride_side_b.png"))
+    build_ride_front(frames, chest).save(os.path.join(art, "bike_ride_front.png"))
+    build_ride_back(frames, back_cloth).save(os.path.join(art, "bike_ride_back.png"))
     print("dream bike: side 68x42 (x2 khung), front/back 30x42; ride side 68x60 (x2), ride front/back 30x60")
 
 

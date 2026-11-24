@@ -7,6 +7,10 @@ extends Node2D
 ## nội dung mỗi ô chọn bằng hash của chỉ số ô nên ổn định, không tạo node. Toạ độ luôn làm tròn (pixel art).
 ## Ảnh dùng lại từ bản đồ (MapView.node_textures) qua "tex"; thiếu ảnh nào thì bỏ qua vật đó.
 ## front = true: lớp sát ống kính (bụi cỏ phía trước, khán giả hàng trước) vẽ đè lên xe.
+## Bản Stardew hơn: đoạn chợ nổi trên sông (ghe chở trái cây, cây bẹo treo hàng) ở giữa đường đua, cầu vòm qua sông ở
+## lớp xa, đoạn đường bê tông vượt kênh (lan can, nước bên dưới), nhà có dây phơi đồ bay phấp phới, cò trắng bay, vạch
+## kẻ đường (vạch lề liền, mũi tên, vạch qua đường), cổng xuất phát + người phất cờ, cổng đích vòm bong bóng; sunset =
+## true: trời hoàng hôn cam tím, mặt trời thấp, nước ánh cam.
 
 const HORIZON: float = 74.0
 const RIVER_BOTTOM: float = 98.0
@@ -42,6 +46,14 @@ var track_len: float = 10800.0
 var tex: Dictionary = {}              # tên node bản đồ → Array[Texture2D]
 var crowd: Array[Texture2D] = []      # game/art/npc/crowd_*.png
 var cheer: float = 0.0                # > 0: khán giả ở đích nhảy mừng
+var sunset: bool = false              # bản hoàng hôn (race_game đặt theo giờ trong game)
+## Đoạn chợ nổi (tỉ lệ quãng đường, theo mép trái camera) và các đoạn đường vượt kênh (toạ độ x đường đua, dài px).
+const MARKET_SPAN: Vector2 = Vector2(0.34, 0.58)
+const ROAD_BRIDGES: Array = [[2600.0, 260.0], [7900.0, 300.0]]
+const SKY_SUNSET: Array = [
+	[-600.0, Color(0.27, 0.22, 0.45)], [12.0, Color(0.42, 0.29, 0.52)], [28.0, Color(0.66, 0.38, 0.5)],
+	[42.0, Color(0.88, 0.5, 0.42)], [55.0, Color(0.98, 0.66, 0.38)], [65.0, Color(1.0, 0.82, 0.5)],
+]
 
 
 func _ready() -> void:
@@ -55,11 +67,18 @@ func _draw() -> void:
 	_draw_sky()
 	_draw_far()
 	_draw_river()
+	_draw_far_bridges()
 	_draw_fields()
+	_draw_birds()
 	_draw_mid()
 	_draw_poles()
 	_draw_road()
+	_draw_road_bridges()
+	_draw_start()
 	_draw_gate()
+	if sunset:
+		# phủ ấm nhẹ toàn cảnh (mặt đường, cây) cho hợp ánh chiều
+		draw_rect(Rect2(floorf(cam_left) - 2.0, view_top - 20.0, view_w + 6.0, view_h + 60.0), Color(1.0, 0.55, 0.25, 0.08))
 
 
 # ------------------------------------------------------------------ tiện ích
@@ -111,15 +130,24 @@ func _band(y0: float, y1: float, color: Color) -> void:
 
 func _draw_sky() -> void:
 	var top: float = minf(view_top, 0.0) - 20.0
-	for k in range(SKY.size()):
-		var y0: float = maxf(float(SKY[k][0]), top)
-		var y1: float = float(SKY[k + 1][0]) if k + 1 < SKY.size() else HORIZON
-		_band(y0, y1, SKY[k][1])
-	# Nắng chiều: cố định trên màn hình.
-	var sun := Vector2(roundf(cam_left + view_w * 0.8), 24.0)
-	draw_circle(sun, 15.0, Color(1.0, 0.95, 0.75, 0.25))
-	draw_circle(sun, 11.0, Color(1.0, 0.95, 0.72, 0.45))
-	draw_circle(sun, 8.0, Color(1.0, 0.96, 0.78))
+	var sky: Array = SKY_SUNSET if sunset else SKY
+	for k in range(sky.size()):
+		var y0: float = maxf(float(sky[k][0]), top)
+		var y1: float = float(sky[k + 1][0]) if k + 1 < sky.size() else HORIZON
+		_band(y0, y1, sky[k][1])
+	# Nắng chiều: cố định trên màn hình (hoàng hôn: thấp, to, đỏ cam).
+	if sunset:
+		var sun_low := Vector2(roundf(cam_left + view_w * 0.72), HORIZON - 10.0)
+		draw_circle(sun_low, 24.0, Color(1.0, 0.6, 0.3, 0.2))
+		draw_circle(sun_low, 17.0, Color(1.0, 0.65, 0.35, 0.4))
+		draw_circle(sun_low, 12.0, Color(1.0, 0.78, 0.45))
+		for k in range(3):
+			draw_rect(Rect2(sun_low.x - 14.0 + float(k) * 3.0, sun_low.y + 2.0 + float(k) * 3.0, 28.0 - float(k) * 6.0, 1.0), Color(0.95, 0.45, 0.35, 0.7))
+	else:
+		var sun := Vector2(roundf(cam_left + view_w * 0.8), 24.0)
+		draw_circle(sun, 15.0, Color(1.0, 0.95, 0.75, 0.25))
+		draw_circle(sun, 11.0, Color(1.0, 0.95, 0.72, 0.45))
+		draw_circle(sun, 8.0, Color(1.0, 0.96, 0.78))
 	# Mây trôi chậm.
 	var f: float = 0.05
 	var drift: float = time * 3.0
@@ -131,11 +159,12 @@ func _draw_sky() -> void:
 		var x: float = _lx(float(i) * 150.0 + float(h % 70) - drift, f)
 		var y: float = 6.0 + float((h >> 5) % 30)
 		var w: float = 26.0 + float((h >> 9) % 30)
-		var c := Color(1.0, 1.0, 1.0, 0.85)
+		var c := Color(1.0, 0.86, 0.76, 0.85) if sunset else Color(1.0, 1.0, 1.0, 0.85)
+		var c_low := Color(0.86, 0.52, 0.55, 0.85) if sunset else Color(0.82, 0.88, 0.95, 0.85)
 		draw_rect(Rect2(x, y + 4.0, w, 5.0), c)
 		draw_rect(Rect2(x + 5.0, y, w * 0.45, 5.0), c)
 		draw_rect(Rect2(x + w * 0.45, y + 1.0, w * 0.35, 4.0), c)
-		draw_rect(Rect2(x + 2.0, y + 8.0, w - 2.0, 2.0), Color(0.82, 0.88, 0.95, 0.85))
+		draw_rect(Rect2(x + 2.0, y + 8.0, w - 2.0, 2.0), c_low)
 
 
 func _draw_far() -> void:
@@ -162,9 +191,16 @@ func _draw_far() -> void:
 
 
 func _draw_river() -> void:
-	_band(HORIZON + 1.0, RIVER_BOTTOM, Color(0.45, 0.63, 0.66))
-	_band(HORIZON + 1.0, HORIZON + 3.0, Color(0.38, 0.55, 0.56))
-	_band(RIVER_BOTTOM - 6.0, RIVER_BOTTOM, Color(0.5, 0.67, 0.68))
+	var water := Color(0.62, 0.52, 0.55) if sunset else Color(0.45, 0.63, 0.66)
+	_band(HORIZON + 1.0, RIVER_BOTTOM, water)
+	_band(HORIZON + 1.0, HORIZON + 3.0, water.darkened(0.15))
+	_band(RIVER_BOTTOM - 6.0, RIVER_BOTTOM, water.lightened(0.08))
+	if sunset:
+		# vệt nắng cam trên mặt sông
+		var sx: float = roundf(cam_left + view_w * 0.72)
+		for k in range(6):
+			var w: float = 18.0 - float(k) * 2.0 + roundf(sin(time * 3.0 + float(k)) * 2.0)
+			draw_rect(Rect2(sx - w * 0.5, HORIZON + 3.0 + float(k) * 3.0, w, 1.0), Color(1.0, 0.75, 0.4, 0.7))
 	var f: float = 0.2
 	# Ánh nước lấp lánh trôi theo dòng.
 	var r: Vector2i = _tiles(f, 16.0, 20.0)
@@ -186,6 +222,110 @@ func _draw_river() -> void:
 		var x: float = _lx(float(i) * 260.0 + float(h % 120) + dirn * time * 6.0, f)
 		var y: float = HORIZON + 10.0 + float((h >> 6) % 12)
 		_draw_boat(x, y, (h >> 10) % 3 == 0, dirn)
+	_draw_floating_market()
+
+
+## Mức "chợ nổi" (0..1) theo vị trí camera trên đường đua.
+func market_amount() -> float:
+	var t: float = (cam_left + view_w * 0.5) / maxf(track_len, 1.0)
+	var a: float = clampf((t - MARKET_SPAN.x) / 0.04, 0.0, 1.0)
+	var b: float = clampf((MARKET_SPAN.y - t) / 0.04, 0.0, 1.0)
+	return minf(a, b)
+
+
+## Đoạn chợ nổi: ghe chở trái cây san sát, cây bẹo treo hàng, người bán đội nón lá.
+func _draw_floating_market() -> void:
+	if market_amount() <= 0.0:
+		return
+	var f: float = 0.24
+	var tile: float = 58.0
+	var r: Vector2i = _tiles(f, tile, 60.0)
+	for i in range(r.x, r.y + 1):
+		var h: int = hash_i(i, 77)
+		var cx: float = _lx(float(i) * tile + float(h % 20), f)
+		var world_t: float = (cx + view_w * 0.0) / maxf(track_len, 1.0)
+		if world_t < MARKET_SPAN.x - 0.05 or world_t > MARKET_SPAN.y + 0.05:
+			continue
+		var y: float = HORIZON + 9.0 + float((h >> 5) % 3) * 5.0
+		var bob: float = roundf(sin(time * 1.6 + float(i)) * 0.6)
+		_market_boat(cx, y + bob, h)
+
+
+func _market_boat(x: float, y: float, h: int) -> void:
+	var hull := Color(0.36, 0.24, 0.16)
+	var w: float = 36.0
+	draw_colored_polygon(PackedVector2Array([Vector2(x - w * 0.5 - 4.0, y - 4.0), Vector2(x + w * 0.5 + 4.0, y - 4.0),
+		Vector2(x + w * 0.5, y), Vector2(x - w * 0.5, y)]), hull)
+	draw_rect(Rect2(x - w * 0.5 - 3.0, y - 4.0, w + 6.0, 1.0), Color(0.62, 0.42, 0.24))
+	# mắt ghe (đỏ trắng) ở mũi
+	draw_rect(Rect2(x + w * 0.5 - 2.0, y - 3.0, 2.0, 1.0), Color(0.9, 0.2, 0.15))
+	draw_rect(Rect2(x - w * 0.5 + 2.0, y + 1.0, w - 4.0, 1.0), Color(0.86, 0.95, 0.97, 0.35))
+	# hàng trái cây chất đống
+	var fruit: Array[Color] = [Color(0.2, 0.55, 0.2), Color(0.95, 0.75, 0.2), Color(0.9, 0.45, 0.15), Color(0.6, 0.2, 0.35)]
+	var c: Color = fruit[h % fruit.size()]
+	for k in range(6):
+		var fx: float = x - 12.0 + float(k) * 4.0
+		draw_rect(Rect2(fx, y - 7.0 - float(k % 2), 3.0, 3.0), c)
+		draw_rect(Rect2(fx, y - 7.0 - float(k % 2), 1.0, 1.0), c.lightened(0.35))
+	draw_rect(Rect2(x - 6.0, y - 10.0, 8.0, 3.0), fruit[(h >> 3) % fruit.size()])
+	# cây bẹo: sào tre cao treo mẫu hàng
+	var px: float = x + 8.0
+	draw_rect(Rect2(px, y - 26.0, 1.0, 22.0), Color(0.62, 0.5, 0.3))
+	var sway: float = roundf(sin(time * 2.0 + x * 0.1))
+	draw_rect(Rect2(px - 1.0 + sway, y - 24.0, 3.0, 3.0), fruit[(h >> 5) % fruit.size()])
+	draw_rect(Rect2(px - 1.0 + sway, y - 20.0, 3.0, 2.0), fruit[(h >> 7) % fruit.size()])
+	_draw_hat_person(x - 12.0, y - 4.0, [Color(0.75, 0.25, 0.2), Color(0.25, 0.4, 0.7), Color(0.85, 0.8, 0.3)][(h >> 9) % 3])
+
+
+## Cầu vòm bê tông bắc qua sông ở lớp xa (thưa, mỗi ~1100 px lớp).
+func _draw_far_bridges() -> void:
+	var f: float = 0.23
+	var tile: float = 1100.0
+	var r: Vector2i = _tiles(f, tile, 120.0)
+	for i in range(r.x, r.y + 1):
+		var h: int = hash_i(i, 83)
+		if h % 2 == 0:
+			continue
+		var x: float = _lx(float(i) * tile + 300.0 + float(h % 200), f)
+		var span: float = 70.0
+		var deck_y: float = HORIZON + 2.0
+		var col := Color(0.82, 0.8, 0.74) if not sunset else Color(0.86, 0.7, 0.62)
+		var dark := col.darkened(0.3)
+		# vòm
+		var pts := PackedVector2Array()
+		for k in range(13):
+			var t: float = float(k) / 12.0
+			pts.append(Vector2(roundf(x - span * 0.5 + span * t), roundf(deck_y + 14.0 - sin(t * PI) * 10.0)))
+		draw_polyline(pts, dark, 2.0)
+		draw_rect(Rect2(x - span * 0.5 - 6.0, deck_y - 2.0, span + 12.0, 3.0), col)
+		draw_rect(Rect2(x - span * 0.5 - 6.0, deck_y + 1.0, span + 12.0, 1.0), dark)
+		for k in range(0, int(span) + 12, 6):
+			draw_rect(Rect2(x - span * 0.5 - 6.0 + float(k), deck_y - 5.0, 1.0, 3.0), col)
+		draw_rect(Rect2(x - span * 0.5 - 6.0, deck_y - 5.0, span + 12.0, 1.0), col)
+		# người đi xe đạp qua cầu
+		var bx: float = x - span * 0.5 + fmod(time * 9.0 + float(h % 50), span)
+		draw_rect(Rect2(roundf(bx), deck_y - 5.0, 3.0, 3.0), Color(0.3, 0.3, 0.35))
+		_draw_hat_person(roundf(bx) + 1.0, deck_y - 4.0, Color(0.9, 0.9, 0.85))
+
+
+## Cò trắng bay chậm qua ruộng.
+func _draw_birds() -> void:
+	var f: float = 0.3
+	var tile: float = 420.0
+	var r: Vector2i = _tiles(f, tile, 60.0)
+	for i in range(r.x, r.y + 1):
+		var h: int = hash_i(i, 89)
+		if h % 3 != 0:
+			continue
+		for k in range(2 + h % 3):
+			var x: float = _lx(float(i) * tile + float(k * 11) - time * 14.0, f)
+			var y: float = RIVER_BOTTOM - 18.0 + float((h >> 4) % 10) + float(k % 2) * 4.0 + roundf(sin(time * 1.5 + float(k)) * 1.5)
+			var flap: bool = int(time * 4.0 + float(k)) % 2 == 0
+			var c := Color(0.98, 0.98, 0.95)
+			draw_rect(Rect2(x, y, 3.0, 1.0), c)
+			draw_rect(Rect2(x - 2.0, y - (1.0 if flap else -1.0), 2.0, 1.0), c)
+			draw_rect(Rect2(x + 3.0, y - (1.0 if flap else -1.0), 2.0, 1.0), c)
+			draw_rect(Rect2(x + 3.0, y, 1.0, 1.0), Color(0.95, 0.75, 0.3))
 
 
 func _draw_boat(x: float, y: float, roofed: bool, dirn: float) -> void:
@@ -249,6 +389,12 @@ func _draw_fields() -> void:
 			2:
 				_tiny_farmer(x, foot, int(time * 2.0 + float(h % 5)) % 2)
 				_tiny_farmer(x + 9.0, foot + 2.0, int(time * 2.0 + float(h % 3) + 1.0) % 2)
+				_tiny_farmer(x + 18.0, foot + 1.0, int(time * 2.0 + float(h % 7) + 0.5) % 2)
+			3:
+				# bó lúa + nón lá trên bờ ruộng
+				draw_rect(Rect2(x - 2.0, foot - 6.0, 4.0, 6.0), Color(0.88, 0.75, 0.35))
+				draw_rect(Rect2(x - 3.0, foot - 3.0, 6.0, 1.0), Color(0.6, 0.45, 0.2))
+				draw_rect(Rect2(x + 4.0, foot - 5.0, 4.0, 5.0), Color(0.9, 0.78, 0.38))
 
 
 func _tiny_buffalo(x: float, foot: float, flip: bool) -> void:
@@ -355,6 +501,36 @@ func _house(cx: float, wall_name: String, thatch: bool) -> void:
 		draw_rect(Rect2(left - 6.0 + inset - 6.0, y, w + 12.0 - 2.0 * (inset - 6.0), 1.0), line)
 	draw_rect(Rect2(left + 10.0, top - roof_h - 1.0, w - 20.0, 2.0), base.lightened(0.2))
 	draw_rect(Rect2(left - 6.0, top + 2.0, w + 12.0, 1.0), line.darkened(0.3))
+	_laundry(left + w + 10.0, top + 10.0, int(cx))
+
+
+## Dây phơi đồ cạnh nhà: hai cọc tre, áo quần nhiều màu bay phấp phới.
+func _laundry(x: float, y: float, seed_i: int) -> void:
+	var pole := Color(0.55, 0.42, 0.25)
+	var ground: float = MID_GROUND + 1.0
+	draw_rect(Rect2(x, y, 1.0, ground - y), pole)
+	draw_rect(Rect2(x + 40.0, y, 1.0, ground - y), pole)
+	var pts := PackedVector2Array()
+	for k in range(9):
+		var t: float = float(k) / 8.0
+		pts.append(Vector2(roundf(x + 40.0 * t), roundf(y + 1.0 + sin(t * PI) * 2.0)))
+	draw_polyline(pts, Color(0.3, 0.28, 0.26), 1.0)
+	var cols: Array[Color] = [Color(0.9, 0.3, 0.3), Color(0.3, 0.5, 0.85), Color(0.95, 0.85, 0.3), Color(0.95, 0.95, 0.92),
+		Color(0.4, 0.7, 0.4), Color(0.85, 0.5, 0.75)]
+	for k in range(4):
+		var cx: float = x + 6.0 + float(k) * 9.0
+		var cy: float = y + 2.0 + roundf(sin(float(k + 1) / 5.0 * PI) * 2.0)
+		var flap: float = roundf(sin(time * 4.0 + float(k) + float(seed_i)) * 1.0)
+		var c: Color = cols[(seed_i / 7 + k) % cols.size()]
+		if k % 2 == 0:
+			# áo
+			draw_rect(Rect2(cx - 3.0, cy, 7.0, 3.0), c)
+			draw_rect(Rect2(cx - 2.0 + flap, cy + 3.0, 5.0, 4.0), c)
+		else:
+			# quần
+			draw_rect(Rect2(cx - 2.0, cy, 5.0, 2.0), c)
+			draw_rect(Rect2(cx - 2.0 + flap, cy + 2.0, 2.0, 5.0), c)
+			draw_rect(Rect2(cx + 1.0 + flap, cy + 2.0, 2.0, 5.0), c)
 
 
 func _stall(cx: float) -> void:
@@ -433,6 +609,25 @@ func _draw_road() -> void:
 		draw_rect(Rect2(x + float((h >> 7) % 30), POLE_GROUND - 4.0 + float((h >> 20) % 4), 1.0, 2.0), g)
 		draw_rect(Rect2(x + float((h >> 21) % 30), ROAD_BOTTOM + 4.0 + float((h >> 11) % 6), 1.0, 2.0), g)
 		draw_rect(Rect2(x + float((h >> 24) % 30) + 1.0, ROAD_BOTTOM + 3.0 + float((h >> 11) % 6), 1.0, 3.0), g)
+	# Vạch lề liền (trắng) hai bên mặt đường.
+	_band(ROAD_TOP + 4.0, ROAD_TOP + 5.0, Color(0.93, 0.92, 0.85))
+	_band(ROAD_BOTTOM - 5.0, ROAD_BOTTOM - 4.0, Color(0.93, 0.92, 0.85))
+	# Mũi tên sơn trên làn giữa mỗi 640 px; vết bánh xe mờ.
+	var a0: int = floori(left / 640.0)
+	for a in range(a0, floori(right / 640.0) + 1):
+		var ax: float = float(a) * 640.0 + 300.0
+		var ay: float = 177.0
+		var paint := Color(0.93, 0.92, 0.85, 0.85)
+		draw_rect(Rect2(ax, ay - 1.0, 14.0, 2.0), paint)
+		draw_colored_polygon(PackedVector2Array([Vector2(ax + 14.0, ay - 4.0), Vector2(ax + 20.0, ay), Vector2(ax + 14.0, ay + 4.0)]), paint)
+		draw_rect(Rect2(ax - 60.0, 160.0, 50.0, 1.0), Color(0.5, 0.48, 0.45, 0.35))
+		draw_rect(Rect2(ax - 50.0, 199.0, 70.0, 1.0), Color(0.5, 0.48, 0.45, 0.35))
+	# Vạch qua đường (zebra) gần xuất phát và trước đích.
+	for zx in [120.0, track_len - 240.0]:
+		if zx + 40.0 > left and zx - 10.0 < right:
+			for k in range(8):
+				var y0: float = ROAD_TOP + 7.0 + float(k) * 7.5
+				draw_rect(Rect2(zx + roundf(6.0 * (1.0 - float(k) / 8.0)), y0, 22.0, 4.0), Color(0.94, 0.93, 0.87))
 	# Vạch chia làn.
 	var dash: float = 32.0
 	var k0: int = floori(left / dash)
@@ -470,6 +665,61 @@ func _checker(x: float) -> void:
 		for col in range(2):
 			var c: Color = Color(0.1, 0.1, 0.1) if (row + col) % 2 == 0 else Color(0.97, 0.97, 0.95)
 			draw_rect(Rect2(x + shift + float(col) * 4.0, y, 4.0, y2 - y), c)
+
+
+## Đoạn đường bê tông vượt kênh: lan can trắng hai bên, khe nước xanh dưới lề trước, cọc tiêu.
+func _draw_road_bridges() -> void:
+	for b in ROAD_BRIDGES:
+		var x0: float = float(b[0])
+		var length: float = float(b[1])
+		if x0 + length < cam_left - 20.0 or x0 > cam_left + view_w + 20.0:
+			continue
+		var rail := Color(0.92, 0.92, 0.88)
+		var rail_d := Color(0.62, 0.62, 0.6)
+		# nước kênh lộ ra dưới mép trước + mép sau
+		draw_rect(Rect2(x0, ROAD_BOTTOM + 2.0, length, view_top + view_h + 40.0 - ROAD_BOTTOM), Color(0.38, 0.58, 0.68))
+		for k in range(0, int(length), 10):
+			var gx: float = x0 + float(k) + fmod(time * 6.0, 10.0)
+			draw_rect(Rect2(roundf(gx), ROAD_BOTTOM + 8.0 + float(k % 3) * 5.0, 4.0, 1.0), Color(0.85, 0.95, 0.98, 0.6))
+		draw_rect(Rect2(x0, POLE_GROUND - 6.0, length, 6.0), Color(0.38, 0.58, 0.68))
+		# lan can phía sau (thấp) và phía trước
+		for edge_y in [ROAD_TOP - 6.0, ROAD_BOTTOM - 2.0]:
+			draw_rect(Rect2(x0 - 4.0, edge_y, length + 8.0, 2.0), rail)
+			draw_rect(Rect2(x0 - 4.0, edge_y + 2.0, length + 8.0, 1.0), rail_d)
+			for k in range(0, int(length) + 8, 12):
+				draw_rect(Rect2(x0 - 4.0 + float(k), edge_y + 2.0, 2.0, 5.0), rail)
+		for side_x in [x0 - 6.0, x0 + length + 2.0]:
+			draw_rect(Rect2(side_x, ROAD_TOP - 10.0, 4.0, 10.0), Color(0.95, 0.95, 0.9))
+			draw_rect(Rect2(side_x, ROAD_TOP - 10.0, 4.0, 3.0), Color(0.85, 0.2, 0.15))
+
+
+## Cổng xuất phát: hai cọc tre giăng dây cờ, ông trọng tài phất cờ ở lề sau.
+func _draw_start() -> void:
+	if cam_left > 160.0 or cam_left + view_w < -160.0:
+		return
+	var x: float = -30.0
+	for k in range(2):
+		var px: float = x + float(k) * 70.0
+		draw_rect(Rect2(px, POLE_GROUND - 46.0, 2.0, 46.0), Color(0.6, 0.48, 0.28))
+	for k in range(12):
+		var fx: float = x + 2.0 + float(k) * 6.0
+		var fy: float = POLE_GROUND - 44.0 + roundf(sin(float(k) / 11.0 * PI) * 4.0)
+		var c: Color = [Color(0.9, 0.2, 0.15), Color(1.0, 0.85, 0.2), Color(0.25, 0.5, 0.9), Color(0.3, 0.7, 0.35)][k % 4]
+		draw_colored_polygon(PackedVector2Array([Vector2(fx, fy), Vector2(fx + 4.0, fy), Vector2(fx + 2.0, fy + 4.0)]), c)
+	# trọng tài: áo trắng, nón lá, cờ ca-rô phất lên xuống
+	var rx: float = 52.0
+	var foot: float = POLE_GROUND - 1.0
+	draw_rect(Rect2(rx - 3.0, foot - 13.0, 6.0, 8.0), Color(0.95, 0.95, 0.92))
+	draw_rect(Rect2(rx - 2.0, foot - 5.0, 2.0, 5.0), Color(0.25, 0.25, 0.3))
+	draw_rect(Rect2(rx + 1.0, foot - 5.0, 2.0, 5.0), Color(0.25, 0.25, 0.3))
+	draw_rect(Rect2(rx - 2.0, foot - 17.0, 4.0, 4.0), Color(0.85, 0.65, 0.5))
+	draw_colored_polygon(PackedVector2Array([Vector2(rx - 6.0, foot - 17.0), Vector2(rx + 6.0, foot - 17.0), Vector2(rx, foot - 22.0)]), Color(0.95, 0.86, 0.55))
+	var wave: float = roundf(sin(time * 8.0) * 3.0)
+	draw_line(Vector2(rx + 3.0, foot - 12.0), Vector2(rx + 8.0, foot - 22.0 + wave), Color(0.4, 0.3, 0.2), 1.0)
+	for yy in range(3):
+		for xx in range(3):
+			var c2: Color = Color(0.1, 0.1, 0.1) if (xx + yy) % 2 == 0 else Color(0.97, 0.97, 0.95)
+			draw_rect(Rect2(rx + 8.0 + float(xx) * 2.0, foot - 26.0 + wave + float(yy) * 2.0, 2.0, 2.0), c2)
 
 
 # ------------------------------------------------------------------ cổng ấp (đích)
@@ -513,6 +763,22 @@ func _draw_gate() -> void:
 		var fy: float = GATE_TOP + 9.0 + roundf(sin(float(k) / 13.0 * PI) * 5.0)
 		var c: Color = [Color(0.9, 0.2, 0.15), Color(1.0, 0.85, 0.2), Color(0.25, 0.5, 0.9)][k % 3]
 		draw_colored_polygon(PackedVector2Array([Vector2(fx, fy), Vector2(fx + 5.0, fy), Vector2(fx + 2.5, fy + 5.0)]), c)
+	# Vòm bong bóng trên cổng (đỏ – vàng – xanh), lắc nhẹ; pháo giấy khi có người về đích.
+	var balloon: Array[Color] = [Color(0.92, 0.22, 0.2), Color(1.0, 0.84, 0.22), Color(0.25, 0.55, 0.95), Color(0.98, 0.98, 0.95)]
+	for k in range(23):
+		var t: float = float(k) / 22.0
+		var bx: float = x - GATE_HALF + GATE_HALF * 2.0 * t
+		var by: float = GATE_TOP - 6.0 - sin(t * PI) * 22.0 + roundf(sin(time * 3.0 + float(k)) * 0.6)
+		var c: Color = balloon[k % balloon.size()]
+		draw_circle(Vector2(roundf(bx), roundf(by)), 3.4, c.darkened(0.25))
+		draw_circle(Vector2(roundf(bx), roundf(by)), 2.6, c)
+		draw_rect(Rect2(roundf(bx) - 1.0, roundf(by) - 2.0, 1.0, 1.0), Color(1, 1, 1, 0.8))
+	if cheer > 0.0:
+		for k in range(24):
+			var h: int = hash_i(k, 101)
+			var cx2: float = x - 60.0 + float(h % 120)
+			var cy2: float = GATE_TOP - 30.0 + fmod(time * 30.0 + float((h >> 7) % 80), 90.0)
+			draw_rect(Rect2(roundf(cx2 + sin(time * 5.0 + float(k)) * 2.0), roundf(cy2), 2.0, 1.0), balloon[k % balloon.size()])
 	# Khán giả hàng sau (lề sau).
 	_draw_crowd(x, POLE_GROUND - 1.0, [-82.0, -66.0, -30.0, 18.0, 34.0, 70.0, 86.0], 0)
 

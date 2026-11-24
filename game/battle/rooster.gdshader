@@ -20,6 +20,31 @@ uniform vec3 comb_hsv = vec3(0.0, 1.0, 1.0);
 uniform vec4 flash_color : source_color = vec4(1.0);
 uniform float flash = 0.0;
 
+// Lớp trang bị (GDD 5.3) – sheet cùng bố cục ô với sheet gà (tools/art/build_gear.py), lấy mẫu bằng đúng UV.
+// Thứ tự vẽ: Thân → Cựa → Đầu → Mào → Giáp → Cánh → Vũ khí. Mào chỉ hiện ở chỗ đồ ô Đầu không che;
+// pixel khoá magenta (255,0,255) của lớp Mào = xoá phần mào gốc (Mào cắt gọn).
+// Cựa + vũ khí có ánh kim lướt qua (glint) trên các pixel sáng.
+uniform bool use_gear = false;
+uniform sampler2D gear_spur : filter_nearest, repeat_disable;
+uniform sampler2D gear_head : filter_nearest, repeat_disable;
+uniform sampler2D gear_comb : filter_nearest, repeat_disable;
+uniform sampler2D gear_armor : filter_nearest, repeat_disable;
+uniform sampler2D gear_wing : filter_nearest, repeat_disable;
+uniform sampler2D gear_weapon : filter_nearest, repeat_disable;
+uniform bool has_spur = false;
+uniform bool has_head = false;
+uniform bool has_comb = false;
+uniform bool has_armor = false;
+uniform bool has_wing = false;
+uniform bool has_weapon = false;
+uniform float glint_phase = 0.0;
+// Màu modulate của node (vertex color) – lớp trang bị nhân theo (KO tô tối, bóng mờ…), không nhân màu ảnh gốc.
+varying vec4 tint;
+
+void vertex() {
+	tint = COLOR;
+}
+
 vec3 rgb2hsv(vec3 c) {
 	vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
 	vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
@@ -41,6 +66,16 @@ vec3 shift(vec3 hsv, vec3 p) {
 		return hsv;
 	}
 	return vec3(fract(hsv.x + p.x), clamp(hsv.y * p.y, 0.0, 1.0), clamp(hsv.z * p.z, 0.0, 1.0));
+}
+
+// Ánh kim lướt chéo qua các pixel sáng của lớp kim loại (chỉ hình ảnh; pha do FighterView tăng dần).
+vec3 glint(vec3 col, vec2 uv) {
+	float lum = dot(col, vec3(0.3, 0.59, 0.11));
+	if (lum < 0.72) {
+		return vec3(0.0);
+	}
+	float band = fract((uv.x + uv.y * 0.6) / 48.0 - glint_phase);
+	return vec3(smoothstep(0.08, 0.0, abs(band - 0.5)) * 0.6);
 }
 
 void fragment() {
@@ -81,5 +116,54 @@ void fragment() {
 		hsv.y = clamp(hsv.y * saturation, 0.0, 1.0);
 	}
 	vec3 rgb = hsv2rgb(hsv);
-	COLOR = vec4(mix(rgb, flash_color.rgb, clamp(flash, 0.0, 1.0)), c.a);
+	float alpha = c.a;
+	if (use_gear) {
+		vec4 head = has_head ? texture(gear_head, UV) : vec4(0.0);
+		if (has_comb) {
+			vec4 cb = texture(gear_comb, UV);
+			if (cb.a > 0.5 && cb.r > 0.99 && cb.g < 0.01 && cb.b > 0.99) {
+				alpha = 0.0; // mào bị cắt gọn
+				cb = vec4(0.0);
+			}
+			if (head.a > 0.5) {
+				cb = vec4(0.0);
+			}
+			if (has_spur) {
+				vec4 sp = texture(gear_spur, UV);
+				sp.rgb += glint(sp.rgb, UV / TEXTURE_PIXEL_SIZE);
+				rgb = mix(rgb, sp.rgb * tint.rgb, sp.a);
+				alpha = max(alpha, sp.a * tint.a);
+			}
+			rgb = mix(rgb, head.rgb * tint.rgb, head.a);
+			alpha = max(alpha, head.a * tint.a);
+			rgb = mix(rgb, cb.rgb * tint.rgb, cb.a);
+			alpha = max(alpha, cb.a * tint.a);
+		} else {
+			if (has_spur) {
+				vec4 sp = texture(gear_spur, UV);
+				sp.rgb += glint(sp.rgb, UV / TEXTURE_PIXEL_SIZE);
+				rgb = mix(rgb, sp.rgb * tint.rgb, sp.a);
+				alpha = max(alpha, sp.a * tint.a);
+			}
+			rgb = mix(rgb, head.rgb * tint.rgb, head.a);
+			alpha = max(alpha, head.a * tint.a);
+		}
+		if (has_armor) {
+			vec4 ar = texture(gear_armor, UV);
+			rgb = mix(rgb, ar.rgb * tint.rgb, ar.a);
+			alpha = max(alpha, ar.a * tint.a);
+		}
+		if (has_wing) {
+			vec4 wg = texture(gear_wing, UV);
+			rgb = mix(rgb, wg.rgb * tint.rgb, wg.a);
+			alpha = max(alpha, wg.a * tint.a);
+		}
+		if (has_weapon) {
+			vec4 wp = texture(gear_weapon, UV);
+			wp.rgb += glint(wp.rgb, UV / TEXTURE_PIXEL_SIZE);
+			rgb = mix(rgb, wp.rgb * tint.rgb, wp.a);
+			alpha = max(alpha, wp.a * tint.a);
+		}
+	}
+	COLOR = vec4(mix(rgb, flash_color.rgb, clamp(flash, 0.0, 1.0)), alpha);
 }

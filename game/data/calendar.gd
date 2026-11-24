@@ -28,29 +28,37 @@ const PERIODS: Array[Dictionary] = [
 		"hint": "Đấu giải, giao hữu, sự kiện truyện; ngủ (tự lưu)"},
 ]
 
-## Hoạt động có tốn giờ (GDD 3.6). money/technology: thưởng gốc khi làm đủ (perform() nhân hệ số minigame 0,5–1,3
-## cho tiền). Ca làm: GDD 7.2 (bóc gạch 80k / bán hàng 70k / chở ghe 100k, 2 giờ). Học: GDD 6 (2 tiết × +5 Tech).
-## Thư viện: +4 Tech/giờ (GDD 7.1). PLACEHOLDER: chat, train, feed, shop, sleep_early không có trong GDD.
+## Hoạt động có tốn giờ (GDD 3.6). money/technology: thưởng gốc khi làm đủ (GameState.perform() nhân hệ số minigame
+## 0,5–1,3 cho tiền). Ca làm: GDD 7.2 (bóc gạch 80k / bán hàng 70k / chở ghe 100k, 2 giờ). Học: GDD 6 (2 tiết × +5 Tech).
+## Thư viện: +4 Tech/giờ (GDD 7.1). per_day: số lần tối đa mỗi ngày (PLACEHOLDER – wave 2 áp dụng).
+## weekdays: ngày làm được (0 = Thứ 2 … 6 = CN), periods: buổi làm được (GameState.Period) – dữ liệu cho wave 2,
+## hiện chỉ "class" bị chặn (school_day_only). PLACEHOLDER: chat, train, feed, shop, sleep_early không có trong GDD.
 const ACTIVITIES: Dictionary = {
-	&"class": {"name": "Đi học", "minutes": 180, "technology": 10, "school_day_only": true},
-	&"work_brick": {"name": "Bóc gạch", "minutes": 120, "money": 80000},
-	&"work_shop": {"name": "Bán hàng", "minutes": 120, "money": 70000},
-	&"work_boat": {"name": "Chở ghe", "minutes": 120, "money": 100000},
+	&"class": {"name": "Đi học", "minutes": 180, "technology": 10, "school_day_only": true, "per_day": 1,
+		"weekdays": [0, 1, 2, 3, 4], "periods": [0]},
+	&"work_brick": {"name": "Bóc gạch (phụ hồ)", "minutes": 120, "money": 80000, "per_day": 1, "periods": [0, 1, 2]},
+	&"work_shop": {"name": "Bán hàng", "minutes": 120, "money": 70000, "per_day": 1, "periods": [0, 1, 2, 3]},
+	&"work_boat": {"name": "Chở ghe", "minutes": 120, "money": 100000, "per_day": 1, "periods": [0, 1, 2]},
 	&"quest": {"name": "Làm quest", "minutes": 60},
-	&"library": {"name": "Thư viện", "minutes": 60, "technology": 4},
+	&"library": {"name": "Thư viện", "minutes": 60, "technology": 4, "periods": [1, 2]},
 	&"match": {"name": "Trận đấu", "minutes": 60},
 	&"travel": {"name": "Sang khu vực khác", "minutes": 30},
-	&"chat": {"name": "Trò chuyện hàng xóm", "minutes": 30},   # PLACEHOLDER
-	&"train": {"name": "Luyện gà", "minutes": 60},              # PLACEHOLDER (xem GameState.train)
-	&"feed": {"name": "Cho gà ăn", "minutes": 0},               # PLACEHOLDER: không tốn giờ
-	&"shop": {"name": "Mua sắm", "minutes": 0},                 # PLACEHOLDER: đi tới tiệm đã tính bằng travel
+	&"ferry": {"name": "Qua sông bằng đò", "minutes": 30},
+	&"chat": {"name": "Trò chuyện hàng xóm", "minutes": 15},     # PLACEHOLDER
+	&"train": {"name": "Luyện gà", "minutes": 60, "per_day": 3},   # PLACEHOLDER (xem GameState.train)
+	&"feed": {"name": "Cho gà ăn", "minutes": 0},                 # PLACEHOLDER: không tốn giờ
+	&"shop": {"name": "Mua sắm", "minutes": 0},                   # PLACEHOLDER: đi tới tiệm đã tính bằng travel
 }
 
-## Bảng giờ tốn (phút) rút từ ACTIVITIES – GDD 3.6: học 3 giờ, ca làm 2 giờ, quest 1 giờ, thư viện 1 giờ,
-## trận 1 giờ, sang khu vực khác 30 phút.
+## Bảng giờ tốn (phút) – GDD 3.6: học 3 giờ, ca làm 2 giờ, quest 1 giờ, thư viện 1 giờ, trận 1 giờ, sang khu vực
+## khác 30 phút. Các hoạt động bờ nam hiện có (activity_runner.gd): PLACEHOLDER theo tính chất việc.
 const TIME_COSTS: Dictionary = {
-	&"class": 180, &"work": 120, &"work_brick": 120, &"work_shop": 120, &"work_boat": 120, &"quest": 60,
-	&"library": 60, &"match": 60, &"travel": 30, &"chat": 30, &"train": 60, &"feed": 0, &"shop": 0,
+	&"class": 180, &"school": 180, &"work": 120, &"job": 120, &"work_brick": 120, &"work_shop": 120, &"work_boat": 120,
+	&"quest": 60, &"library": 60, &"match": 60, &"battle": 60, &"travel": 30, &"ferry": 30, &"chat": 15, &"train": 60,
+	&"feed": 0, &"shop": 0,
+	# Bờ nam (id của ActivityRunner):
+	&"fish_house": 60, &"fish_feed": 15, &"farm": 60, &"school_quiz": 60, &"site": 120, &"temple": 30,
+	&"lottery": 10, &"race": 30,
 }
 const MINIGAME_FACTOR_MIN: float = 0.5
 const MINIGAME_FACTOR_MAX: float = 1.3

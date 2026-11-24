@@ -19,6 +19,7 @@ signal fx(kind: StringName, pos: Vector2)
 const Backdrop := preload("res://game/world/race/race_backdrop.gd")
 const Hud := preload("res://game/world/race/race_hud.gd")
 const Audio := preload("res://game/audio/audio_director.gd")
+const RiderData := preload("res://game/world/race/race_riders.gd")
 
 enum Phase { INTRO, COUNTDOWN, RACE, FINISH, RESULT, DONE }
 
@@ -95,6 +96,7 @@ class Racer:
 	var top: float = 0.0
 	var travel: float = 0.0
 	var dust: float = 0.0
+	var puff: float = 0.0
 	var node: Node2D
 
 
@@ -127,6 +129,8 @@ class Pickup:
 
 var rider: Dictionary = {}
 var map_view: Node = null
+## Bản hoàng hôn của nền: -1 = theo giờ trong game (sau 16:30 hoặc trước 5:30), 0 = ban ngày, 1 = hoàng hôn.
+var sunset_mode: int = -1
 var race_seed: int = 1
 var autopilot: bool = false
 var autopilot_skill: float = 1.0
@@ -170,6 +174,8 @@ var _cam_left: float = 0.0
 
 var _textures: Dictionary = {}       # tên node bản đồ → Array[Texture2D]
 var _rival_frames: Array[Texture2D] = []
+## true: ảnh xe đối thủ lấy từ traffic.json hướng đông (đã quay đúng hướng đua, không lật).
+var _rival_faces_east: bool = false
 var _rival_sprite: Sprite2D
 var _rival_emitter: AudioStreamPlayer2D
 var _player_visual: Node2D
@@ -214,6 +220,7 @@ func _ready() -> void:
 	_backdrop.set("tex", _textures)
 	_backdrop.set("track_len", TRACK_LEN)
 	_backdrop.set("crowd", _crowd_textures())
+	_backdrop.set("sunset", is_sunset())
 	add_child(_backdrop)
 	_ground = Node2D.new()
 	_ground.draw.connect(_draw_ground)
@@ -307,6 +314,14 @@ static func _script_with(path: String, method_name: String) -> Script:
 	return null
 
 
+## Nền hoàng hôn? (theo sunset_mode / giờ GameState).
+func is_sunset() -> bool:
+	if sunset_mode >= 0:
+		return sunset_mode == 1
+	var m: int = int(GameState.minutes)
+	return m >= 16 * 60 + 30 or m < 5 * 60 + 30
+
+
 func _make_racer(id: int, lane: int) -> Racer:
 	var r := Racer.new()
 	r.id = id
@@ -328,7 +343,7 @@ func _make_rival_node() -> Node2D:
 		_rival_sprite.texture = _rival_frames[0]
 		var size: Vector2 = _rival_frames[0].get_size()
 		_rival_sprite.position = Vector2(-roundf(size.x * 0.5), -size.y)
-		_rival_sprite.flip_h = int(rider.get("dir", 1)) < 0 # ảnh xe chạy sang trái → lật cho cùng hướng đua
+		_rival_sprite.flip_h = int(rider.get("dir", 1)) < 0 and not _rival_faces_east # ảnh xe chạy sang trái → lật cho cùng hướng đua
 		holder.add_child(_rival_sprite)
 	else:
 		var stand_in: Node2D = WorldPlayer.make_parked_bike()
@@ -340,6 +355,16 @@ func _make_rival_node() -> Node2D:
 
 
 func _load_textures() -> void:
+	# Xe đối thủ: đúng dáng xe NPC đã thách (traffic.json / game/art/vehicles – cả dáng mới), ảnh hướng đông (đường đua
+	# luôn chạy sang phải nên không lật). Không cần MapView.
+	var vehicle: String = RiderData.vehicle_of(rider)
+	var frames: Array = MapView.vehicle_textures(vehicle, "east") if vehicle != "" else []
+	if not frames.is_empty():
+		_rival_faces_east = true
+	elif map_view != null and map_view.has_method("node_textures"):
+		frames = map_view.call("node_textures", String(rider.get("node", "")))
+	for frame in frames:
+		_rival_frames.append(frame)
 	if map_view == null or not map_view.has_method("node_textures"):
 		return
 	var names: Array[String] = []
@@ -347,9 +372,6 @@ func _load_textures() -> void:
 	names.append_array(["B_ga_nha_01", "E_vit_01", "NV_cho_vang"])
 	for node_name in names:
 		_textures[node_name] = map_view.call("node_textures", node_name)
-	var frames: Array = map_view.call("node_textures", String(rider.get("node", "")))
-	for frame in frames:
-		_rival_frames.append(frame)
 
 
 func _crowd_textures() -> Array[Texture2D]:
@@ -1291,6 +1313,12 @@ func _burst(pos: Vector2, color: Color, count: int, speed: float, life: float) -
 
 
 func _trail(r: Racer, dt: float) -> void:
+	# khói pô xám nhẹ phía sau xe (cả khi chạy chậm), bụi đường khi chạy nhanh
+	r.puff += dt
+	if r.v > 5.0 and r.puff > 0.12:
+		r.puff = 0.0
+		_particles.append({"p": Vector2(r.x - 30.0, r.y - 8.0), "v": Vector2(_rng_fx.randf_range(-30.0, -12.0), _rng_fx.randf_range(-10.0, -4.0)),
+			"life": 0.7, "max": 0.7, "c": Color(0.75, 0.75, 0.78, 0.45), "g": -6.0, "s": 2.0})
 	if r.v < 110.0:
 		return
 	r.dust -= dt
@@ -1339,6 +1367,13 @@ func _draw_fx() -> void:
 			var span: float = _view.x + 80.0
 			var x: float = _cam_left + _view.x - fmod(_clock * 700.0 + float(h % 997), span)
 			_fx.draw_rect(Rect2(roundf(x), y, 16.0 + float((h >> 8) % 24), 1.0), Color(1, 1, 1, 0.45))
+	elif player.v > 225.0:
+		# chạy gần tốc độ tối đa: vài vệt gió mảnh quanh xe mình
+		for k in range(6):
+			var h2: int = Backdrop.hash_i(k, 131)
+			var y2: float = player.y - 40.0 + float(h2 % 46)
+			var x2: float = player.x + 60.0 - fmod(_clock * 420.0 + float(h2 % 211), 160.0)
+			_fx.draw_rect(Rect2(roundf(x2), roundf(y2), 8.0 + float((h2 >> 5) % 10), 1.0), Color(1, 1, 1, 0.3))
 	if _drafting:
 		for k in range(4):
 			var y: float = player.y - 6.0 - float(k * 9)

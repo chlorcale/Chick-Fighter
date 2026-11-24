@@ -35,7 +35,7 @@ var _left: Label
 var _speed: Label
 var _speed_unit: Label
 var _nitro_label: Label
-var _help: Label
+var _help: Control
 var _count: Label
 var _toast: Label
 var _toast_time: float = 0.0
@@ -61,42 +61,46 @@ func _ready() -> void:
 	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.draw.connect(_draw_hud)
+	UISkin.pixel(_root)
 	add_child(_root)
-	_place = _label(40, GOLD, true)
-	_place.position = Vector2(24, 14)
-	_time = _label(20, Color(0.95, 0.93, 0.88), false)
-	_time.position = Vector2(26, 64)
-	_left = _label(26, Color(0.95, 0.93, 0.88), true)
+	# Góc trên trái (chữ pixel phóng nguyên lần): hạng ×4 · giờ ×2 · km/h ×4 · vạch tốc độ · BỐC GA ×2 · thanh bốc ga.
+	_place = _label(UISkin.FS_HUGE, GOLD, true)
+	_place.position = Vector2(24, 6)
+	_time = _label(UISkin.FS_BODY, Color(0.95, 0.93, 0.88), false)
+	_time.position = Vector2(26, 72)
+	_left = _label(UISkin.FS_BODY, Color(0.95, 0.93, 0.88), true)
 	_left.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	_left.offset_left = -260.0
 	_left.offset_right = -24.0
 	_left.offset_top = 16.0
 	_left.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	# Đồng hồ tốc độ + bốc ga ở góc trên-trái (trên nền trời, không che xe chạy ở làn dưới).
-	_speed = _label(40, Color.WHITE, true)
-	_speed.position = Vector2(28, 92)
-	_speed_unit = _label(17, Color(0.9, 0.9, 0.9), false)
-	_speed_unit.position = Vector2(110, 112)
+	_speed = _label(UISkin.FS_HUGE, Color.WHITE, true)
+	_speed.position = Vector2(28, 100)
+	_speed_unit = _label(UISkin.FS_BODY, Color(0.9, 0.9, 0.9), false)
+	_speed_unit.position = Vector2(112, 126)
 	_speed_unit.text = "km/h"
-	_nitro_label = _label(17, Color(1.0, 0.75, 0.35), true)
-	_nitro_label.position = Vector2(30, 152)
-	_help = _label(15, Color(0.92, 0.92, 0.92, 0.85), false)
-	_help.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	_help.offset_left = -560.0
-	_help.offset_right = -20.0
-	_help.offset_top = -34.0
-	_help.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_help.text = "W/S đổi làn · D ga · A thắng · J/E bốc ga · Esc bỏ cuộc"
+	_nitro_label = _label(UISkin.FS_BODY, Color(1.0, 0.75, 0.35), true)
+	_nitro_label.position = Vector2(30, 174)
+	# Dải phím góc dưới phải (phím gỗ UISkin, chữ ×1 đậm).
+	_help = Control.new()
+	_help.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_help.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_help.draw.connect(func() -> void:
+		UISkin.draw_key_hints(_help, _help.size - Vector2(12, 10), [["W/S", "Đổi làn"], ["D", "Ga"], ["A", "Thắng"],
+			["J/E", "Bốc ga"], ["Esc", "Bỏ cuộc"]]))
+	_help.resized.connect(_help.queue_redraw)
+	_root.add_child(_help)
 	_count = _center_label(110, GOLD, 0.36)
-	_toast = _center_label(32, Color(1.0, 0.95, 0.5), 0.24)
-	_banner = _center_label(64, GOLD, 0.42)
-	_gate = _label(18, Color(1.0, 0.92, 0.5), true)
+	_toast = _center_label(UISkin.FS_BIG, Color(1.0, 0.95, 0.5), 0.24)
+	_banner = _center_label(66, GOLD, 0.42)
+	_gate = _label(UISkin.FS_BODY, Color(1.0, 0.92, 0.5), true)
 	_gate.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_gate.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_gate.text = "ẤP BÌNH KÊ"
-	_bubble = _label(18, Color(0.1, 0.08, 0.05), true)
-	_bubble.add_theme_color_override("font_outline_color", Color(1.0, 0.98, 0.9))
-	_bubble.add_theme_constant_override("outline_size", 8)
+	_bubble = _label(UISkin.FS_BODY, UISkin.INK, false)
+	_bubble.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0))
+	_bubble.add_theme_stylebox_override("normal", UISkin.panel_style(&"tooltip", 2.0))
 	_bubble.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	for node in [_count, _toast, _banner, _gate, _bubble]:
 		(node as Control).visible = false
@@ -110,8 +114,7 @@ func _label(font_size: int, color: Color, bold: bool) -> Label:
 	label.add_theme_font_override("font", _font_bold if bold else _font)
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
-	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	label.add_theme_constant_override("outline_size", 6)
+	UISkin.label_shadow(label, 4)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(label)
 	return label
@@ -124,11 +127,11 @@ func _center_label(font_size: int, color: Color, y_ratio: float) -> Label:
 	label.anchor_right = 1.0
 	label.anchor_top = y_ratio
 	label.anchor_bottom = y_ratio
-	label.offset_top = -float(font_size) * 0.7
-	label.offset_bottom = float(font_size) * 0.7
+	label.offset_top = -float(font_size) * 0.8
+	label.offset_bottom = float(font_size) * 0.8
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_constant_override("outline_size", 10)
+	UISkin.label_shadow(label, 8)
 	return label
 
 
@@ -139,13 +142,7 @@ func _panel(width: float) -> PanelContainer:
 	panel.offset_right = width * 0.5
 	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.11, 0.07, 0.05, 0.9)
-	style.border_color = BORDER
-	style.set_border_width_all(3)
-	style.set_corner_radius_all(8)
-	style.set_content_margin_all(18)
-	panel.add_theme_stylebox_override("panel", style)
+	panel.add_theme_stylebox_override("panel", UISkin.panel_style(&"dark", 12.0))
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(panel)
 	return panel
@@ -160,13 +157,13 @@ func _build_intro() -> void:
 	_intro.add_child(box)
 	_intro_title = Label.new()
 	_intro_title.add_theme_font_override("font", _font_bold)
-	_intro_title.add_theme_font_size_override("font_size", 36)
+	_intro_title.add_theme_font_size_override("font_size", UISkin.FS_BIG)
 	_intro_title.add_theme_color_override("font_color", GOLD)
 	_intro_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_intro_title)
 	_intro_text = Label.new()
 	_intro_text.add_theme_font_override("font", _font)
-	_intro_text.add_theme_font_size_override("font_size", 19)
+	_intro_text.add_theme_font_size_override("font_size", UISkin.FS_BODY)
 	_intro_text.add_theme_color_override("font_color", Color(0.95, 0.93, 0.88))
 	_intro_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_intro_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -183,18 +180,18 @@ func _build_result() -> void:
 	_result.add_child(box)
 	_result_title = Label.new()
 	_result_title.add_theme_font_override("font", _font_bold)
-	_result_title.add_theme_font_size_override("font_size", 40)
+	_result_title.add_theme_font_size_override("font_size", UISkin.FS_HUGE)
 	_result_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_result_title)
 	_result_body = Label.new()
 	_result_body.add_theme_font_override("font", _font)
-	_result_body.add_theme_font_size_override("font_size", 20)
+	_result_body.add_theme_font_size_override("font_size", UISkin.FS_BODY)
 	_result_body.add_theme_color_override("font_color", Color(0.95, 0.93, 0.88))
 	_result_body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_result_body)
 	_result_hint = Label.new()
 	_result_hint.add_theme_font_override("font", _font_bold)
-	_result_hint.add_theme_font_size_override("font_size", 18)
+	_result_hint.add_theme_font_size_override("font_size", UISkin.FS_BODY)
 	_result_hint.add_theme_color_override("font_color", Color(0.75, 1.0, 0.7))
 	_result_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_result_hint)
@@ -256,8 +253,8 @@ func bubble(text: String, seconds: float = 1.6) -> void:
 
 
 func place_bubble(screen_pos: Vector2) -> void:
-	_bubble.size = Vector2(320, 30)
-	_bubble.position = (screen_pos - Vector2(160, 34)).round()
+	_bubble.reset_size()
+	_bubble.position = (screen_pos - Vector2(_bubble.size.x * 0.5, _bubble.size.y + 4.0)).round()
 
 
 func set_gate(screen_rect: Rect2, on: bool) -> void:
@@ -338,7 +335,7 @@ func _draw_hud() -> void:
 	_marker(Vector2(lerpf(x0, x1, clampf(rival_progress, 0.0, 1.0)), y - 1.0), rider_color, rider_name.substr(rider_name.rfind(" ") + 1, 1))
 	_marker(Vector2(lerpf(x0, x1, clampf(player_progress, 0.0, 1.0)), y + 1.0), PLAYER_COLOR, "B")
 	# Thanh bốc ga 3 nấc.
-	var nb := Rect2(28.0, 178.0, 210.0, 18.0)
+	var nb := Rect2(28.0, 212.0, 210.0, 18.0)
 	_root.draw_rect(nb.grow(3.0), PANEL)
 	for k in range(3):
 		var seg := Rect2(nb.position.x + float(k) * 70.0 + 1.0, nb.position.y, 68.0, nb.size.y)
@@ -351,7 +348,7 @@ func _draw_hud() -> void:
 			_root.draw_rect(Rect2(seg.position, Vector2(seg.size.x * fill, seg.size.y)), c)
 		_root.draw_rect(seg, Color(0.95, 0.75, 0.3, 0.8), false, 1.0)
 	# Vạch tốc độ dưới số km/h.
-	var sb := Rect2(28.0, 144.0, 210.0, 6.0)
+	var sb := Rect2(28.0, 162.0, 210.0, 6.0)
 	_root.draw_rect(sb, Color(0.2, 0.15, 0.1, 0.8))
 	_root.draw_rect(Rect2(sb.position, Vector2(sb.size.x * clampf(kmh / 90.0, 0.0, 1.0), sb.size.y)),
 		Color(1.0, 0.45, 0.2) if boosting else Color(0.6, 0.9, 0.5))
@@ -360,4 +357,4 @@ func _draw_hud() -> void:
 func _marker(pos: Vector2, color: Color, letter: String) -> void:
 	_root.draw_circle(pos, 11.0, Color.BLACK)
 	_root.draw_circle(pos, 9.0, color)
-	_root.draw_string(_font_bold, pos + Vector2(-6.0, 5.0), letter, HORIZONTAL_ALIGNMENT_CENTER, 12, 14, Color.BLACK)
+	_root.draw_string(_font_bold, (pos + Vector2(-6.0, 5.0)).round(), letter, HORIZONTAL_ALIGNMENT_CENTER, 12, UISkin.FS_SMALL, Color.BLACK)

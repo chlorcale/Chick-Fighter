@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://7gwytrrprkx0"
+path="res://.godot/imported/water.png-da505f22a1997a40368d26b475c7c46c.image"
+
+[deps]
+
+source_file="res://game/art/world_map/water.png"
+dest_files=["res://.godot/imported/water.png-da505f22a1997a40368d26b475c7c46c.image"]
+
+[params]
+

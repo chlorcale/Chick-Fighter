@@ -208,3 +208,67 @@ Lệnh: `godot --headless --path . --fixed-fps 60 -s res://tests/game/<file>.gd`
 
 Test mới: `tests/game/run_race_smoke.gd`. **Chưa kiểm chứng:** chơi tay game đua, nghe thử nhạc mới.
 
+---
+
+## 10. Vòng 6 – Mở rộng theo GDD v5 (17–18/11/2026)
+
+| Mục | Nội dung | File chính |
+|---|---|---|
+| Dữ liệu & thời gian | Đàn gà, kho đồ, 6 ô trang bị, trứng/ấp, Biotech, đột biến, Khô Gà, thể trạng; thứ trong tuần, 5 buổi, ngày/đêm, đồng hồ; đối thủ Liên tỉnh/Olympic | `game/game_state.gd`, `game/data/*.gd`, `game/world/day_night.gd`, `game/ui/clock_hud.gd` |
+| Bản đồ 5120×2160 | Xuất từ `Chick_Fighter_World_Map_Expanded.aseprite` (không sửa file gốc), chợ đông, Lão Gà Khô (trước đây: Tiệm Mèo), sới Liên tỉnh, nhà thi đấu Olympic, mũi tên mép màn hình, bản đồ M, minimap N, biển chỉ đường | `tools/art/build_world_map.py`, `game/art/world_map/`, `game/world/world.gd`, `map_view.gd`, `market_crowd.gd`, `world_map_overlay.gd` |
+| Nhà & chuồng gà | Nội thất, sân sau có bội gà, bảng chăm gà/gắn đồ/đột biến, kệ ấp trứng, bàn học | `game/home/**`, `tools/art/build_home.py` |
+| Trận đấu | 3 vũ khí, lớp trang bị trên gà, chỉ số/nội tại/đột biến có tác dụng, màn chuẩn bị, chế độ công an 30 s, AI T4, Hell Mode, 2 sân mới | `game/battle/**`, `game/ui/prebattle.gd`, `result_screen.gd`, `tools/art/build_gear.py`, `build_arena_venues.py` |
+| Escape | Chạy bộ + bơi vượt chướng ngại, cảnh rửa bát | `game/escape/**`, `tools/art/build_escape.py` |
+| Đời sống & cốt truyện | Lịch tuần, lớp THPT, thư viện, việc làm (bốc gạch, bán cơm, chở ghe), hàng xóm + thân thiết + 5 quest, cửa hàng (Cô Ba, 4 sạp chợ, Lão Gà Khô (trước đây: Tiệm Mèo)), giải Liên tỉnh/Olympic, luồng báo công an → Escape | `game/main.gd`, `game/story/**`, `game/sim/life_state.gd`, `game/world/minigames/*` |
+
+**PLACEHOLDER / cần Owner chốt:** chỉ số Đông Tảo (game: ATK 10/DEF 2/SPD 140/WEIGHT 12; GDD v5: 11/4/150/4,5); "Heavy" của GDD = đòn K; SPD từ trang bị chỉ hiển thị (tốc độ trong trận theo preset giống); DEF cộng dồn làm hiệp hay hết giờ; chung kết Ao Làng còn dễ; mọi giá, thưởng, giờ mở cửa, ngưỡng báo công an 1,35; biến thể sân buổi tối; `tools/balance/economy_sim.gd` chưa được chuyển sang API mới.
+
+Test mới: `run_state_smoke`, `run_home_smoke`, `run_escape_smoke`, `run_life_smoke`. **Chưa kiểm chứng:** chơi tay bất kỳ phần nào của vòng này.
+
+---
+
+## 11. Vòng 7 – Sửa lỗi Godot, nhà mới, Lão Gà Khô (20/11/2026)
+
+| Mục | Nội dung | File chính |
+|---|---|---|
+| Lỗi parse | `tools/balance/economy_sim.gd` chuyển sang API GameState mới (hết lỗi đỏ ở editor, `run_economy_report.gd` chạy lại được) | `tools/balance/economy_sim.gd` |
+| Lỗi Rect2 âm | Làm mờ tán cây với vật < 5 px, mũi tên mép màn hình, minimap: chặn kích thước âm | `game/world/map_view.gd`, `world.gd`, `world_map_overlay.gd` |
+| Ảnh trang bị lỗi import | `dongtao_cua_dong.png` có `.import` hỏng (valid=false) → tạo lại | `game/art/gear/dongtao_cua_dong.png.import` |
+| Nhà mới | Nội thất từ `NhaTrong_NhanVatChinh.aseprite` (960×576, 8 frame): phòng khách, buồng, bếp, sân gà; 8 bội vẽ tay = ô chuồng 1–8 (ô 9–14 bội chép thêm, 15–20 ổ rơm); người chơi ×1,0 trong nhà theo layer guide | `tools/art/build_home_interior.py`, `game/home/**`, `game/escape/escape_cutscene.gd` |
+| Lão Gà Khô | Xe khô gà lá chanh (8 frame, thu ×½) thay kiosk Tiệm Mèo ở góc đông bắc chợ; cơ chế giữ nguyên (id `cat_shop`, shop `&"meo"`) | `tools/art/world_map_extras.py`, `game/story/story_shops.gd`, `game/world/world.gd` |
+
+Còn mở: báo cáo kinh tế cho thấy người chơi giả lập đăng ký Liên tỉnh nhưng không vào trận nào trong 12 tuần (chưa điều tra).
+
+---
+
+## 12. Vòng 8 – Map cập nhật, nhân vật mới, xe/vỏ lãi chạy thật, lái vỏ lãi (23/11/2026)
+
+| Mục | Nội dung | File chính |
+|---|---|---|
+| Map | Dựng lại từ `Chick_Fighter_World_Map_Expanded.aseprite` (23/11). Dùng 2 sân của Owner (Sân gà Liên tỉnh cổng (4508,1080), Sân gà Olympia (4938,1413)) và xe Lão Gà Khô của Owner ((2912,922), [E] (2968,1044)); bỏ bản do mình vẽ. 4 sạp đặc biệt dời chỗ. | `tools/art/build_world_map.py`, `world_map_extras.py`, `world_map_traffic.py`, `game/art/world_map/*` |
+| Xe & vỏ lãi | 71 layer giao thông tách khỏi map → `traffic.json` (8 kiểu, 17 tuyến, 37 spawn, 8 bến, 18 cầu) + `water.png`, `roads.png`. Runtime: 39 xe/vỏ lãi chạy theo tuyến, giữ khoảng cách, nhường người chơi/người đi bộ, bóp còi, âm thanh theo vị trí. | `game/world/traffic.gd`, `vehicle_actor.gd` |
+| Lái vỏ lãi | Lên ở 8 bến ("[E] Lái vỏ lãi"), W ga, S lùi, A/D bẻ lái 16 hướng, va bờ/cầu thấp, lên bờ ở bến hoặc bờ đi được. | `game/world/player_boat.gd`, `world.gd` |
+| Người đi bộ | 79 người có lịch trình theo vai (đi chợ, đi học, thăm xóm), A* tránh đường xe, chờ xe, tránh người chơi, tụ 2 người nói chuyện, tối về nhà. | `game/world/pedestrians.gd` |
+| Camera | Làng: ×2,0/2,5/3,0/4,0, mặc định ×2,5, con lăn chuột hoặc `-`/`=`, lưu `user://view_settings.cfg`. Nhà: ×2,0–4,0, mặc định ×2,5. | `game/world/view_settings.gd`, `game/home/home_scene.gd` |
+| Nhân vật chính | `truongcon_stardew.aseprite` (20 frame) ở ×1,0 ngoài làng, ×4/3 trong nhà; dáng ngồi xe, chân dung, Escape vẽ lại theo nhân vật mới. | `tools/art/build_player.py`, `game/world/player.gd`, `build_dream_bike.py`, `build_escape.py` |
+| Người nhà | Mẹ, Ba, em trai dựng từ khung hình nhân vật mới; đi lại theo buổi (A* trong nhà), nói chuyện được khi đang đi. | `tools/art/build_family.py`, `game/home/family_npc.gd`, `home_nav.gd` |
+
+Test mới: `run_traffic_smoke`. Còn mở: vỏ lãi hướng Bắc/Nam là thân tàu vẽ bằng code (Owner có thể vẽ lại); chỉ 4 xe "race_rider" mới thách đua; nhân vật mới chỉ có tư thế đứng quay xuống.
+
+---
+
+## 13. Vòng 9 – Sửa crash, font pixel, sổ V, xe đa dạng, minigame màn riêng (24/11/2026)
+
+| Mục | Nội dung | File chính |
+|---|---|---|
+| Crash | Game sập khi khởi động do driver D3D12 trên Intel Iris Xe → `project.godot`: `rendering_device/driver.windows="vulkan"` | `project.godot` |
+| Font | Hai font pixel tự vẽ (`chick_body.ttf`, `chick_bold.ttf`), đủ dấu tiếng Việt, phóng theo bậc nguyên (11–16 ×1, 17–27 ×2, 28–38 ×3…); viền chữ vẽ lại bằng `UISkin.draw_string_crisp` | `tools/art/build_font.py`, `game/fonts/`, `game/ui/ui_skin.gd` |
+| Giao diện | Khung gỗ + giấy (Stardew-inspired): hội thoại, đồng hồ, tiêu đề, chuẩn bị trận, kết quả, HUD trận, bảng nhà, minigame, đua, Escape; toàn game lọc NEAREST | `tools/art/build_ui_skin.py`, `game/art/ui/`, `game/ui/**` |
+| Bản đồ | Minimap tắt mặc định (N), M mở bản đồ giấy cũ có xe máy/vỏ lãi | `game/world/world_map_overlay.gd` |
+| Sổ V | Hướng dẫn 8 mục, cây 71 thành tựu 5 nhánh (bí mật = "?"), sổ tay | `game/ui/guidebook.gd`, `game/sim/achievements.gd`, `achievement_toast.gd` |
+| Thế giới | Vỏ lãi bốc đầu nằm trên nước; ông câu cá quay ra sông; vỏ lãi đi hết sông (1 vòng liền, chui mọi cầu); xe máy qua 17 cầu; dấu vị trí xe/vỏ lãi; 8 mẫu xe NPC mới (20 kiểu); đua xe: 10 tay đua có tên + dấu "!"; cảnh đua mới; `World.achievement_event` | `game/world/**`, `tools/art/build_vehicles.py`, `world_map_fixes.py` |
+| Minigame | 13 trò thành màn riêng vẽ lại; thêm Câu cá lóc (345,252) và Thả diều (480,842) | `game/world/minigames/**`, `activity_runner.gd`, `tools/art/build_minigames.py` |
+| Nhà | Gà đi lại trong sân (hình nhỏ vẽ đúng cỡ, màu + đồ theo từng con, tối vào bội), chuồng gỗ có chân sàn | `game/home/yard_chicken*.gd`, `tools/art/build_rooster_walk.py`, `build_home_interior.py` |
+
+Còn mở: rạch nhỏ phía đông quá hẹp cho vỏ lãi; xe Dream của nhân vật giữ hình cũ; một số chữ ×1 còn nhỏ (tab sổ V, tên địa điểm trên bản đồ M); `run_game_smoke` mất ~10 phút.
+

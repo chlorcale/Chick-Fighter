@@ -36,6 +36,7 @@ func _physics_process(_delta: float) -> void:
 		r["log"] = _director.hit_log.duplicate(true)
 		r["p_tier"] = int(_job["p_ai"].get("tier", 0))
 		r["o_tier"] = int(_job["o"].get("tier", 0))
+		r["hp_left"] = [_director.fighters[0].hp_ratio(), _director.fighters[1].hp_ratio()]
 		var specials: Array = [0, 0]
 		for f in _director.fighters:
 			specials[f.index] = int(f.track["specials"])
@@ -50,8 +51,12 @@ func _start(job: Dictionary) -> void:
 	_frames = 0
 	_result = {}
 	_director = BattleDirector.new()
-	_director.setup({"player": job["p"], "opponent": job["o"], "mode": String(job.get("mode", "normal")),
-		"seed": int(job.get("seed", 1)), "cinematics": bool(job.get("cinematics", false)), "title": "TEST"})
+	var config: Dictionary = {"player": job["p"], "opponent": job["o"], "mode": String(job.get("mode", "normal")),
+		"seed": int(job.get("seed", 1)), "cinematics": bool(job.get("cinematics", false)), "title": "TEST"}
+	for key in ["round_time", "opponent_start_card_gauge", "hell_mode", "arena_variant"]:
+		if job.has(key):
+			config[key] = job[key]
+	_director.setup(config)
 	add_child(_director)
 	_director.finished.connect(func(r: Dictionary) -> void: _result = r)
 	var c: BattleDirector.Fighter = _director.fighters[0]
@@ -59,6 +64,8 @@ func _start(job: Dictionary) -> void:
 	c.ai = EnemyAI.new()
 	var cfg: Dictionary = (job["p_ai"] as Dictionary).duplicate()
 	cfg["kit"] = c.kit
+	if not cfg.has("flags"):
+		cfg["flags"] = c.fl # vũ khí/đồ của bên P1 (bản dựng) để AI biết dùng
 	c.ai.configure(cfg, int(job.get("seed", 1)) * 31 + 7)
 	if job.has("o_mode"):
 		_director.fighters[1].ai.script_mode = int(job["o_mode"])

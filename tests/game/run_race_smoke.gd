@@ -1,12 +1,14 @@
 extends SceneTree
 
-## Smoke test đua xe bí mật: dò thách đua (thuần logic + thật trên World của main), hội thoại thách/từ chối,
+## Smoke test đua xe bí mật: dò thách đua (thuần logic + trên World của main với xe giả gắn qua race_bike_source – xe NPC
+## đã tách khỏi bản đồ sang traffic.json), hội thoại thách/từ chối,
 ## thời gian chờ, cuộc đua chạy hết headless (autopilot thắng/thua/bỏ cuộc), thưởng mỗi ngày một lần,
 ## trạng thái World trả lại nguyên vẹn sau cuộc đua, lưu/tải số lần thắng.
 ## Chạy: godot --headless --path . --fixed-fps 60 -s res://tests/game/run_race_smoke.gd
 
 const Activities := preload("res://game/world/activities.gd")
 const RaceRiders := preload("res://game/world/race/race_riders.gd")
+const RaceGame := preload("res://game/world/race/race_game.gd")
 const TEST_SAVE: String = "user://test_race_smoke.cfg"
 const NORTH: String = "A_xe_may_con_tay_do"   # bờ bắc, chạy sang phải
 const SOUTH: String = "C_xe_may_con_tay_den"  # bờ nam, chạy sang trái
@@ -40,6 +42,34 @@ func _initialize() -> void:
 	Activities.save_path = TEST_SAVE
 	_main = (load("res://game/main.tscn") as PackedScene).instantiate()
 	root.add_child(_main)
+
+
+## Tay đua mới + tay đua vô danh: màn đua dùng đúng ảnh xe NPC đã thách (dáng mới), nền hoàng hôn bật được.
+func _check_new_riders() -> void:
+	var named: Array[String] = ["R_ba_phuot", "R_ut_vespa", "R_sau_dream", "R_nam_cub", "R_tu_ba_gac", "R_ut_ga"]
+	var ok: bool = true
+	for key in named:
+		var rider: Dictionary = RaceRiders.get_rider(key)
+		ok = ok and RaceRiders.has_rider(key) and String(rider["name"]) != "" and MapView.find_look(String(rider["vehicle"])).has("model")
+	_check(ok, "6 new named riders, each tied to a new vehicle look")
+	var generic: Dictionary = RaceRiders.get_rider("generic:bike_11:7")
+	_check(RaceRiders.has_rider("generic:bike_11:7") and String(generic["vehicle"]) == "bike_11" and String(generic["name"]) != ""
+		and float(generic["pace"]) > 200.0, "generic racer key builds a rider for that vehicle (%s)" % String(generic["name"]))
+	for key in ["R_ba_phuot", "generic:bike_21:3", "A_xe_may_cho_ga"]:
+		var game: Node2D = RaceGame.new()
+		game.call("setup", RaceRiders.get_rider(key), null, 3)
+		game.set("sunset_mode", 1 if key == "R_ba_phuot" else 0)
+		root.add_child(game)
+		var frames: Array = game.get("_rival_frames")
+		var expected: String = RaceRiders.vehicle_of(RaceRiders.get_rider(key))
+		var want: Array = MapView.vehicle_textures(expected, "east")
+		var same: bool = frames.size() == want.size() and frames.size() >= 2 \
+			and (frames[0] as AtlasTexture).region == (want[0] as AtlasTexture).region
+		_check(same and bool(game.get("_rival_faces_east")), "race rival uses the challenger's own vehicle sprite (%s → %s, %d frames)" % [key, expected, frames.size()])
+		if key == "R_ba_phuot":
+			_check(bool((game.get("_backdrop") as Node).get("sunset")), "sunset backdrop variant can be enabled")
+		root.remove_child(game)
+		game.free()
 
 
 func _find(type_check: Callable) -> Node:
@@ -141,34 +171,51 @@ func _unit_checks() -> void:
 	_check(not w.race_eligible(), "no detection while the player is frozen (dialog/busy)")
 	w.player.can_move = true
 	w._race_pace.clear()
-	_check(RaceRiders.has_rider(NORTH) and RaceRiders.has_rider(SOUTH) and RaceRiders.RIDERS.size() == 4, "four riders defined")
+	_check(RaceRiders.has_rider(NORTH) and RaceRiders.has_rider(SOUTH) and RaceRiders.RIDERS.size() >= 10,
+		"the four original riders + the new named riders are defined (%d)" % RaceRiders.RIDERS.size())
 	var ids: Dictionary = {}
 	var paces: Dictionary = {}
 	for key in RaceRiders.RIDERS:
 		var rider: Dictionary = RaceRiders.RIDERS[key]
 		ids[rider["id"]] = true
 		paces[rider["pace"]] = true
-		_check(int(rider["dir"]) == int(World.RACE_BIKES[key]), "%s: rider dir matches world table" % key)
-	_check(ids.size() == 4 and paces.size() == 4, "each rider has its own id and pace")
+		if World.RACE_BIKES.has(key):
+			_check(int(rider["dir"]) == int(World.RACE_BIKES[key]), "%s: rider dir matches world table" % key)
+	_check(ids.size() == RaceRiders.RIDERS.size() and paces.size() == RaceRiders.RIDERS.size(), "each rider has its own id and pace")
 
 
-## Đặt người chơi sau xe NPC thật trên bản đồ và cho chạy theo 210 px/s (như xe Dream) tới khi bị thách.
-func _start_follow(bike: String, frame: int) -> void:
-	_world.map_view._time_ms = float(frame * _world.map_view.frame_ms) + 1.0
-	_world.map_view._set_frame(frame)
-	var box: Rect2 = _world.map_view.node_rect(bike)
+## Xe NPC đã tách khỏi bản đồ (giao thông chạy lúc chơi – traffic.json) → test gắn một xe giả chạy đều trên đường làng
+## qua World.race_bike_source (đúng cái móc hệ thống giao thông sẽ dùng), đặt người chơi sau xe và cho chạy theo 210 px/s
+## (như xe Dream) tới khi bị thách.
+const FAKE_BIKE_SPEED: float = 165.0 # ≈ tốc độ xe máy trong tranh (traffic.json speed_px_s)
+var _fake_box: Rect2
+
+
+func _start_follow(bike: String, box: Rect2) -> void:
 	_follow = bike
 	_follow_dir = int(World.RACE_BIKES[bike])
+	_fake_box = box
+	_world.race_bike_source = func() -> Dictionary: return {_follow: _fake_box}
 	_world.player.position = Vector2(roundf(box.get_center().x - 50.0 * _follow_dir), box.end.y - 3.0)
 	_world.race_cooldown = 0.0
 	_challenged = ""
+
+
+func _drive_fake_bike() -> void:
+	_fake_box.position.x += FAKE_BIKE_SPEED / 60.0 * _follow_dir
 
 
 func _on_challenge(bike: String) -> void:
 	_challenged = bike
 
 
+var _riders_checked: bool = false
+
+
 func _physics_process(_delta: float) -> bool:
+	if not _riders_checked:
+		_riders_checked = true
+		_check_new_riders()
 	_frames += 1
 	_drive_ui()
 	if _main.race != null and not _race_seen:
@@ -193,11 +240,13 @@ func _physics_process(_delta: float) -> bool:
 		1:
 			# Thật: bám theo xe đỏ bờ bắc rồi vượt → main mở hội thoại thách đua → từ chối.
 			if _frames == 1:
-				_start_follow(NORTH, 20)
+				_start_follow(NORTH, Rect2(300, 175, 72, 60)) # đường làng bờ bắc, bánh xe y = 235
 			if _challenged == "":
+				_drive_fake_bike()
 				_world.player.position.x += 210.0 / 60.0 * _follow_dir
 				return _timeout(60 * 8, "north follow")
-			_check(_challenged == NORTH, "real map: overtaking the red sport bike (north road) triggers a challenge")
+			_check(_challenged == NORTH, "traffic hook: overtaking the moving red sport bike (north road) triggers a challenge")
+			_world.race_bike_source = Callable()
 			_check(_main._busy and not _world.player.can_move, "challenge freezes the player")
 			_choice = 1
 			_drive = true
@@ -215,11 +264,13 @@ func _physics_process(_delta: float) -> bool:
 		3:
 			# Bờ nam: bám theo xe đen (chạy sang trái) rồi vượt → nhận đua → autopilot thắng.
 			if _frames == 1:
-				_start_follow(SOUTH, 5)
+				_start_follow(SOUTH, Rect2(900, 530, 72, 60)) # đường dừa bờ nam, bánh xe y = 590, xe chạy sang trái
 			if _challenged == "":
+				_drive_fake_bike()
 				_world.player.position.x += 210.0 / 60.0 * _follow_dir
 				return _timeout(60 * 8, "south follow")
-			_check(_challenged == SOUTH, "real map: overtaking the black bike (south road, leftward) triggers a challenge")
+			_check(_challenged == SOUTH, "traffic hook: overtaking the moving black bike (south road, leftward) triggers a challenge")
+			_world.race_bike_source = Callable()
 			_pre_pos = _world.player.position
 			_money = GameState.money
 			_begin_race(1.0, false)

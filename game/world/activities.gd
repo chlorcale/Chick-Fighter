@@ -4,7 +4,8 @@ extends RefCounted
 ## Mỗi hoạt động có thưởng chỉ làm được 1 lần mỗi "ngày"; ngày mới bắt đầu khi ngủ ở nhà.
 ## Lưu riêng ở user://chick_fighter_world.cfg (không đụng file save của GameState).
 ## Lịch: GameState.day là nguồn sự thật duy nhất – Activities.day chỉ đọc/ghi qua đó; done_today tự xóa khi
-## ngày của GameState đổi (kể cả khi nơi khác gọi thẳng GameState.sleep()).
+## ngày của GameState đổi (GameState.end_day() gọi on_day_changed()).
+## Giờ: mỗi hoạt động làm xong tốn giờ theo GameState.TIME_COSTS (ActivityRunner gọi spend()).
 ## Dùng qua: const Activities := preload("res://game/world/activities.gd")
 
 const SAVE_PATH: String = "user://chick_fighter_world.cfg"
@@ -26,9 +27,15 @@ const LOTTERY_PRIZE_ODDS: float = 0.08
 const LOTTERY_CONSOLATION_ODDS: float = 0.20
 const RACE_PRIZE: int = 30000           # đua xe bí mật: thắng lần đầu trong ngày, đối thủ "bao cà phê"
 const RACE_TITLE: String = "Thần Gió Đường Làng" # danh hiệu bí mật khi thắng lần đầu tiên
+## Trò phụ (mỗi ngày một lần): câu cá lóc ở bờ kênh, thả diều trên bờ đê.
+const LOC_PRICE: int = 7000             # ông câu cá mua mỗi con cá lóc (tối đa 3 con/ngày)
+const KITE_RINGS_PER_TECH: int = 3      # mỗi 3 luồng gió = +1 Technology
+const KITE_TECH_MAX: int = 4
+## Giờ tốn cho trò phụ (Calendar.TIME_COSTS chưa có khóa riêng).
+const EXTRA_MINUTES: Dictionary = {&"cau_ca_loc": 60, &"tha_dieu": 30}
 
 ## Các hoạt động có giới hạn mỗi ngày.
-const DAILY: Array[StringName] = [&"fish", &"farm", &"school", &"site", &"temple", &"lottery"]
+const DAILY: Array[StringName] = [&"fish", &"farm", &"school", &"site", &"temple", &"lottery", &"cau_ca_loc", &"tha_dieu"]
 
 static var day: int:                         # = GameState.day
 	get:
@@ -67,12 +74,34 @@ static func reset() -> void:
 	rng.randomize()
 
 
-## Ngủ ở nhà = sang ngày mới (GameState.sleep(): Thể trạng gà, lò ấp, 07:00): mọi hoạt động có thưởng mở lại.
-## Trả về tóm tắt của GameState.sleep().
+## Ngủ ở nhà = sang ngày mới (GameState.end_day(): Thể trạng gà, lò ấp, 07:00): mọi hoạt động có thưởng mở lại.
+## Trả về tóm tắt của GameState.end_day().
 static func new_day() -> Dictionary:
-	var summary: Dictionary = GameState.sleep()
+	return GameState.end_day()
+
+
+## GameState.end_day() gọi khi sang ngày mới.
+static func on_day_changed() -> void:
 	_sync_day()
-	return summary
+
+
+## Số phút một hoạt động bờ nam tốn (id của ActivityRunner; cho cá ăn ở cầu cá tra rẻ hơn kéo vó).
+static func time_cost(id: StringName, result: Dictionary = {}) -> int:
+	if id == &"fish_house" and StringName(result.get("kind", &"")) == &"feed":
+		return GameState.time_cost(&"fish_feed")
+	if id == &"school":
+		return GameState.time_cost(&"school_quiz")
+	var cost: int = GameState.time_cost(id)
+	if cost == 0 and EXTRA_MINUTES.has(id):
+		return int(EXTRA_MINUTES[id])
+	return cost
+
+
+## Trừ giờ cho một hoạt động đã làm xong (bỏ ngang/hết lượt thì không tốn). Trả về true nếu hết ngày.
+static func spend(id: StringName, result: Dictionary) -> bool:
+	if bool(result.get("cancelled", false)):
+		return GameState.day_over()
+	return GameState.spend_time(time_cost(id, result))
 
 
 ## Ngày đã đổi (ngủ) → xóa lượt đã làm của ngày cũ.
@@ -128,8 +157,9 @@ static func reward_text(reward: Dictionary) -> String:
 
 # ------------------------------------------------------------------ vé số
 
-static func buy_lottery_ticket() -> String:
-	lottery_ticket = "%06d" % rng.randi_range(0, 999999)
+## number: số người chơi tự lựa ở trang vé số (6 chữ số); trống = bốc ngẫu nhiên. Tỉ lệ trúng không phụ thuộc số.
+static func buy_lottery_ticket(number: String = "") -> String:
+	lottery_ticket = number if number.length() == 6 and number.is_valid_int() else "%06d" % rng.randi_range(0, 999999)
 	lottery_day = day
 	mark_done(&"lottery")
 	return lottery_ticket
@@ -149,6 +179,13 @@ static func draw_lottery() -> int:
 	if roll < LOTTERY_PRIZE_ODDS + LOTTERY_CONSOLATION_ODDS:
 		return LOTTERY_CONSOLATION
 	return 0
+
+
+# ------------------------------------------------------------------ thả diều
+
+## Technology thưởng theo số luồng gió đón được.
+static func kite_technology(rings: int) -> int:
+	return clampi(rings / KITE_RINGS_PER_TECH, 0, KITE_TECH_MAX)
 
 
 # ------------------------------------------------------------------ đua xe bí mật

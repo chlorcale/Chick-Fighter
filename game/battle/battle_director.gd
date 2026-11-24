@@ -53,6 +53,15 @@ const HEALTH_SCALE: float = 1.6
 const MATCH_ROUNDS_TO_WIN: int = 2
 const ROUND_SETTLE_TICKS: int = 30
 const INTRO_TICKS: int = 290
+## Chế độ báo công an: số giây phải cầm cự (PLACEHOLDER theo yêu cầu Owner: 30 s).
+const POLICE_SECONDS: int = 30
+## Passive giống (chỉ áp cho bên đấu có bản dựng – side có "stats"/"flags"): Lanh Lẹ (gà tre) dash hồi nhanh 30%.
+const LANH_LE_DASH_MULT: float = 0.7
+## Cánh Tiến Hóa: xung nhảy lần hai (px/s, qua kênh apply_launch có sẵn) và lướt trên không (px trong tick).
+const AIR_JUMP_SPEED: float = 540.0
+const AIR_DASH_PX: float = 110.0
+const AIR_DASH_TICKS: int = 14
+const DOUBLE_TAP_TICKS: int = 12
 const SKIP_MASK: int = (1 << InputBits.LIGHT) | (1 << InputBits.HEAVY) | (1 << InputBits.SPECIAL) | (1 << InputBits.ACTION_H)
 
 const MOVE_MASK: int = (1 << InputBits.MOVE_LEFT) | (1 << InputBits.MOVE_RIGHT) \
@@ -152,6 +161,23 @@ class Fighter:
 	var prox_guard: bool = false # Thiết Giáp: giữ lùi khi bị đe dọa thì đứng thủ, không lùi
 	var intro_pose: bool = false # mở màn: diễn tư thế thị uy
 	var total_damage: int = 0    # sát thương nhận ở các hiệp trước
+	# Bản dựng (wave 2): side có "stats"/"flags" do GameState dựng → áp chỉ số, đồ, vũ khí, passive giống, đột biến.
+	var build: bool = false
+	var fl: Dictionary = {}       # cờ hành vi đã gộp (đồ + đột biến + passive giống) – xem BUILD_FLAG_DEFAULTS
+	var weapon: StringName = &""
+	var def_bonus: float = 0.0    # +2 DEF của Mào sắt kiểu cũ (side không có "stats")
+	var chip_acc: float = 0.0     # sát thương xuyên đỡ lẻ (chip × chip_taken_mult) cộng dồn
+	var air_jumped: bool = false  # Cánh Tiến Hóa: đã nhảy lần hai
+	var air_dashed: bool = false  # Cánh Tiến Hóa: đã lướt trên không
+	var tap_tick: Array[int] = [-100, -100] # tick bấm trái / phải gần nhất (lướt trên không)
+	var gust_out: bool = false    # Quạt lông: đã có luồng gió trên sân
+	var air_ticks: int = 0        # số tick liên tục trên không (nhảy lần hai chỉ sau khi đã rời đất ≥ 6 tick)
+
+	func flag(key: String, default: Variant = 1.0) -> Variant:
+		return fl.get(key, default)
+
+	func mult(key: String) -> float:
+		return float(fl.get(key, 1.0))
 
 	func x() -> float:
 		return body.global_position.x
@@ -207,10 +233,34 @@ class Projectile:
 	var hits_left: int = 5
 	var cooldown: int = 0
 	var t: int = 0
-	var node: Sprite2D
+	var node: Node2D
+	var kind: StringName = &"feather" # &"feather" (Phun Lông) | &"gust" (luồng gió Quạt lông)
 
 	func box() -> Rect2:
+		if kind == &"gust":
+			var half: Vector2 = Moves.GUST["half"]
+			return Rect2(pos - half, half * 2.0)
 		return Rect2(pos.x - 46.0, pos.y - 22.0, 92.0, 44.0)
+
+
+## Hình luồng gió Quạt lông (chỉ trình diễn): vài vòng xoáy trắng xanh + vệt gió.
+class GustView:
+	extends Node2D
+	var dir: int = 1
+	var t: int = 0
+
+	func _draw() -> void:
+		var fade: float = clampf(float(Moves.GUST["life"] - t) / 18.0, 0.0, 1.0)
+		for k in range(3):
+			var r: float = 14.0 + 8.0 * float(k)
+			var spin: float = float(t) * 0.35 * float(dir) + float(k) * 1.7
+			draw_arc(Vector2(-float(dir) * 6.0 * float(k), 0), r, spin, spin + 3.6, 14,
+				Color(0.85, 0.97, 1.0, (0.85 - 0.22 * float(k)) * fade), 3.0 - 0.6 * float(k))
+		for k in range(4):
+			var y: float = -30.0 + 20.0 * float(k)
+			var len: float = 34.0 + 10.0 * float((k + t / 3) % 3)
+			draw_line(Vector2(-float(dir) * 10.0, y), Vector2(-float(dir) * (10.0 + len), y),
+				Color(1, 1, 1, 0.55 * fade), 2.0)
 
 
 var phase: int = Phase.INTRO
@@ -243,6 +293,13 @@ var max_rounds: int = 3
 var hit_log: Array = []
 ## Trận gần nhất (cho màn kết quả): {"sides": [player, opponent], "result": {...}}.
 static var last_match: Dictionary = {}
+## Độ dài một hiệp (tick): config["round_time"] (giây) hoặc side đối thủ "round_time"; mặc định 99 s. Hell Mode = 60 s.
+var round_ticks: int = ROUND_TICKS
+## Hell Mode (GDD 9.3): chỉ trình diễn + AI; luật thật là round_time / start_card_gauge trong config.
+var hell_mode: bool = false
+## Chế độ "gọi tay trong" (mode "police"): cầm cự POLICE_SECONDS giây, sống sót → công an ập vào (raid).
+var raid: bool = false
+var police_ticks_total: int = POLICE_SECONDS * 60
 
 var _config: Dictionary = {}
 var _phase_ticks: int = 0
@@ -278,8 +335,50 @@ func setup(config: Dictionary) -> void:
 	_rng.seed = int(config.get("seed", 1))
 	_fx_rng.seed = int(config.get("seed", 1)) * 7919 + 13
 	cinematics = bool(config.get("cinematics", true))
-	rounds_to_win = 1 if mode == &"tutorial" else int(config.get("rounds_to_win", MATCH_ROUNDS_TO_WIN))
+	rounds_to_win = 1 if mode in [&"tutorial", &"police"] else int(config.get("rounds_to_win", MATCH_ROUNDS_TO_WIN))
 	max_rounds = rounds_to_win * 2 - 1
+	var opponent: Dictionary = config.get("opponent", {})
+	var seconds: float = float(config.get("round_time", opponent.get("round_time", 99.0)))
+	round_ticks = maxi(60, int(round(seconds * 60.0)))
+	hell_mode = bool(config.get("hell_mode", opponent.get("hell_mode", false)))
+	if mode == &"police":
+		police_ticks_total = int(round(float(config.get("police_seconds", POLICE_SECONDS)) * 60.0))
+		round_ticks = police_ticks_total
+	clock_ticks = round_ticks
+
+
+## Bên đấu có bản dựng đầy đủ (GameState.player_side()/opponent_side()/side_from_raw(): có "stats" hoặc "flags").
+## Side cũ (chỉ breed/lv/dao_chan/mao_sat) giữ nguyên hành vi trước wave 2.
+static func is_build(side: Dictionary) -> bool:
+	return side.has("stats") or side.has("flags")
+
+
+## Chỉ số dùng trong trận: side["stats"] (đã gồm cấp, đồ, đột biến, Thể trạng – GameState.stats_of) nếu có, không thì
+## công thức 5 theo giống + cấp như trước (Mào sắt kiểu cũ cộng +2 DEF riêng lúc tính sát thương).
+static func side_stats(side: Dictionary) -> Dictionary:
+	if side.has("stats") and not (side["stats"] as Dictionary).is_empty():
+		return side["stats"]
+	return GameState.scaled_stats(int(side.get("breed", 0)), int(side.get("lv", 1)))
+
+
+## Cờ hành vi gộp cho trận: side["flags"] (đồ + đột biến) + passive giống (chỉ bản dựng). Side cũ: suy từ
+## dao_chan / mao_sat đúng như code trước (combo thêm 1 Light, Heavy −10% đẩy lùi; trúng đòn cao bị đẩy −20%).
+static func build_flags(side: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	if is_build(side):
+		out = (side.get("flags", {}) as Dictionary).duplicate(true)
+		match int(side.get("breed", 0)):
+			MovementConfig.Breed.GA_TRE:
+				out["dash_recovery_mult"] = float(out.get("dash_recovery_mult", 1.0)) * LANH_LE_DASH_MULT # Lanh Lẹ
+			MovementConfig.Breed.GA_DONG_TAO:
+				out["light_kb_immune"] = true # Gồng: không bị Light đẩy lùi
+		return out
+	if bool(side.get("dao_chan", false)):
+		out["light_combo_extra"] = 1
+		out["heavy_kb_mult"] = 0.9
+	if bool(side.get("mao_sat", false)):
+		out["high_hit_kb_taken_mult"] = 0.8
+	return out
 
 
 func _ready() -> void:
@@ -310,7 +409,7 @@ func _ready() -> void:
 		body.name = "P%d" % (i + 1)
 		body.breed = int(side["breed"])
 		var hp_scale: float = 1.0 if mode == &"tutorial" else float(_config.get("health_scale", HEALTH_SCALE))
-		body.health_max_hp = int(round(float(GameState.scaled_stats(int(side["breed"]), int(side["lv"]))["hp"]) * hp_scale))
+		body.health_max_hp = int(round(float(side_stats(side)["hp"]) * hp_scale))
 		body.dash_policy = FighterController.DASH_GROUNDED_ONLY if bool(kdef["can_dash"]) else FighterController.DASH_DISABLED
 		body.position = Vector2(START_X[i], -2.0)
 		var shape := CollisionShape2D.new()
@@ -326,6 +425,7 @@ func _ready() -> void:
 		view.hue = float(side.get("hue", 0.0))
 		view.saturation = float(side.get("sat", 1.0))
 		view.body_scale = 0.9 if int(side["breed"]) == MovementConfig.Breed.GA_TRE else 1.0
+		view.gear = FighterView.gear_items(side)
 		view.fx_parent = _stage
 		view.facing = 1 if i == 0 else -1
 		body.add_child(view)
@@ -345,10 +445,14 @@ func _ready() -> void:
 		f.side = side
 		f.kit = Moves.kit_for_side(side)
 		f.kdef = Moves.kit(f.kit)
-		f.stats = GameState.scaled_stats(int(side["breed"]), int(side["lv"]))
+		f.stats = side_stats(side)
 		f.is_player = i == 0
 		f.dao_chan = bool(side.get("dao_chan", false))
 		f.mao_sat = bool(side.get("mao_sat", false))
+		f.build = is_build(side)
+		f.fl = build_flags(side)
+		f.weapon = StringName(side.get("weapon", &"")) if f.build else &""
+		f.def_bonus = 0.0 if f.build else (2.0 if f.mao_sat else 0.0)
 		f.special = SpecialGaugeComponent.new()
 		f.body.add_child(f.special)
 		f.special.configure(0)
@@ -359,7 +463,10 @@ func _ready() -> void:
 			for card_id in card_ids:
 				deck.append(database.get_card(card_id))
 			f.card_gauge = CardGaugeComponent.new()
-			f.card_gauge.configure(2) # GDD 4.7: bắt đầu trận với 2
+			# GDD 4.7: bắt đầu trận với 2; Hell Mode (GDD 9.3): đối thủ vào trận với 4.
+			var start_gauge: int = int(side.get("start_card_gauge",
+				_config.get("opponent_start_card_gauge", 2) if i == 1 else 2))
+			f.card_gauge.configure(clampi(start_gauge, 0, CardGaugeComponent.MAX_GAUGE))
 			f.cards = CardController.new()
 			if not f.cards.configure(deck, f.card_gauge, 0, _rng.randi()):
 				f.cards = null
@@ -373,6 +480,9 @@ func _ready() -> void:
 			f.ai = EnemyAI.new()
 			var ai_config: Dictionary = side.duplicate()
 			ai_config["kit"] = f.kit
+			ai_config["flags"] = f.fl
+			if mode == &"police":
+				ai_config["relentless"] = true # báo công an: đối thủ dồn ép để hạ trước khi công an tới
 			f.ai.configure(ai_config, _rng.randi())
 		fighters.append(f)
 
@@ -415,6 +525,9 @@ func _setup_mode() -> void:
 			hud.hint = "Áp sát rồi nhấn J để mổ nhanh, K để tát cánh."
 		&"friendly":
 			objectives = [{"text": "Dùng ít nhất 1 thẻ (U/I chọn, O tung)", "goal": 1, "value": 0}]
+		&"police":
+			objectives = [{"text": "Cầm cự tới khi công an tới (giây)", "goal": police_ticks_total / 60, "value": 0}]
+			hud.hint = "Đừng để bị hạ! Né, đỡ, câu giờ – công an sắp tới!"
 
 
 # =================================================================== vòng lặp
@@ -547,6 +660,12 @@ func _round_intro_tick() -> void:
 		if mode == &"tutorial":
 			text = "SẴN SÀNG…"
 			color = Color(1, 1, 1)
+		elif mode == &"police":
+			text = "CẦM CỰ %d GIÂY!" % (police_ticks_total / 60)
+			color = Color(0.55, 0.75, 1.0)
+		elif hell_mode and round_index == 1:
+			text = "HELL MODE – HIỆP 1"
+			color = Color(1.0, 0.35, 0.2)
 		elif round_wins[0] == rounds_to_win - 1 and round_wins[1] == rounds_to_win - 1:
 			text = "HIỆP QUYẾT ĐỊNH"
 			color = Color(1.0, 0.45, 0.25)
@@ -744,7 +863,7 @@ func _try_start_move(f: Fighter) -> void:
 	if f.ko or f.body.is_dashing():
 		return
 	var next_id: StringName = f.buffer_cmd
-	var next: Dictionary = Moves.get_move(next_id, f.kit)
+	var next: Dictionary = _move_for(f, next_id)
 	var next_cat: String = String(next["cat"])
 
 	# Đỡ xong hủy sang L (Combo 5 – Phản Đòn Thị Uy) hoặc sang chiêu phản đòn (Đông Tảo Combo 2).
@@ -761,13 +880,13 @@ func _try_start_move(f: Fighter) -> void:
 			return
 		if not (f.move["cancel"] as Array).has(next_cat):
 			return
-		var light_limit: int = 3 + (1 if f.dao_chan else 0)
+		var light_limit: int = 3 + int(f.fl.get("light_combo_extra", 0)) # Dao chân: L-L-L-H
 		if next_cat == "L" and f.chain >= light_limit:
 			return
 		# Chuỗi J J: đòn L thứ hai thành Đá Nhẹ (Combo 1 trong bảng chiêu).
 		if next_id == &"mo_nhanh" and f.move["id"] == &"mo_nhanh" and f.chain == 1:
 			next_id = &"da_nhe"
-			next = Moves.get_move(next_id, f.kit)
+			next = _move_for(f, next_id)
 	elif f.airborne:
 		if not next.has("air") or f.air_used:
 			return
@@ -796,6 +915,11 @@ func _try_start_move(f: Fighter) -> void:
 		f.body.begin_attack_facing_lock()
 
 
+## Đòn theo bảng chiêu của kit sau khi áp vũ khí (Moves.weapon_move – không cờ vũ khí thì đúng bảng gốc).
+func _move_for(f: Fighter, move_id: StringName) -> Dictionary:
+	return Moves.weapon_move(move_id, f.kit, f.fl)
+
+
 func _start_move(f: Fighter, move: Dictionary) -> void:
 	f.move = move
 	f.mf = 0
@@ -810,7 +934,7 @@ func _start_move(f: Fighter, move: Dictionary) -> void:
 	_instance_counter += 1
 	f.instance = _instance_counter
 	f.buffer_cmd = &""
-	f.armor = 1 if move.has("armor") else 0
+	f.armor = int(move.get("armor_hits", 1)) if move.has("armor") else 0
 	f.countered = false
 	f.contact_blocked = false
 	f.move_start_tick = _sim_tick
@@ -897,7 +1021,38 @@ func _step_movement(f: Fighter) -> void:
 		if (pressed_mv & (1 << InputBits.JUMP)) != 0:
 			f.jump_dir = LocomotionStateMachine.horizontal_direction(InputFrame.new(0, held_mv, 0, 0))
 			f.air_used = false
+	_air_mobility(f)
 	_step_body(f, held_mv, pressed_mv)
+
+
+## Cánh Tiến Hóa (cờ double_jump / air_dash): nhảy lần hai bằng kênh hất dọc có sẵn (apply_launch), lướt trên không
+## (bấm đúp trái/phải) bằng kênh đẩy ngang (apply_knockback). Chỉ kit nhảy được (Đông Tảo không có tác dụng).
+func _air_mobility(f: Fighter) -> void:
+	var pressed: int = f.tick_pressed
+	var jumps: bool = bool(f.fl.get("double_jump", false))
+	var dashes: bool = bool(f.fl.get("air_dash", false))
+	if (not jumps and not dashes) or not bool(f.kdef["can_jump"]):
+		return
+	var free: bool = f.airborne and f.air_ticks >= 6 and f.react == &"" and f.move.is_empty() and not f.ko
+	if free and jumps and not f.air_jumped and (pressed & (1 << InputBits.JUMP)) != 0:
+		f.air_jumped = true
+		f.jump_dir = LocomotionStateMachine.horizontal_direction(InputFrame.new(0, f.held & MOVE_MASK, 0, 0))
+		f.body.apply_launch(AIR_JUMP_SPEED)
+		f.view.spawn_afterimage(Color(0.75, 0.95, 1.0), 0.3)
+		fx.feathers(Vector2(f.x(), f.body.global_position.y - 40.0), 6, -f.facing())
+		sfx.play(&"jump", -4.0, 1.3)
+	for k in range(2):
+		var bit: int = InputBits.MOVE_LEFT if k == 0 else InputBits.MOVE_RIGHT
+		if (pressed & (1 << bit)) == 0:
+			continue
+		if free and dashes and not f.air_dashed and _sim_tick - f.tap_tick[k] <= DOUBLE_TAP_TICKS:
+			f.air_dashed = true
+			var dir: int = -1 if k == 0 else 1
+			f.jump_dir = dir
+			f.body.apply_knockback(AIR_DASH_PX, AIR_DASH_TICKS, dir)
+			f.view.spawn_afterimage(Color(0.75, 0.95, 1.0), 0.3)
+			sfx.play(&"dash", -4.0, 1.4)
+		f.tap_tick[k] = _sim_tick
 
 
 func _holding_back(f: Fighter) -> bool:
@@ -925,6 +1080,13 @@ func _step_body(f: Fighter, held_mv: int, pressed_mv: int) -> void:
 	f.body.movement_locked = false
 	f.body.step_with_input_frame(InputFrame.new(f.serial, held_mv, pressed_mv, 0))
 	f.airborne = not f.body.is_on_floor()
+	# Dash hồi nhanh (Lanh Lẹ gà tre ×0,7, Cánh lụa/gió, Cơ Nhanh…): rút ngắn pha hồi ngay khi DashController vừa
+	# chuyển sang RECOVERY. Không sửa core: chỉ đặt bộ đếm hồi còn lại (như director vẫn reset dash khi sang hiệp).
+	var dash_mult: float = float(f.fl.get("dash_recovery_mult", 1.0))
+	if not is_equal_approx(dash_mult, 1.0):
+		var dash: Variant = f.body.get("_dash_controller")
+		if dash != null and int(dash.get("state")) == DashController.State.RECOVERY 				and int(dash.get("recovery_ticks_remaining")) == DashController.RECOVERY_TICKS:
+			dash.set("_recovery_ticks_remaining", maxi(1, int(round(float(DashController.RECOVERY_TICKS) * dash_mult))))
 
 
 func _advance_move(f: Fighter, o: Fighter) -> void:
@@ -994,6 +1156,11 @@ func _on_frame_enter(f: Fighter, o: Fighter) -> void:
 	var move: Dictionary = f.move
 	if int(move.get("spawn", -1)) == f.mf:
 		_spawn_projectile(f)
+	# Quạt lông: tát cánh không trúng/không bị đỡ thì quạt ra một luồng gió (một luồng trên sân).
+	if int(move.get("gust_spawn", -1)) == f.mf and f.contact_tick < f.move_start_tick and not _has_projectile(f.index, &"gust"):
+		_spawn_gust(f)
+	if move.has("weapon_fx") and not (move["hits"] as Array).is_empty() and f.mf == int(move["hits"][0]["frames"][0]):
+		_weapon_flourish(f, StringName(move["weapon_fx"]))
 	if int(move.get("gain_frame", -1)) == f.mf:
 		var gain: int = int(float(f.special.get_maximum_points()) * TAUNT_GAIN_RATIO)
 		f.special.add_points(gain)
@@ -1038,11 +1205,39 @@ func _end_move(f: Fighter) -> void:
 
 # =================================================================== đạn lông
 
-func _has_projectile(owner: int) -> bool:
+func _has_projectile(owner: int, kind: StringName = &"feather") -> bool:
 	for p in projectiles:
-		if p.owner == owner:
+		if p.owner == owner and (kind == &"" or p.kind == kind):
 			return true
 	return false
+
+
+func _spawn_gust(f: Fighter) -> void:
+	var p := Projectile.new()
+	p.kind = &"gust"
+	p.owner = f.index
+	p.dir = f.facing()
+	p.hits_left = 1
+	p.pos = f.body.global_position + Vector2(64.0 * float(p.dir), float(Moves.GUST["y"]))
+	var view := GustView.new()
+	view.dir = p.dir
+	view.z_index = 3
+	p.node = view
+	_stage.add_child(view)
+	projectiles.append(p)
+	sfx.play(&"gust", -2.0)
+	fx.feathers(p.pos, 5, p.dir)
+
+
+## Điểm nhấn hình ảnh của vũ khí lúc nhịp đánh đầu tiên ra (chỉ trình diễn).
+func _weapon_flourish(f: Fighter, kind: StringName) -> void:
+	match kind:
+		&"dao_chan":
+			fx.hit_spark(f.body.global_position + Vector2(48.0 * float(f.facing()), -24.0), 0, f.facing(), 0.6)
+		&"quat_long":
+			f.view.spawn_afterimage(Color(0.85, 0.97, 1.0), 0.18)
+		&"non_bao_hiem":
+			f.view.flash(Color(1.0, 0.45, 0.35), 0.5)
 
 
 func _spawn_projectile(f: Fighter) -> void:
@@ -1050,14 +1245,15 @@ func _spawn_projectile(f: Fighter) -> void:
 	p.owner = f.index
 	p.dir = f.facing()
 	p.pos = f.body.global_position + Vector2(88.0 * float(p.dir), -70.0)
-	p.node = Sprite2D.new()
-	p.node.texture = FighterView.SHEET
-	p.node.region_enabled = true
-	p.node.centered = false
-	p.node.offset = -Vector2(40, 53)
-	p.node.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	p.node.material = FighterView.make_material(f.view.hue, f.view.saturation, f.kit, f.view.colors)
-	p.node.z_index = 3
+	var sprite := Sprite2D.new()
+	sprite.texture = FighterView.SHEET
+	sprite.region_enabled = true
+	sprite.centered = false
+	sprite.offset = -Vector2(40, 53)
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sprite.material = FighterView.make_material(f.view.hue, f.view.saturation, f.kit, f.view.colors)
+	sprite.z_index = 3
+	p.node = sprite
 	_stage.add_child(p.node)
 	projectiles.append(p)
 	sfx.play(&"dash", -2.0, 1.6)
@@ -1065,8 +1261,10 @@ func _spawn_projectile(f: Fighter) -> void:
 
 func _advance_projectiles() -> void:
 	for p in projectiles:
-		p.pos.x += PROJECTILE_SPEED * float(p.dir)
+		p.pos.x += (float(Moves.GUST["speed"]) if p.kind == &"gust" else PROJECTILE_SPEED) * float(p.dir)
 		p.t += 1
+		if p.kind == &"gust" and p.t >= int(Moves.GUST["life"]):
+			p.hits_left = 0
 		if p.cooldown > 0:
 			p.cooldown -= 1
 	# Đạn chạm đạn: triệt tiêu.
@@ -1082,6 +1280,14 @@ func _advance_projectiles() -> void:
 		var target: Fighter = fighters[1 - p.owner]
 		var hurt: Rect2 = _hurtbox(target)
 		if p.hits_left > 0 and p.cooldown == 0 and hurt.has_area() and p.box().intersects(hurt):
+			if p.kind == &"gust":
+				# Luồng gió Quạt lông: ít sát thương, đẩy lùi mạnh (kiểm soát khoảng cách).
+				var gust: Dictionary = {"dmg": int(Moves.GUST["dmg"]), "react": Moves.GUST["react"], "level": Moves.Level.MID,
+					"kb": float(Moves.GUST["kb"]), "hitstop": int(Moves.GUST["hitstop"])}
+				_resolve_hit(fighters[p.owner], target, gust, {"cat": "PROJ", "id": &"luong_gio", "gust": true},
+					p.box().intersection(hurt).get_center())
+				p.hits_left = 0
+				continue
 			var last: bool = p.hits_left == 1
 			var hit: Dictionary = {"dmg": 3, "react": &"nang" if last else &"nhe", "level": Moves.Level.MID,
 				"kb": 30.0 if last else 6.0, "hitstop": 4 if last else 2}
@@ -1098,8 +1304,13 @@ func _advance_projectiles() -> void:
 func _update_projectile_views() -> void:
 	for p in projectiles:
 		p.node.position = p.pos
-		p.node.region_rect = FighterView.frame_region(FighterView.tag_frame_at("FX_LongPhi", p.t))
-		p.node.scale = Vector2(FighterView.SCALE * float(p.dir), FighterView.SCALE)
+		if p.node is GustView:
+			(p.node as GustView).t = p.t
+			p.node.queue_redraw()
+			continue
+		var sprite := p.node as Sprite2D
+		sprite.region_rect = FighterView.frame_region(FighterView.tag_frame_at("FX_LongPhi", p.t))
+		sprite.scale = Vector2(FighterView.SCALE * float(p.dir), FighterView.SCALE)
 
 
 # =================================================================== va chạm
@@ -1255,14 +1466,29 @@ func _guard_result(t: Fighter, a: Fighter, hit: Dictionary, move: Dictionary) ->
 			return 0
 		if level == Moves.Level.LOW and not crouched:
 			return 0
-	return 1 if t.guard > _guard_cost(t, String(move["cat"])) else 2
+	return 1 if t.guard > _guard_cost(t, String(move["cat"]), a) else 2
 
 
-func _guard_cost(t: Fighter, cat: String) -> float:
+## Block Gauge mất khi đỡ: theo nhóm đòn × Bền Bỉ (gà nòi −10%) × Thiết Giáp × block_drain_mult của bên đỡ
+## (Cánh sắt) × block_damage_mult của bên đánh (Cựa bạc).
+func _guard_cost(t: Fighter, cat: String, a: Fighter = null) -> float:
 	var cost: float = float(GUARD_COST.get(cat, 10.0))
 	if t.body.breed == MovementConfig.Breed.GA_NOI:
 		cost *= 0.9 # passive Bền Bỉ
+	cost *= t.mult("block_drain_mult")
+	if a != null:
+		cost *= a.mult("block_damage_mult")
 	return cost * float(t.kdef["guard_cost_mult"]) # Thiết Giáp đỡ mọi tầng nhưng tốn gauge hơn
+
+
+## Cộng Special Gauge có hệ số special_gain_mult (Mào đồng / Mào vàng).
+func _gain(f: Fighter, points: int) -> void:
+	var m: float = f.mult("special_gain_mult")
+	f.special.add_points(points if is_equal_approx(m, 1.0) else int(round(float(points) * m)))
+
+
+func _stun(ticks: int, m: float) -> int:
+	return ticks if is_equal_approx(m, 1.0) else maxi(1, int(round(float(ticks) * m)))
 
 
 func _near_wall(f: Fighter) -> bool:
@@ -1283,29 +1509,39 @@ func _resolve_hit(a: Fighter, t: Fighter, hit: Dictionary, move: Dictionary, poi
 			_counter(t, a, point)
 			return
 
-	# Công thức 2.
+	# Công thức 2 + đồ: Heavy (M/H) × heavy_kb_mult của bên đánh (Dao chân 0,9); bên nhận × high/low_hit_kb_taken_mult
+	# theo tầng đòn (Mào sắt, Mũ, Giáp đồng); Gồng (Đông Tảo bản dựng): Light không đẩy lùi.
+	var level: int = int(hit["level"])
 	var knockback: float = float(hit["kb"]) * sqrt(3.0 / float(t.stats["weight"]))
 	if cat == "H" or cat == "M":
 		if a.cards != null:
 			knockback *= a.cards.get_heavy_knockback_multiplier()
-		if a.dao_chan:
-			knockback *= 0.9
-	if t.mao_sat and int(hit["level"]) == Moves.Level.HIGH:
-		knockback *= 0.8
+		knockback *= a.mult("heavy_kb_mult")
+	if level == Moves.Level.HIGH:
+		knockback *= t.mult("high_hit_kb_taken_mult")
+	elif level == Moves.Level.LOW:
+		knockback *= t.mult("low_hit_kb_taken_mult")
+	var gong: bool = cat == "L" and bool(t.fl.get("light_kb_immune", false))
+	if gong:
+		knockback = 0.0
 
 	var guard: int = _guard_result(t, a, hit, move)
 	a.contact_blocked = guard == 1
 	if guard == 1:
-		t.guard -= _guard_cost(t, cat)
+		t.guard -= _guard_cost(t, cat, a)
 		t.guard_delay = GUARD_REGEN_DELAY_TICKS
-		if t.hp() > CHIP_DAMAGE:
-			t.damage_taken += int(t.health.call("apply_damage", CHIP_DAMAGE))
+		# Chip 1 HP (Owner) × chip_taken_mult (Giáp tre −20%): phần lẻ cộng dồn, đủ 1 thì trừ.
+		t.chip_acc += float(CHIP_DAMAGE) * t.mult("chip_taken_mult")
+		var chip: int = int(floor(t.chip_acc + 0.0001))
+		t.chip_acc -= float(chip)
+		if chip > 0 and t.hp() > chip:
+			t.damage_taken += int(t.health.call("apply_damage", chip))
 		var blockstun: int = int(Moves.BLOCKSTUN.get(cat, 12))
 		t.body.clear_hit_reactions()
 		t.body.apply_blockstun(blockstun)
 		t.react = &"guard"
 		t.react_t = 0
-		var push: float = maxf(knockback * 0.5, 8.0)
+		var push: float = 0.0 if gong else maxf(knockback * 0.5, 8.0)
 		var keep: float = float(t.kdef["guard_push"]) # Thiết Giáp: gần như không bị đẩy, người đánh bật ra
 		if _near_wall(t):
 			a.body.apply_knockback(push, blockstun, -direction)
@@ -1314,7 +1550,7 @@ func _resolve_hit(a: Fighter, t: Fighter, hit: Dictionary, move: Dictionary, poi
 			a.body.apply_knockback(push * (1.0 - keep), blockstun, -direction)
 		else:
 			t.body.apply_knockback(push, blockstun, direction)
-		t.special.add_points(3)
+		_gain(t, 3)
 		t.view.shield_ticks = 6
 		t.view.flash(Color(0.45, 0.7, 1.0), 0.7)
 		fx.hit_spark(point, 3, direction)
@@ -1349,13 +1585,27 @@ func _resolve_hit(a: Fighter, t: Fighter, hit: Dictionary, move: Dictionary, poi
 	var atk: float = float(a.stats["atk"])
 	if a.cards != null:
 		atk *= a.cards.get_attack_damage_multiplier()
-	var defense: float = float(t.stats["def"]) + (2.0 if t.mao_sat else 0.0)
+	if a.hp_ratio() < 0.3:
+		atk *= a.mult("low_hp_atk_mult") # Máu Lửa: HP < 30% → ATK ×1,2
+	var defense: float = float(t.stats["def"]) + t.def_bonus
 	var damage: float = maxf(1.0, atk - defense) * float(hit["dmg"]) / 10.0
+	# Đồ/vũ khí của bên đánh: cận chiến (mọi đòn không phải đạn) × melee_dmg_mult (Quạt lông 0,8);
+	# Light × light_dmg_mult (Cựa tre), Heavy M/H × heavy_dmg_mult (Cựa sắt).
+	if cat != "PROJ":
+		damage *= a.mult("melee_dmg_mult")
+	if cat == "L":
+		damage *= a.mult("light_dmg_mult")
+	elif cat == "M" or cat == "H":
+		damage *= a.mult("heavy_dmg_mult")
 	var crit: bool = cat in ["L", "M", "H"] and _rng.randf() < float(a.stats["crit"])
 	if crit:
-		damage *= CRIT_MULTIPLIER
+		damage *= CRIT_MULTIPLIER + float(a.fl.get("crit_dmg_add", 0.0)) # Cựa đồng/bạc: ×1,6
 	if t.cards != null:
 		damage *= t.cards.get_incoming_damage_multiplier()
+	# Đồ của bên nhận: mọi sát thương (Giáp thép), đòn cao (Mào cắt gọn).
+	damage *= t.mult("dmg_taken_mult")
+	if level == Moves.Level.HIGH:
+		damage *= t.mult("high_hit_dmg_taken_mult")
 	if juggling:
 		damage *= 0.7 # giảm sát thương khi tung hứng
 	# Giảm sát thương theo độ dài combo (kiểu game đối kháng): mỗi nhịp −5%, tối thiểu 50%.
@@ -1380,9 +1630,10 @@ func _resolve_hit(a: Fighter, t: Fighter, hit: Dictionary, move: Dictionary, poi
 	hit_data.base_damage = maxi(1, int(round(damage)))
 	hit_data.hitstun_ticks = -1
 	hit_data.down_duration_ticks = -1
+	var stun_mult: float = t.mult("hitstun_taken_mult") # Khăn rằn: lì đòn −5%
 	match react:
 		&"nhe", &"nang":
-			hit_data.hitstun_ticks = int(Moves.REACTIONS[react]["stun"])
+			hit_data.hitstun_ticks = _stun(int(Moves.REACTIONS[react]["stun"]), stun_mult)
 		&"te":
 			hit_data.down_duration_ticks = int(t.kdef["te_ticks"]) + Moves.DOWN_TICKS
 		&"vang":
@@ -1417,7 +1668,7 @@ func _resolve_hit(a: Fighter, t: Fighter, hit: Dictionary, move: Dictionary, poi
 		&"te":
 			t.body.apply_knockback(knockback, 24, direction)
 		_:
-			var stun: int = int(Moves.REACTIONS.get(react, {"stun": 20})["stun"])
+			var stun: int = _stun(int(Moves.REACTIONS.get(react, {"stun": 20})["stun"]), stun_mult)
 			if _near_wall(t):
 				a.body.apply_knockback(knockback * 0.6, maxi(stun / 2, 6), -direction)
 			else:
@@ -1430,8 +1681,8 @@ func _resolve_hit(a: Fighter, t: Fighter, hit: Dictionary, move: Dictionary, poi
 		hud.combo(a.index, a.combo_hits, a.combo_damage)
 
 	# PLACEHOLDER: đòn thường nạp nộ theo sát thương; chiêu đặc biệt/siêu chiêu/đạn chỉ nạp rất ít để không tự hoàn vạch.
-	a.special.add_points(4 + dealt if cat in ["L", "M", "H"] else 1)
-	t.special.add_points(2 + dealt / 2)
+	_gain(a, 4 + dealt if cat in ["L", "M", "H"] else 1)
+	_gain(t, 2 + dealt / 2)
 	var weight: int = 0
 	if cat in ["M", "H"] or react == &"nang":
 		weight = 1
@@ -1510,8 +1761,8 @@ func _absorb_hit(a: Fighter, t: Fighter, hit: Dictionary, move: Dictionary, amou
 	t.damage_taken += dealt
 	t.track["armor"] = int(t.track["armor"]) + 1
 	hit_log.append([_sim_tick, a.index, String(move.get("id", "")), "armor", dealt])
-	a.special.add_points(4 + dealt if String(move["cat"]) in ["L", "M", "H"] else 1)
-	t.special.add_points(2 + dealt / 2)
+	_gain(a, 4 + dealt if String(move["cat"]) in ["L", "M", "H"] else 1)
+	_gain(t, 2 + dealt / 2)
 	a.combo_hits = 0
 	t.view.flash(Color(1.0, 0.55, 0.3), 0.9)
 	t.view.shield_ticks = 6
@@ -1560,6 +1811,7 @@ func _separate_pushboxes() -> void:
 
 func _post_step(f: Fighter, o: Fighter) -> void:
 	f.react_t += 1
+	f.air_ticks = f.air_ticks + 1 if f.airborne else 0
 	# Cất cánh / tiếp đất.
 	if not f.was_airborne and f.airborne:
 		f.jump_serial += 1
@@ -1570,6 +1822,8 @@ func _post_step(f: Fighter, o: Fighter) -> void:
 		sfx.play(&"land", -4.0)
 		fx.dust(Vector2(f.x(), 0), 8)
 		f.air_used = false
+		f.air_jumped = false
+		f.air_dashed = false
 		f.jump_dir = 0
 		if f.move.has("air"):
 			_end_move(f)
@@ -1675,6 +1929,9 @@ func _update_objectives() -> void:
 						_finish(0, "HOÀN THÀNH!")
 		&"friendly":
 			objectives[0]["value"] = mini(int(p.track["cards"]), 1)
+		&"police":
+			objectives[0]["value"] = clampi((police_ticks_total - clock_ticks) / 60, 0, police_ticks_total / 60)
+			arena.nervous = clampf(1.0 - float(clock_ticks) / float(police_ticks_total), 0.0, 1.0)
 
 
 func _next_tutorial_step(new_objectives: Array[Dictionary], ai_mode: int, hint: String, banner: String) -> void:
@@ -1701,6 +1958,9 @@ func _check_end() -> void:
 		_begin_ko(0 if p_alive else 1)
 		return
 	if mode == &"tutorial" or clock_ticks > 0:
+		return
+	if mode == &"police":
+		_raid_begin()
 		return
 	var pr: float = fighters[0].hp_ratio()
 	var opr: float = fighters[1].hp_ratio()
@@ -1845,7 +2105,7 @@ func _round_end_tick() -> void:
 ## Hiệp mới: về vị trí xuất phát, hồi đầy HP và Block Gauge. Special Gauge và Card Gauge GIỮ NGUYÊN.
 func _reset_round() -> void:
 	round_index += 1
-	clock_ticks = ROUND_TICKS
+	clock_ticks = round_ticks
 	overtime = false
 	rush_clash = 0
 	_hitstop = 0
@@ -1877,6 +2137,8 @@ func _reset_round() -> void:
 		f.break_pending = false
 		f.jump_dir = 0
 		f.airborne = false
+		f.air_jumped = false
+		f.air_dashed = false
 		f.intro_pose = false
 		f.anim = &""
 		f.view.aura = 0.0
@@ -1944,8 +2206,43 @@ func _outro_step() -> void:
 			f.react = &"nam"
 
 
+## Báo công an: người chơi cầm cự đủ giờ → công an ập vào, cả sới chạy tán loạn. Trận không ai thắng
+## (kết quả: won false, raid true, survived true).
+func _raid_begin() -> void:
+	raid = true
+	winner = 1
+	round_log.append({"winner": 1, "ticks": _round_ticks, "frames": _round_frames, "reason": "CÔNG AN TỚI!",
+		"hp": [fighters[0].hp_ratio(), fighters[1].hp_ratio()]})
+	_match_ticks += _round_ticks
+	phase = Phase.END
+	_phase_ticks = 0 if cinematics else 189
+	_hitstop = 0
+	_freeze = 0
+	rush_clash = 0
+	hud.hint = ""
+	for f in fighters:
+		_end_move(f)
+	if not cinematics:
+		return
+	hud.raid_cut_in()
+	hud.flash(Color(0.4, 0.55, 1.0), 0.6)
+	sfx.play(&"whistle", 0.0)
+	sfx.play(&"siren", -2.0)
+	arena.scatter()
+	_shake = maxf(_shake, 4.0)
+	_cine_set(Vector2(500, -170), 0.85, 1.0)
+
+
 func _outro_tick() -> void:
 	_outro_step()
+	if raid:
+		if cinematics and _phase_ticks % 40 == 20:
+			sfx.play(&"whistle", -4.0, 1.0 + 0.1 * float((_phase_ticks / 40) % 2))
+		if _phase_ticks == 190:
+			var raid_result: Dictionary = _result()
+			last_match["result"] = raid_result
+			finished.emit(raid_result)
+		return
 	if _phase_ticks == 40 and cinematics:
 		var text: String = "%s THẮNG!" % String(fighters[winner].side["name"])
 		if winner == 0 and _perfect() and mode != &"tutorial":
@@ -1994,6 +2291,11 @@ func _result() -> Dictionary:
 		"round_reasons": reasons,
 		"round_wins": [round_wins[0], round_wins[1]],
 		"duration_ticks": _match_ticks,
+		"mode": String(mode),
+		# Báo công an: raid = cầm cự đủ giờ (công an ập vào, không ai thắng); survived = không bị hạ.
+		"raid": raid,
+		"survived": raid or winner == 0,
+		"hell_mode": hell_mode,
 	}
 
 
@@ -2085,6 +2387,9 @@ func _ai_view(f: Fighter, o: Fighter) -> Dictionary:
 		var hand: Array[StringName] = f.cards.get_hand_card_ids()
 		selected = hand[clampi(f.cards.get_selected_index(), 0, hand.size() - 1)]
 	var toward_sign: float = signf(f.x() - o.x())
+	var hand_ids: Array = []
+	if f.cards != null:
+		hand_ids.assign(f.cards.get_hand_card_ids())
 	return {
 		"dx": o.x() - f.x(),
 		"distance": absf(o.x() - f.x()),
@@ -2129,6 +2434,16 @@ func _ai_view(f: Fighter, o: Fighter) -> Dictionary:
 		"opp_hp_ratio": o.hp_ratio(),
 		"rush_clash": rush_clash > 0,
 		"clock_ticks": clock_ticks,
+		# Wave 2: vũ khí / Cánh Tiến Hóa / thẻ trên tay (AI T4 xoay thẻ) / chế độ.
+		"my_gust_out": _has_projectile(f.index, &"gust"),
+		"my_can_air_jump": bool(f.fl.get("double_jump", false)) and bool(f.kdef["can_jump"]) and not f.air_jumped,
+		"my_vy": f.body.velocity.y,
+		"my_hand": hand_ids,
+		"my_card_index": f.cards.get_selected_index() if f.cards != null else 0,
+		"cuong_no_active": f.cards != null and f.cards.has_active_effect(&"attack_power_bonus"),
+		"gio_song_active": f.cards != null and f.cards.has_active_effect(&"heavy_knockback_bonus"),
+		"opp_at_wall": o.x() <= STAGE_MIN + 90.0 or o.x() >= STAGE_MAX - 90.0,
+		"police": mode == &"police",
 		"my_rounds": round_wins[f.index],
 		"opp_rounds": round_wins[o.index],
 		"rounds_needed": rounds_to_win,
@@ -2150,6 +2465,16 @@ func _update_view(f: Fighter) -> void:
 	var v: FighterView = f.view
 	v.facing = f.facing()
 	v.stars = false
+	# Công an ập vào: hai gà bỏ chạy hai hướng (chỉ hình – thân gà không đổi).
+	if raid and phase == Phase.END:
+		var away: int = -1 if f.index == 0 else 1
+		v.facing = away
+		v.position.x += float(away) * 5.0
+		v.play_tag(String(f.kdef["anims"]["walk_f"]), _set_anim(f, &"flee") * 2)
+		return
+	# Máu Lửa: HP < 30% thì bốc lửa đỏ (chỉ hình, nhịp theo tick mô phỏng – không dùng RNG).
+	if phase == Phase.FIGHT and f.hp_ratio() < 0.3 and f.alive() and f.fl.has("low_hp_atk_mult") and _sim_tick % 14 == 0:
+		v.spawn_afterimage(Color(1.0, 0.3, 0.1), 0.25)
 	if (_hitstop > 0 or _freeze > 0) and f.anim != &"":
 		return
 	var t: int = f.react_t

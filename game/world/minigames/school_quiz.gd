@@ -52,6 +52,21 @@ const PRAISE: Array[String] = ["Giỏi quá! Đúng rồi con.", "Chính xác! C
 var current_answer: int = -1
 
 
+## Bộ COUNT câu cho trang lớp học (quiz_page.gd): [{q, answers (đã xáo), correct, why, header}].
+static func build(rng: RandomNumberGenerator) -> Array:
+	var order: Array = range(QUESTIONS.size())
+	_shuffle(order, rng)
+	var out: Array = []
+	for n in range(COUNT):
+		var question: Dictionary = QUESTIONS[order[n]]
+		var answers: Array = (question["a"] as Array).duplicate()
+		var correct: String = answers[0]
+		_shuffle(answers, rng)
+		out.append({"q": question["q"], "answers": answers, "correct": answers.find(correct), "why": question["why"],
+			"header": "Câu %d/%d" % [n + 1, COUNT], "praise": PRAISE[n % PRAISE.size()]})
+	return out
+
+
 ## Hỏi COUNT câu; trả về {"right": số câu đúng, "total": COUNT, "cancelled": false}.
 func run(dialog: DialogBox, rng: RandomNumberGenerator) -> Dictionary:
 	var order: Array = range(QUESTIONS.size())

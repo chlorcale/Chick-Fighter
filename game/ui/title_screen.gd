@@ -1,7 +1,7 @@
 class_name TitleScreen
 extends Node2D
 
-## Màn hình tiêu đề: bản đồ xóm Bình Kê cuộn chậm làm nền, chiến kê lớn, menu.
+## Màn hình tiêu đề: bản đồ xóm Bình Kê cuộn chậm làm nền, chiến kê lớn, logo chữ pixel, menu trong khung gỗ (UISkin).
 ## Trả về "new" | "continue" | "quit".
 
 signal _picked(choice: String)
@@ -36,6 +36,7 @@ func _ready() -> void:
 	_canvas = Control.new()
 	_canvas.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_canvas.draw.connect(_draw_ui)
+	UISkin.pixel(_canvas)
 	_ui.add_child(_canvas)
 	_rooster = Sprite2D.new()
 	_rooster.texture = FighterView.SHEET
@@ -90,9 +91,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _text(pos: Vector2, text: String, size: int, color: Color, bold: bool, align: int = HORIZONTAL_ALIGNMENT_LEFT,
 		width: float = -1.0, outline: int = 8) -> void:
-	var font: Font = DialogBox.make_font(bold)
-	_canvas.draw_string_outline(font, pos, text, align, width, size, outline, Color(0.12, 0.04, 0.02))
-	_canvas.draw_string(font, pos, text, align, width, size, color)
+	UISkin.draw_text(_canvas, pos, text, size, color, bold, align, width, outline, Color(0.12, 0.04, 0.02))
 
 
 func _draw_ui() -> void:
@@ -104,13 +103,23 @@ func _draw_ui() -> void:
 	for i in range(30):
 		var k: float = float(i) / 29.0
 		_canvas.draw_rect(Rect2(w * 0.7 * k, 0, w * 0.7 / 29.0 + 1.0, h), Color(0.05, 0.02, 0.0, 0.45 * (1.0 - k)))
-	_text(Vector2(60, 120), "HUYỀN THOẠI", 40, Color(1.0, 0.92, 0.7), true)
-	var pulse: float = 1.0 + 0.02 * sin(_time * 3.0)
-	_text(Vector2(56, 196), "ĐÁ GÀ", int(86 * pulse), Color(1.0, 0.55, 0.15), true, HORIZONTAL_ALIGNMENT_LEFT, -1, 12)
-	_text(Vector2(62, 236), "CHICK FIGHTER", 28, Color(1.0, 0.85, 0.35), true)
-	_text(Vector2(62, 266), "Ao Làng – Act 1", 18, Color(0.95, 0.9, 0.8), false)
+	# Logo: chữ pixel phóng nguyên lần (cỡ là bội của 11), "ĐÁ GÀ" nhún nhẹ.
+	var bob: float = -2.0 if fmod(_time, 1.6) < 0.8 else 0.0
+	_text(Vector2(60, 108), "HUYỀN THOẠI", UISkin.FS_BIG, Color(1.0, 0.92, 0.7), true)
+	_text(Vector2(52, 200 + bob), "ĐÁ GÀ", 88, Color(1.0, 0.55, 0.15), true, HORIZONTAL_ALIGNMENT_LEFT, -1, 16)
+	_text(Vector2(62, 244), "CHICK FIGHTER", UISkin.FS_BODY, UISkin.GOLD, true)
+	_text(Vector2(62, 276), "Ao Làng – Act 1", UISkin.FS_BODY, Color(0.95, 0.9, 0.8), false, HORIZONTAL_ALIGNMENT_LEFT, -1, 4)
+	# Bảng chọn: khung gỗ giấy dó, mũi tên chỉ.
+	var row_h: float = 42.0
+	var box := Rect2(52, 312, 300, _options.size() * row_h + 52.0)
+	UISkin.draw_panel(_canvas, box, &"wood")
 	for i in range(_options.size()):
 		var selected: bool = i == _index
-		_text(Vector2(70, 350 + i * 46), ("▶  " if selected else "    ") + _options[i], 30 if selected else 26,
-			Color(1.0, 0.85, 0.3) if selected else Color(0.85, 0.85, 0.85), selected)
-	_text(Vector2(0, h - 20), "W/S chọn · E xác nhận", 15, Color(0.8, 0.8, 0.8), false, HORIZONTAL_ALIGNMENT_CENTER, w, 4)
+		var y: float = box.position.y + 26.0 + i * row_h
+		if selected:
+			_canvas.draw_rect(Rect2(box.position.x + 20, y, box.size.x - 40, row_h), Color(0.86, 0.72, 0.5, 0.55))
+			var nudge: float = 2.0 if fmod(_time, 0.6) < 0.3 else 0.0
+			_canvas.draw_texture(UISkin.texture("cursor"), Vector2(box.position.x + 28 + nudge, y + 12))
+		UISkin.draw_text(_canvas, Vector2(box.position.x + 60, UISkin.baseline_in(y, row_h, UISkin.FS_BODY, selected)), _options[i],
+			UISkin.FS_BODY, UISkin.INK_RED if selected else UISkin.INK, selected)
+	UISkin.draw_key_hints(_canvas, Vector2(w - 12, h - 10), [["W/S", "Chọn"], ["E", "Xác nhận"]])

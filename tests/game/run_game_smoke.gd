@@ -1,6 +1,8 @@
 extends SceneTree
 
 ## Smoke test lớp game/: khám phá (4 hướng, xe máy, đò qua sông) và bộ chiêu trong trận.
+## Wave 2 (bước 50+): vũ khí đổi lối đánh, chỉ số/passive đồ, passive giống, đột biến, báo công an (2 kết cục),
+## Hell Mode, sân Liên tỉnh/Olympic, API hình chiến kê (FighterView.make_portrait) cho mọi món/giống, lớp đồ.
 ## Chạy: godot --headless --path . --fixed-fps 60 -s res://tests/game/run_game_smoke.gd
 
 var _failures: int = 0
@@ -29,11 +31,13 @@ func _initialize() -> void:
 	root.add_child(_world)
 
 
-func _new_battle(p_side: Dictionary, o_side: Dictionary, mode: String = "normal") -> void:
+func _new_battle(p_side: Dictionary, o_side: Dictionary, mode: String = "normal", extra: Dictionary = {}) -> void:
 	if _director != null:
 		_director.queue_free()
 	_director = BattleDirector.new()
-	_director.setup({"player": p_side, "opponent": o_side, "mode": mode, "seed": 5})
+	var config: Dictionary = {"player": p_side, "opponent": o_side, "mode": mode, "seed": 5}
+	config.merge(extra, true)
+	_director.setup(config)
 	root.add_child(_director)
 	_director.finished.connect(func(r: Dictionary) -> void: _result = r)
 	_result = {}
@@ -255,6 +259,10 @@ func _physics_process(_delta: float) -> bool:
 				_frames = 0
 		24, 25, 26, 27:
 			if _rounds_step():
+				_step = 50
+				_frames = 0
+		50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61:
+			if _wave2_step():
 				var opponent: Dictionary = GameState.OPPONENTS["teo_2"].duplicate(true)
 				_new_battle({"owner": "Test", "name": "Ô Mun", "breed": 0, "lv": 3, "dao_chan": true,
 					"cards": [&"cuong_no", &"mai_rua", &"gio_song"]}, opponent)
@@ -714,9 +722,17 @@ func _start_batch() -> void:
 			_runner.jobs.append({"label": "T1<T3", "p": t1, "p_ai": t1, "o": t3, "seed": 200 + s})
 	# Mọi đối thủ trong danh sách: AI tầm trung đứng thay người chơi (trận hướng dẫn chạy như trận thường).
 	var modes: Dictionary = {"teo_1": "friendly"}
+	# Bản dựng đầy đủ (GameState.opponent_side: vũ khí, đồ, đột biến, passive giống) – mọi đối thủ kể cả Liên tỉnh/Olympic.
 	for id in GameState.OPPONENTS.keys():
-		_runner.jobs.append({"label": "roster:" + String(id), "p": mid, "p_ai": mid, "o": GameState.OPPONENTS[id].duplicate(true),
+		_runner.jobs.append({"label": "roster:" + String(id), "p": mid, "p_ai": mid, "o": GameState.opponent_side(String(id)),
 			"mode": modes.get(id, "normal"), "seed": 900 + String(id).length()})
+	# T4 vs T3 (đổi bên xen kẽ).
+	var t4: Dictionary = {"owner": "AI", "name": "T4", "breed": 0, "lv": 3, "tier": 4, "skill": 0.9, "aggr": 0.6, "block": 0.35, "jumpy": 0.2}
+	for s in range(10):
+		if s % 2 == 0:
+			_runner.jobs.append({"label": "T4>T3", "p": t4, "p_ai": t4, "o": t3, "seed": 1300 + s})
+		else:
+			_runner.jobs.append({"label": "T3<T4", "p": t3, "p_ai": t3, "o": t4, "seed": 1300 + s})
 	# Cảnh điện ảnh không đổi kết quả mô phỏng.
 	_runner.jobs.append({"label": "det:off", "p": mid, "p_ai": mid, "o": GameState.OPPONENTS["bay_ghe"].duplicate(true), "seed": 77, "cinematics": false})
 	_runner.jobs.append({"label": "det:on", "p": mid, "p_ai": mid, "o": GameState.OPPONENTS["bay_ghe"].duplicate(true), "seed": 77, "cinematics": true})
@@ -725,6 +741,7 @@ func _start_batch() -> void:
 
 func _report_batch() -> void:
 	var t3_wins: int = 0
+	var t4_wins: int = 0
 	var det: Dictionary = {}
 	for r in _batch:
 		var label: String = String(r["label"])
@@ -732,6 +749,8 @@ func _report_batch() -> void:
 			t3_wins += 1
 		elif label == "T1<T3" and not bool(r["won"]):
 			t3_wins += 1
+		elif (label == "T4>T3" and bool(r["won"])) or (label == "T3<T4" and not bool(r["won"])):
+			t4_wins += 1
 		elif label.begins_with("roster:"):
 			var rounds: Array = r.get("rounds", [])
 			_check(not bool(r["stalemate"]) and rounds.size() >= 2 and int(r["hits"]) > 0,
@@ -739,6 +758,7 @@ func _report_batch() -> void:
 		elif label.begins_with("det:"):
 			det[label] = r
 	_check(t3_wins >= 7, "T3 beats T1 in ≥ 7 of 10 seeded matches (%d/10)" % t3_wins)
+	_check(t4_wins >= 7, "T4 beats T3 in ≥ 7 of 10 seeded matches (%d/10)" % t4_wins)
 	if det.size() == 2:
 		var a: Dictionary = det["det:off"]
 		var b: Dictionary = det["det:on"]
@@ -839,3 +859,284 @@ func _check_arena_coverage(arena: BattleArena) -> void:
 							if not missing.is_empty() and bad.size() < 5:
 								bad.append("%s@%s:%s" % [str(vis.round()), str(center.round()), str(missing)])
 	_check(bad.is_empty(), "arena art covers the camera view at every zoom/sweep/shake extreme (%d views) %s" % [tested, str(bad)])
+
+
+# ==================================================================== wave 2: vũ khí, đồ, passive, công an, Hell Mode
+
+## Bên đấu có bản dựng đầy đủ (như GameState.player_side()/opponent_side()).
+func _build(breed: int, weapon: StringName = &"", gear: Dictionary = {}, mutations: Array = [], lv: int = 3) -> Dictionary:
+	return GameState.side_from_raw({"owner": "T", "name": "Gà", "breed": breed, "lv": lv, "tier": 2, "skill": 0.5,
+		"weapon": weapon, "gear": gear, "mutations": mutations, "cards": [&"cuong_no", &"mai_rua", &"gio_song"]})
+
+
+func _jab() -> Dictionary:
+	return Moves.get_move(&"mo_nhanh")
+
+
+func _wave2_step() -> bool:
+	_release_due()
+	match _step:
+		50:
+			_wave2_static_checks()
+			_new_battle(_build(0, &"quat_long"), _build(0))
+			_next()
+		51:
+			# Quạt lông: Heavy K đánh hụt → luồng gió bay tới, đẩy đối thủ lùi (sát thương cận chiến −20%).
+			var d: BattleDirector = _director
+			if _frames == 2:
+				_setup_duel(300, 640)
+				_seen["x1"] = _p(1).x()
+			if _frames == 4:
+				_press(0, InputBits.HEAVY)
+			for pr in d.projectiles:
+				if pr.kind == &"gust":
+					_seen["gust"] = true
+			if _frames == 110:
+				var gusts: Array = _logged(0, "luong_gio")
+				_check(_seen.has("gust"), "Quạt lông: whiffed Heavy K fires a wind gust projectile")
+				_check(gusts.size() == 1 and _p(1).x() - float(_seen["x1"]) > 40.0,
+					"gust hits and pushes the opponent back (%.0f px)" % (_p(1).x() - float(_seen["x1"])))
+				_check(is_equal_approx(_p(0).mult("melee_dmg_mult"), 0.8), "Quạt lông: melee damage ×0.8 flag active")
+				_new_battle(_build(0, &"non_bao_hiem"), _build(0))
+				_next()
+		52:
+			# Nón bảo hiểm: Heavy K thành Húc Nón – lao tới, giáp chịu 1 đòn, vẫn trúng.
+			var h: BattleDirector.Fighter = _p(0)
+			if _frames == 2:
+				_setup_duel(300, 520)
+				_seen["x0"] = h.x()
+			if _frames == 4:
+				_press(0, InputBits.HEAVY)
+			if not _seen.has("hit1") and h.move.get("id", &"") == &"huc_non" and h.mf == 1 and _director._hitstop == 0:
+				_seen["hit1"] = true
+				var hp0: int = h.hp()
+				_director._resolve_hit(_p(1), h, _jab()["hits"][0], _jab(), h.body.global_position + Vector2(0, -60))
+				_check(h.hp() < hp0 and h.react == &"" and h.move.get("id", &"") == &"huc_non",
+					"Húc Nón armour absorbs one hit and keeps charging")
+			if _frames == 90:
+				_check(h.x() - float(_seen.get("x0", 0.0)) > 40.0, "Húc Nón lunges forward (%.0f px)" % (h.x() - float(_seen.get("x0", 0.0))))
+				_check(_logged(0, "huc_non").size() == 1, "Húc Nón connects after absorbing the hit")
+				_new_battle(_build(0, &"dao_chan"), _build(0))
+				_next()
+		53:
+			# Dao chân: Light ra nhanh hơn 2 tick, chuỗi 4 Light (L-L-L-H theo GDD; ở đây L-L-L-L/M).
+			var k: BattleDirector.Fighter = _p(0)
+			if _frames == 2:
+				_setup_duel(450, 560)
+				var fast: Dictionary = _director._move_for(k, &"mo_nhanh")
+				_check(int(fast["startup"]) == int(_jab()["startup"]) - 2,
+					"Dao chân: Light startup %d → %d ticks" % [int(_jab()["startup"]), int(fast["startup"])])
+				_check(int(k.fl.get("light_combo_extra", 0)) == 1, "Dao chân: one extra Light in the chain")
+			for t in [4, 13, 22, 31]:
+				_tap(0, InputBits.LIGHT, t, _frames)
+			_max_combo = maxi(_max_combo, k.combo_hits)
+			if _frames == 90:
+				_check(_max_combo >= 4, "Dao chân: four Lights chain (max %d)" % _max_combo)
+				_max_combo = 0
+				_new_battle(_build(1, &"", {&"wing": &"canh_lua"}), _build(2))
+				_next()
+		54:
+			# Lanh Lẹ (gà tre ×0,7) × Cánh lụa (×0,9): dash hồi 30 × 0,63 ≈ 19 tick. Gồng: Đông Tảo không bị Light đẩy.
+			var t: BattleDirector.Fighter = _p(0)
+			if _frames == 2:
+				_setup_duel(300, 640)
+				_check(is_equal_approx(t.mult("dash_recovery_mult"), 0.7 * 0.9), "Gà tre Lanh Lẹ × Cánh lụa: dash recovery ×0.63")
+				_check(bool(_p(1).fl.get("light_kb_immune", false)), "Đông Tảo bản dựng có passive Gồng")
+			for tt in [4, 8]:
+				_tap(0, InputBits.MOVE_LEFT, tt, _frames)
+			var dash: Variant = t.body.get("_dash_controller")
+			if int(dash.get("state")) == DashController.State.RECOVERY:
+				_seen["rec"] = maxi(int(_seen.get("rec", 0)), int(dash.get("recovery_ticks_remaining")))
+			if _frames == 60:
+				_check(int(_seen.get("rec", 0)) > 0 and int(_seen.get("rec", 99)) <= 19,
+					"dash recovery shortened to %d ticks (base 30)" % int(_seen.get("rec", 0)))
+				_new_battle(_build(0), _build(2))
+				_next()
+		55:
+			var dt: BattleDirector.Fighter = _p(1)
+			if _frames == 2:
+				_setup_duel(450, 560)
+			if _frames == 4:
+				_seen["x"] = dt.x()
+				_director._resolve_hit(_p(0), dt, _jab()["hits"][0], _jab(), dt.body.global_position + Vector2(0, -60))
+			if _frames == 30:
+				_check(absf(dt.x() - float(_seen["x"])) < 1.0 and _logged(0, "mo_nhanh").size() == 1,
+					"Gồng: Light hits Đông Tảo without pushing it (moved %.1f px)" % absf(dt.x() - float(_seen["x"])))
+				_new_battle(_build(0, &"", {}, [&"wing_evolution", &"burning_blood"]), _build(0, &"", {&"head": &"khan_ran",
+					&"armor": &"giap_tre", &"comb": &"mao_dong"}))
+				_next()
+		56:
+			# Cánh Tiến Hóa: nhảy lần hai; Máu Lửa: HP < 30% → ATK ×1,2; đồ của bên nhận: chip, hitstun, Special.
+			var w: BattleDirector.Fighter = _p(0)
+			var o: BattleDirector.Fighter = _p(1)
+			if _frames == 2:
+				_setup_duel(300, 700)
+				_seen["miny"] = 0.0
+			if _frames == 8:
+				_press(0, InputBits.JUMP)
+			if _frames == 26:
+				_press(0, InputBits.JUMP)
+			_seen["miny"] = minf(float(_seen.get("miny", 0.0)), w.body.global_position.y)
+			if _frames == 80:
+				_check(float(_seen["miny"]) < -120.0, "Cánh Tiến Hóa: double jump goes higher than one jump (apex %.0f px)" % -float(_seen["miny"]))
+				# Máu Lửa.
+				w.stats = w.stats.duplicate()
+				w.stats["crit"] = 0.0
+				o.stats = o.stats.duplicate()
+				w.body.global_position = Vector2(450, -1)
+				o.body.global_position = Vector2(560, -1)
+				var hp0: int = o.hp()
+				_director._resolve_hit(w, o, _jab()["hits"][0], _jab(), o.body.global_position + Vector2(0, -60))
+				var full: int = hp0 - o.hp()
+				o.health.call("restore_full_health")
+				o.react = &""
+				o.body.clear_hit_reactions()
+				w.combo_hits = 0
+				w.health.call("apply_damage", int(w.hp() * 0.8))
+				hp0 = o.hp()
+				_director._resolve_hit(w, o, _jab()["hits"][0], _jab(), o.body.global_position + Vector2(0, -60))
+				var low: int = hp0 - o.hp()
+				_check(low > full or (full <= 1 and low >= full), "Máu Lửa: hit under 30%% HP deals more (%d vs %d)" % [low, full])
+				# Khăn rằn: hitstun ×0,95.
+				o.react = &""
+				o.body.clear_hit_reactions()
+				w.combo_hits = 0
+				_check(_director._stun(int(Moves.REACTIONS[&"nhe"]["stun"]), o.mult("hitstun_taken_mult")) == 19,
+					"Khăn rằn: Light hitstun 20 → %d ticks" % _director._stun(20, o.mult("hitstun_taken_mult")))
+				# Giáp tre: chip ×0,8 → 5 lần đỡ chỉ mất 4 HP.
+				o.body.clear_hit_reactions()
+				o.react = &""
+				o.move = {}
+				o.held = 1 << InputBits.MOVE_RIGHT
+				hp0 = o.hp()
+				for i in range(5):
+					o.react = &""
+					o.body.clear_hit_reactions()
+					o.guard = 100.0
+					_director._resolve_hit(w, o, _jab()["hits"][0], _jab(), o.body.global_position + Vector2(0, -60))
+				_check(hp0 - o.hp() == 4, "Giáp tre: 5 blocked hits cost %d HP (chip ×0.8)" % (hp0 - o.hp()))
+				# Mào đồng: Special Gauge ×1,1.
+				var sp0: int = o.special.get_current_points()
+				_director._gain(o, 10)
+				_check(o.special.get_current_points() - sp0 == 11, "Mào đồng: Special gain ×1.1 (+%d)" % (o.special.get_current_points() - sp0))
+				o.held = 0
+				_new_battle(_build(0, &"", {&"spur": &"cua_bac"}), _build(0, &"", {&"wing": &"canh_sat", &"head": &"mao_sat"}))
+				_next()
+		57:
+			if _frames == 2:
+				_setup_duel(450, 560)
+				var a: BattleDirector.Fighter = _p(0)
+				var o: BattleDirector.Fighter = _p(1)
+				# Cựa bạc ×1,2 hao Block Gauge, Cánh sắt ×0,85, Bền Bỉ ×0,9.
+				_check(is_equal_approx(_director._guard_cost(o, "M", a), 18.0 * 0.9 * 0.85 * 1.2),
+					"Block Gauge drain: Bền Bỉ × Cánh sắt × Cựa bạc (%.2f)" % _director._guard_cost(o, "M", a))
+				_check(is_equal_approx(float(o.stats["def"]), float(GameState.scaled_stats(0, 3)["def"]) + 2.0 + 3.0) and is_equal_approx(o.def_bonus, 0.0),
+					"build DEF comes from side stats (Mào sắt +2, Cánh sắt +3), no double Mào sắt bonus")
+				_check(_p(0).body.health_max_hp == int(round(float(_p(0).side["stats"]["hp"]) * BattleDirector.HEALTH_SCALE)),
+					"match HP uses side stats")
+				_new_battle(_build(0), GameState.opponent_side("lt_hai_ben_tre"), "police", {"police_seconds": 3, "cinematics": false})
+				_next()
+		58:
+			# Báo công an – cầm cự đủ giờ: công an ập vào.
+			if _frames == 3:
+				_director.fighters[1].ai.script_mode = EnemyAI.Mode.IDLE
+				_check(_director.rounds_to_win == 1 and _director.clock_ticks == 180, "police mode: single round, survive timer")
+				_check(_director.fighters[1].ai.relentless, "police mode: opponent AI presses hard")
+			if not _result.is_empty():
+				_check(bool(_result["raid"]) and bool(_result["survived"]) and not bool(_result["won"]),
+					"police: surviving the timer ends in a raid (%s)" % str(_result))
+				_new_battle(_build(0), GameState.opponent_side("lt_hai_ben_tre"), "police", {"police_seconds": 20, "cinematics": false})
+				_next()
+			elif _frames > 1200:
+				_check(false, "police raid timed out")
+				_next()
+		59:
+			# Báo công an – bị hạ trước: thua bình thường.
+			if _director.phase == BattleDirector.Phase.FIGHT and not _seen.has("ko"):
+				_seen["ko"] = true
+				_director.fighters[1].ai.script_mode = EnemyAI.Mode.IDLE
+				_p(0).body.global_position.x = 450
+				_p(1).body.global_position.x = 560
+				_p(0).health.call("apply_damage", _p(0).hp() - 1)
+				_press(1, InputBits.LIGHT)
+			if not _result.is_empty():
+				_check(not bool(_result["raid"]) and not bool(_result["survived"]) and not bool(_result["won"]),
+					"police: KO'd before the police arrive is a normal loss (%s)" % str(_result.get("round_reasons", [])))
+				var hell: Dictionary = GameState.opponent_side("ol_thay_cuu")
+				hell["start_card_gauge"] = 4
+				_new_battle(_build(0, &"", {}, [], 20), hell, "tournament", {"round_time": 60.0, "hell_mode": true,
+					"arena_variant": &"olympic"})
+				_next()
+			elif _frames > 2400:
+				_check(false, "police KO timed out")
+				_next()
+		60:
+			if _frames == 3:
+				var d: BattleDirector = _director
+				_check(d.fighters[1].card_gauge.get_current_gauge() == 4 and d.fighters[0].card_gauge.get_current_gauge() == 2,
+					"Hell Mode: opponent starts with 4 Card Gauge, player 2")
+				_check(d.clock_ticks == 60 * 60 and d.hell_mode, "Hell Mode: 60-second rounds")
+				_check(d.fighters[1].ai.tier == 4 and d.fighters[1].ai.reaction_ticks <= 15, "Olympic opponent runs AI tier 4 (%d-tick reactions)" % d.fighters[1].ai.reaction_ticks)
+				_check(d.arena.variant == &"olympic", "arena_variant selects the Olympic arena")
+				_check_arena_coverage(d.arena)
+				_new_battle(_build(0), GameState.opponent_side("lt_tam_can_tho"), "tournament", {"arena_variant": &"lien_tinh"})
+				_next()
+		61:
+			if _frames == 3:
+				_check(_director.arena.variant == &"lien_tinh", "arena_variant selects the Liên tỉnh arena")
+				_check_arena_coverage(_director.arena)
+				return true
+	return false
+
+
+## Kiểm tra không cần chạy trận: bảng chiêu vũ khí, cờ bản dựng, API hình chiến kê cho mọi món × giống.
+func _wave2_static_checks() -> void:
+	var tat: Dictionary = Moves.get_move(&"tat_canh")
+	var fan: Dictionary = Moves.weapon_move(&"tat_canh", Moves.KIT_ROOSTER, {"heavy_gust": true})
+	_check(fan.has("gust_spawn") and not tat.has("gust_spawn"), "Quạt lông variant of Heavy K spawns a gust")
+	var helmet: Dictionary = Moves.weapon_move(&"tat_canh", Moves.KIT_ROOSTER, {"heavy_rush": true, "heavy_armor_hits": 1, "heavy_startup_add": 6})
+	_check(helmet["id"] == &"huc_non" and helmet.has("armor") and int(helmet["startup"]) == int(tat["startup"]) + 6,
+		"Nón bảo hiểm: Heavy K → armoured lunge, startup %d → %d" % [int(tat["startup"]), int(helmet["startup"])])
+	var dt_helmet: Dictionary = Moves.weapon_move(&"dam_chan", Moves.KIT_DONGTAO, {"heavy_rush": true, "heavy_startup_add": 6})
+	var dt_dam: Dictionary = Moves.get_move(&"dam_chan", Moves.KIT_DONGTAO)
+	_check(dt_helmet["id"] == &"huc_non" and int(dt_helmet["startup"]) == int(dt_dam["startup"]) + 6, "Đông Tảo kit gets Húc Nón too")
+	var dt_jab: Dictionary = Moves.weapon_move(&"huc_dau", Moves.KIT_DONGTAO, {"light_startup": 3})
+	_check(int(dt_jab["startup"]) == int(Moves.get_move(&"huc_dau", Moves.KIT_DONGTAO)["startup"]) - 2, "Đông Tảo Dao chân: Light 2 ticks faster")
+	_check(Moves.weapon_move(&"mo_nhanh", Moves.KIT_ROOSTER, {}) == Moves.get_move(&"mo_nhanh"), "no weapon flags → unchanged move table")
+	var legacy: Dictionary = BattleDirector.build_flags({"breed": 0, "lv": 3, "dao_chan": true, "mao_sat": true})
+	_check(int(legacy.get("light_combo_extra", 0)) == 1 and is_equal_approx(float(legacy["heavy_kb_mult"]), 0.9)
+		and is_equal_approx(float(legacy["high_hit_kb_taken_mult"]), 0.8) and not legacy.has("light_startup"),
+		"legacy side (no stats): dao_chan/mao_sat behave exactly as before")
+	_check(not BattleDirector.build_flags({"breed": 1, "lv": 3}).has("dash_recovery_mult"), "legacy Gà tre side: no new passives")
+	var full: Dictionary = _build(0, &"dao_chan", {&"head": &"mu_thep", &"armor": &"giap_thep", &"wing": &"canh_gio",
+		&"spur": &"cua_bac", &"comb": &"mao_vang_meo"})
+	_check(FighterView.gear_items(full).size() == 6, "fully geared side exposes 6 sprite layers (%s)" % str(FighterView.gear_items(full)))
+	var mat: ShaderMaterial = FighterView.material_for_side(full)
+	var all_on: bool = bool(mat.get_shader_parameter("use_gear"))
+	for u in ["spur", "head", "comb", "armor", "wing", "weapon"]:
+		all_on = all_on and bool(mat.get_shader_parameter("has_" + u)) and mat.get_shader_parameter("gear_" + u) is Texture2D
+	_check(all_on, "every gear layer is bound in the fighter material")
+	# API hình chiến kê: mọi món trang bị × 3 giống (hai kit) dựng được, có lớp tương ứng.
+	var bad: Array[String] = []
+	var built: int = 0
+	for id in GameState.ITEMS.keys():
+		var slot: StringName = StringName(GameState.ITEMS[id]["slot"])
+		if not FighterView.GEAR_UNIFORMS.has(slot):
+			continue
+		for breed in range(3):
+			var side: Dictionary = _build(breed, StringName(id) if slot == &"weapon" else &"", {} if slot == &"weapon" else {slot: StringName(id)})
+			var node: Node2D = FighterView.make_portrait(side, "idle")
+			root.add_child(node)
+			var pm: ShaderMaterial = (node as FighterView.Portrait).shader_material
+			var u: String = String(FighterView.GEAR_UNIFORMS[slot])
+			if not bool(pm.get_shader_parameter("has_" + u)):
+				bad.append("%s/%d" % [id, breed])
+			(node as FighterView.Portrait).set_tag("nam")
+			(node as FighterView.Portrait).set_facing(-1)
+			node.queue_free()
+			built += 1
+	_check(bad.is_empty() and built >= 60, "make_portrait builds every gear item on every breed (%d portraits) %s" % [built, str(bad)])
+	for tag in ["idle", "taunt", "walk_f", "nam", "HIT_Nang", "khong_co"]:
+		var n: Node2D = FighterView.make_portrait(GameState.player_side(), tag)
+		root.add_child(n)
+		n.queue_free()

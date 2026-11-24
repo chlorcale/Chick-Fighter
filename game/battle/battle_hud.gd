@@ -44,6 +44,9 @@ var _vs_t: float = 0.0
 var _plates: Array[float] = [-1.0, -1.0]
 var _callout: Dictionary = {}
 var _heartbeat: float = 0.0
+## Cắt cảnh "CÔNG AN TỚI!" (chế độ báo công an).
+var _raid: float = -1.0
+var _siren_beep: float = 0.0
 
 
 func _ready() -> void:
@@ -55,6 +58,7 @@ func _ready() -> void:
 	_canvas.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_canvas.draw.connect(_draw_hud)
+	UISkin.pixel(_canvas)
 	add_child(_canvas)
 	for i in range(2):
 		var portrait := TextureRect.new()
@@ -120,6 +124,11 @@ func callout(text: String, ticks: int) -> void:
 	_callout = {"text": text, "t": 0.0, "life": float(ticks) / 60.0}
 
 
+## Công an ập vào: băng chữ lớn nhấp nháy đỏ – xanh (chỉ trình diễn).
+func raid_cut_in() -> void:
+	_raid = 0.0
+
+
 func reset_round() -> void:
 	_combos = [{}, {}]
 	_trail = [1.0, 1.0]
@@ -136,6 +145,11 @@ func toggle_pause() -> void:
 
 func _process(delta: float) -> void:
 	_time += delta
+	# chân dung gà (con của _canvas, vẽ sau) không được đè lên bảng tạm dừng
+	var paused: bool = get_tree().paused
+	for portrait in _portraits:
+		if portrait.visible == paused:
+			portrait.visible = not paused
 	var real_delta: float = delta / maxf(Engine.time_scale, 0.01)
 	if not _announce.is_empty():
 		_announce["t"] += real_delta
@@ -190,6 +204,14 @@ func _process(delta: float) -> void:
 		_callout["t"] += real_delta
 		if _callout["t"] >= _callout["life"]:
 			_callout = {}
+	if _raid >= 0.0:
+		_raid += real_delta
+	# Báo công an: còi hú dồn dập dần ở 10 giây cuối.
+	if director.mode == &"police" and director.phase == BattleDirector.Phase.FIGHT and director.clock_ticks < 600:
+		_siren_beep -= real_delta
+		if _siren_beep <= 0.0:
+			_siren_beep = 0.35 + 1.4 * float(director.clock_ticks) / 600.0
+			director.sfx.play(&"siren", -14.0 + 8.0 * (1.0 - float(director.clock_ticks) / 600.0), 1.0)
 	# Nhịp tim khi máu người chơi thấp.
 	if director.phase == BattleDirector.Phase.FIGHT and director.fighters[0].hp_ratio() <= 0.25 and director.fighters[0].alive():
 		_heartbeat += real_delta
@@ -221,10 +243,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _text(pos: Vector2, text: String, size: int, color: Color = Color.WHITE,
 		align: int = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0, bold: bool = false, outline: int = 6) -> void:
-	var font: Font = _font_bold if bold else _font
-	if outline > 0:
-		_canvas.draw_string_outline(font, pos, text, align, width, size, outline, Color(0, 0, 0, color.a))
-	_canvas.draw_string(font, pos, text, align, width, size, color)
+	# Viền "đóng dấu" (UISkin.draw_string_crisp) – viền glyph của Godot lệch nét với font pixel phóng nguyên lần.
+	UISkin.draw_string_crisp(_canvas, _font_bold if bold else _font, pos, text, align, width, size, color, outline, Color.BLACK)
 
 
 func _slanted(rect: Rect2, ratio: float, color: Color, right: bool, slant: float = 10.0) -> void:
@@ -344,10 +364,10 @@ func _draw_hud() -> void:
 		_hp_rects[i] = hp_rect
 		_draw_hp_bar(f, hp_rect, right, i)
 		var name_align: int = HORIZONTAL_ALIGNMENT_RIGHT if right else HORIZONTAL_ALIGNMENT_LEFT
-		_text(Vector2(x, 86), "%s" % String(f.side["name"]).to_upper(), 20, Color.WHITE, name_align, bar_w, true)
-		_text(Vector2(x, 104), "%s · %s Lv%d" % [String(f.side.get("owner", "")), GameState.BREED_NAMES[int(f.side["breed"])],
-			int(f.side["lv"])], 14, Color(0.85, 0.85, 0.85), name_align, bar_w)
-		_text(Vector2(x + 14.0 if not right else x, 42) + shake, str(f.hp()), 17, Color.WHITE,
+		_text(Vector2(x, 98), "%s" % String(f.side["name"]).to_upper(), UISkin.FS_BODY, Color.WHITE, name_align, bar_w, true, 5)
+		_text(Vector2(x, 128), "%s · %s Lv%d" % [String(f.side.get("owner", "")), GameState.BREED_NAMES[int(f.side["breed"])],
+			int(f.side["lv"])], UISkin.FS_BODY, Color(0.88, 0.86, 0.8), name_align, bar_w, false, 4)
+		_text(Vector2(x + 14.0 if not right else x, 43) + shake, str(f.hp()), UISkin.FS_BODY, Color.WHITE,
 			HORIZONTAL_ALIGNMENT_LEFT if not right else HORIZONTAL_ALIGNMENT_RIGHT, bar_w - 14.0, true, 5)
 		_draw_round_pips(i, x, bar_w, right)
 
@@ -369,7 +389,7 @@ func _draw_hud() -> void:
 		var seg_w: float = 38.0
 		var sx: float = w - 40.0 - seg_w * 5.0 - 40.0 if right else 40.0
 		var sy: float = h - 40.0
-		_text(Vector2(sx + (seg_w * 5.0 + 8.0 if right else -30.0), sy + 14), str(bars), 30,
+		_text(Vector2(sx + (seg_w * 5.0 + 8.0 if right else -30.0), sy + 14), str(bars), UISkin.FS_BIG,
 			SPECIAL_COLOR if bars > 0 else Color(0.6, 0.6, 0.6), HORIZONTAL_ALIGNMENT_LEFT, -1, true)
 		for b in range(SpecialGaugeComponent.MAX_BARS):
 			var seg := Rect2(sx + float(b) * seg_w, sy, seg_w - 4.0, 14)
@@ -379,21 +399,23 @@ func _draw_hud() -> void:
 			if b < bars:
 				color = color.lerp(Color(1, 1, 0.7), 0.25 + 0.25 * sin(_time * 6.0 + float(b)))
 			_canvas.draw_rect(Rect2(seg.position, Vector2(seg.size.x * fill, seg.size.y)), color)
-		_text(Vector2(sx, sy - 6), "SPECIAL", 13, SPECIAL_COLOR, HORIZONTAL_ALIGNMENT_LEFT, -1, true, 4)
+		_text(Vector2(sx, sy - 6), "SPECIAL", UISkin.FS_SMALL, SPECIAL_COLOR, HORIZONTAL_ALIGNMENT_LEFT, -1, true, 4)
 
 		# Combo
 		if not _combos[i].is_empty():
 			var c: Dictionary = _combos[i]
 			var pop: float = 1.0 + maxf(0.0, 0.3 - float(c["t"])) * 1.5
 			var cx: float = 30.0 if not right else w - 230.0
-			var cy: float = 300.0
+			var cy: float = 340.0
 			var alpha: float = clampf(1.6 - float(c["t"]), 0.0, 1.0)
-			_text(Vector2(cx, cy), "%d" % int(c["hits"]), int(64 * pop), Color(1.0, 0.85, 0.3, alpha),
+			_text(Vector2(cx, cy), "%d" % int(c["hits"]), int(66 * pop), Color(1.0, 0.85, 0.3, alpha),
 				HORIZONTAL_ALIGNMENT_LEFT, -1, true, 8)
-			_text(Vector2(cx + 4, cy + 30.0), "ĐÒN LIÊN HOÀN", 20, Color(1, 1, 1, alpha), HORIZONTAL_ALIGNMENT_LEFT, -1, true)
-			_text(Vector2(cx + 4, cy + 54.0), "%d sát thương" % int(c["damage"]), 16, Color(1.0, 0.75, 0.6, alpha))
+			_text(Vector2(cx + 4, cy + 32.0), "ĐÒN LIÊN HOÀN", UISkin.FS_BODY, Color(1, 1, 1, alpha), HORIZONTAL_ALIGNMENT_LEFT, -1, true, 5)
+			_text(Vector2(cx + 4, cy + 62.0), "%d sát thương" % int(c["damage"]), UISkin.FS_BODY, Color(1.0, 0.75, 0.6, alpha),
+				HORIZONTAL_ALIGNMENT_LEFT, -1, false, 4)
 
 	_draw_clock(w)
+	_draw_police(w, h)
 	_draw_cards(director.fighters[0], w, h)
 	_draw_objectives()
 
@@ -403,8 +425,8 @@ func _draw_hud() -> void:
 		var screen: Vector2 = director.get_viewport().get_canvas_transform() * world
 		var color: Color = p["color"]
 		color.a = clampf(1.2 - float(p["t"]) * 1.2, 0.0, 1.0)
-		_text(screen + Vector2(-100, -float(p["t"]) * 40.0), String(p["text"]), 22, color,
-			HORIZONTAL_ALIGNMENT_CENTER, 200, true)
+		_text(screen + Vector2(-200, -float(p["t"]) * 40.0), String(p["text"]), UISkin.FS_BODY, color,
+			HORIZONTAL_ALIGNMENT_CENTER, 400, true, 5)
 
 	for d in _debris:
 		var c: Color = d["color"]
@@ -426,15 +448,17 @@ func _draw_hud() -> void:
 		_canvas.draw_rect(Rect2(meter.position, Vector2(meter.size.x * share, meter.size.y)), HP_COLOR)
 		_canvas.draw_rect(Rect2(meter.position + Vector2(meter.size.x * share, 0), Vector2(meter.size.x * (1.0 - share), meter.size.y)), GUARD_COLOR)
 		_canvas.draw_rect(meter.grow(4), FRAME, false, 3.0)
-		_text(Vector2(0, h * 0.28 - 12.0), "BẤM H LIÊN TỤC!  %d – %d" % [a, b], 24,
-			Color(1.0, 0.85, 0.3).lerp(Color.WHITE, 0.5 + 0.5 * sin(_time * 16.0)), HORIZONTAL_ALIGNMENT_CENTER, w, true)
+		_text(Vector2(0, h * 0.28 - 12.0), "BẤM H LIÊN TỤC!  %d – %d" % [a, b], UISkin.FS_BODY,
+			Color(1.0, 0.85, 0.3).lerp(Color.WHITE, 0.5 + 0.5 * sin(_time * 16.0)), HORIZONTAL_ALIGNMENT_CENTER, w, true, 5)
 
 	if hint != "":
-		_text(Vector2(0, 130), hint, 18, Color(0.9, 1.0, 0.9), HORIZONTAL_ALIGNMENT_CENTER, w)
+		_text(Vector2(0, 162), hint, UISkin.FS_BODY, Color(0.9, 1.0, 0.9), HORIZONTAL_ALIGNMENT_CENTER, w, false, 5)
 	_draw_cinematic(w, h)
 
 	if not _cut_in.is_empty():
 		_draw_cut_in(w, h)
+	if _raid >= 0.0:
+		_draw_raid(w, h)
 	if not _announce.is_empty():
 		var t: float = float(_announce["t"])
 		var life: float = float(_announce["life"])
@@ -442,35 +466,48 @@ func _draw_hud() -> void:
 		var color: Color = _announce["color"]
 		color.a = clampf((life - t) * 4.0, 0.0, 1.0)
 		_canvas.draw_rect(Rect2(0, h * 0.42 - 52.0 * scale, w, 76.0 * scale), Color(0, 0, 0, 0.35 * color.a))
-		_text(Vector2(0, h * 0.42), String(_announce["text"]), int(56 * scale), color,
+		_text(Vector2(0, h * 0.42), String(_announce["text"]), int(55 * scale), color,
 			HORIZONTAL_ALIGNMENT_CENTER, w, true, 10)
 
 	_text(Vector2(0, h - 8), "A/D đi · W nhảy · S cúi · J nhẹ · K vừa · L mạnh · H đặc biệt · U/I/O thẻ · giữ lùi = đỡ · Esc: bảng chiêu",
-		12, Color(0.85, 0.85, 0.85, 0.75), HORIZONTAL_ALIGNMENT_CENTER, w, false, 4)
+		UISkin.FS_SMALL, Color(0.95, 0.93, 0.86, 0.92), HORIZONTAL_ALIGNMENT_CENTER, w, true, 4)
 
 	if get_tree().paused:
-		_canvas.draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.55))
-		_text(Vector2(60, h * 0.38), "TẠM DỪNG", 48, FRAME, HORIZONTAL_ALIGNMENT_LEFT, -1, true)
-		var options: Array[String] = ["Tiếp tục", "Bỏ cuộc (tính thua)"]
-		for i in range(2):
-			var color: Color = Color(1, 1, 1) if i == _pause_index else Color(0.6, 0.6, 0.6)
-			_text(Vector2(60, h * 0.5 + i * 40.0), ("▶ " if i == _pause_index else "") + options[i], 26, color,
-				HORIZONTAL_ALIGNMENT_LEFT, -1, i == _pause_index)
-		# Bảng chiêu.
-		var panel := Rect2(w * 0.42, 70, w * 0.55, h - 120.0)
-		_canvas.draw_rect(panel, Color(0.08, 0.05, 0.03, 0.92))
-		_canvas.draw_rect(panel, FRAME, false, 2.0)
-		_text(panel.position + Vector2(16, 32), "BẢNG CHIÊU   (J = L · K = M · L = H · H = S)", 18, FRAME,
-			HORIZONTAL_ALIGNMENT_LEFT, -1, true, 4)
-		var y: float = panel.position.y + 64.0
-		var player: BattleDirector.Fighter = director.fighters[0]
-		for entry in Moves.move_list(player.kit):
-			_text(Vector2(panel.position.x + 16, y), String(entry[0]), 15, Color.WHITE, HORIZONTAL_ALIGNMENT_LEFT, -1, true, 3)
-			_text(Vector2(panel.position.x + panel.size.x * 0.55, y), String(entry[1]), 15, Color(1.0, 0.85, 0.5),
-				HORIZONTAL_ALIGNMENT_LEFT, -1, false, 3)
-			y += 30.0
-		_text(Vector2(panel.position.x + 16, y + 6), String(player.kdef["combos"]),
-			14, Color(0.75, 0.9, 0.75), HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 32, false, 3)
+		_draw_pause(w, h)
+
+
+## Bảng tạm dừng: tiêu đề + lựa chọn ở dải trên, bảng chiêu (khung gỗ, giấy) chiếm phần dưới màn hình.
+func _draw_pause(w: float, h: float) -> void:
+	_canvas.draw_rect(Rect2(0, 0, w, h), Color(0, 0, 0, 0.7))
+	var player: BattleDirector.Fighter = director.fighters[0]
+	var moves: Array = Moves.move_list(player.kit)
+	var row_h: float = 30.0
+	var panel := Rect2(32, 16, w - 64.0, minf(h - 32.0, 218.0 + row_h * float(moves.size())))
+	UISkin.draw_panel(_canvas, panel, &"wood")
+	var inner_x: float = panel.position.x + 30.0
+	var inner_w: float = panel.size.x - 60.0
+	_text(Vector2(inner_x, panel.position.y + 76.0), "TẠM DỪNG", UISkin.FS_HUGE, UISkin.INK_RED, HORIZONTAL_ALIGNMENT_LEFT, -1, true, 0)
+	var options: Array[String] = ["Tiếp tục", "Bỏ cuộc (tính thua)"]
+	var ox: float = inner_x + UISkin.text_size("TẠM DỪNG", UISkin.FS_HUGE, true).x + 56.0
+	for i in range(2):
+		var sel: bool = i == _pause_index
+		var oy: float = panel.position.y + 52.0 + float(i) * 34.0
+		if sel:
+			_canvas.draw_texture(UISkin.texture("cursor"), Vector2(ox - 30.0, oy - 18.0))
+		_text(Vector2(ox, oy), options[i], UISkin.FS_BODY, UISkin.INK_RED if sel else UISkin.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT, -1,
+			sel, 0)
+	_canvas.draw_rect(Rect2(inner_x, panel.position.y + 100.0, inner_w, 2.0), Color(UISkin.INK_SOFT, 0.5))
+	_text(Vector2(inner_x, panel.position.y + 136.0), "BẢNG CHIÊU", UISkin.FS_BODY, UISkin.INK_RED, HORIZONTAL_ALIGNMENT_LEFT, -1, true, 0)
+	_text(Vector2(inner_x, panel.position.y + 136.0), "J = L · K = M · L = H · H = S", UISkin.FS_BODY, UISkin.INK_SOFT,
+		HORIZONTAL_ALIGNMENT_RIGHT, inner_w, false, 0)
+	var y: float = panel.position.y + 170.0
+	var key_x: float = inner_x + inner_w * 0.6
+	for entry in moves:
+		_text(Vector2(inner_x, y), String(entry[0]), UISkin.FS_BODY, UISkin.INK, HORIZONTAL_ALIGNMENT_LEFT, -1, false, 0)
+		_text(Vector2(key_x, y), String(entry[1]), UISkin.FS_BODY, UISkin.INK_RED, HORIZONTAL_ALIGNMENT_LEFT, -1, true, 0)
+		y += row_h
+	_text(Vector2(inner_x, minf(y + 6.0, panel.end.y - 26.0)), String(player.kdef["combos"]), UISkin.FS_BODY, UISkin.INK_SOFT,
+		HORIZONTAL_ALIGNMENT_LEFT, inner_w, false, 0)
 
 
 ## Lớp dưới HUD: phủ màu K.O., viền đỏ nhịp tim khi máu thấp.
@@ -513,7 +550,7 @@ func _draw_round_pips(i: int, x: float, bar_w: float, right: bool) -> void:
 	if wins == need - 1 and director.phase in [BattleDirector.Phase.FIGHT, BattleDirector.Phase.ROUND_INTRO]:
 		var pulse: float = 0.6 + 0.4 * sin(_time * 6.0)
 		var label_x: float = (x + bar_w - 26.0 * float(need) - 150.0) if not right else (x + 26.0 * float(need) + 10.0)
-		_text(Vector2(label_x, 76), "ĐIỂM QUYẾT ĐỊNH", 13, Color(1.0, 0.45, 0.25, pulse), HORIZONTAL_ALIGNMENT_LEFT, -1, true, 4)
+		_text(Vector2(label_x, 76), "ĐIỂM QUYẾT ĐỊNH", UISkin.FS_SMALL, Color(1.0, 0.45, 0.25, pulse), HORIZONTAL_ALIGNMENT_LEFT, -1, true, 4)
 
 
 ## Dải đen điện ảnh, màn VS, bảng tên khi ra sân, lời bình (HOÀN HẢO / LỘI NGƯỢC DÒNG), chớp màn hình.
@@ -528,13 +565,13 @@ func _draw_cinematic(w: float, h: float) -> void:
 	if _vs > 0.0:
 		_draw_vs(w, h)
 	if director.phase == BattleDirector.Phase.INTRO and director.mode != &"tutorial" and director.cinematics:
-		_text(Vector2(0, h - 26), "J / K / L / H: bỏ qua", 14, Color(1, 1, 1, 0.6 + 0.3 * sin(_time * 4.0)),
-			HORIZONTAL_ALIGNMENT_RIGHT, w - 20.0, false, 4)
+		_text(Vector2(0, 162), "J / K / L / H: bỏ qua", UISkin.FS_BODY, Color(1, 1, 1, 0.6 + 0.3 * sin(_time * 4.0)),
+			HORIZONTAL_ALIGNMENT_CENTER, w, false, 4)
 	if not _callout.is_empty():
 		var t: float = float(_callout["t"])
 		var a: float = clampf(minf(t * 6.0, (float(_callout["life"]) - t) * 3.0), 0.0, 1.0)
 		var sc: float = 1.0 + maxf(0.0, 0.2 - t) * 2.0
-		_text(Vector2(0, h * 0.56), String(_callout["text"]), int(40 * sc), Color(1.0, 0.95, 0.55, a),
+		_text(Vector2(0, h * 0.56), String(_callout["text"]), int(44 * sc), Color(1.0, 0.95, 0.55, a),
 			HORIZONTAL_ALIGNMENT_CENTER, w, true, 9)
 	if _flash > 0.0:
 		var c: Color = _flash_color
@@ -550,14 +587,14 @@ func _draw_plate(i: int, w: float, h: float) -> void:
 	var pw: float = 420.0
 	var x: float = lerpf(-pw, 40.0, k) if not right else lerpf(w, w - pw - 40.0, k)
 	var y: float = h * 0.66
-	var panel := Rect2(x, y, pw, 92)
+	var panel := Rect2(x, y, pw, 112)
 	_canvas.draw_rect(panel, Color(0.06, 0.04, 0.03, 0.88))
 	_canvas.draw_rect(Rect2(panel.position, Vector2(pw, 5)), HP_COLOR if not right else GUARD_COLOR)
 	_canvas.draw_rect(panel, FRAME, false, 2.0)
 	var align: int = HORIZONTAL_ALIGNMENT_RIGHT if right else HORIZONTAL_ALIGNMENT_LEFT
-	_text(Vector2(x + 16, y + 40), String(f.side["name"]).to_upper(), 30, Color.WHITE, align, pw - 32.0, true, 6)
-	_text(Vector2(x + 16, y + 66), "Chủ gà: %s" % String(f.side.get("owner", "")), 16, Color(0.9, 0.9, 0.9), align, pw - 32.0, false, 4)
-	_text(Vector2(x + 16, y + 84), "%s · Lv%d" % [GameState.BREED_NAMES[int(f.side["breed"])], int(f.side["lv"])], 15,
+	_text(Vector2(x + 16, y + 48), String(f.side["name"]).to_upper(), UISkin.FS_BIG, Color.WHITE, align, pw - 32.0, true, 6)
+	_text(Vector2(x + 16, y + 78), "Chủ gà: %s" % String(f.side.get("owner", "")), UISkin.FS_BODY, Color(0.9, 0.9, 0.9), align, pw - 32.0, false, 4)
+	_text(Vector2(x + 16, y + 104), "%s · Lv%d" % [GameState.BREED_NAMES[int(f.side["breed"])], int(f.side["lv"])], UISkin.FS_BODY,
 		FRAME, align, pw - 32.0, true, 4)
 
 
@@ -573,9 +610,9 @@ func _draw_vs(w: float, h: float) -> void:
 		var f: BattleDirector.Fighter = director.fighters[i]
 		var align: int = HORIZONTAL_ALIGNMENT_LEFT if i == 0 else HORIZONTAL_ALIGNMENT_RIGHT
 		var x: float = 60.0 - slide if i == 0 else slide
-		_text(Vector2(x, h * 0.5 + 12), String(f.side["name"]).to_upper(), 38, Color(1, 1, 1, a), align, w - 60.0, true, 8)
-		_text(Vector2(x, h * 0.5 + 40), "%s · %s" % [String(f.side.get("owner", "")), GameState.BREED_NAMES[int(f.side["breed"])]],
-			17, Color(1.0, 0.85, 0.5, a), align, w - 60.0, false, 5)
+		_text(Vector2(x, h * 0.5 + 12), String(f.side["name"]).to_upper(), UISkin.FS_BIG, Color(1, 1, 1, a), align, w - 60.0, true, 8)
+		_text(Vector2(x, h * 0.5 + 46), "%s · %s" % [String(f.side.get("owner", "")), GameState.BREED_NAMES[int(f.side["breed"])]],
+			UISkin.FS_BODY, Color(1.0, 0.85, 0.5, a), align, w - 60.0, false, 5)
 	var vs_scale: float = 1.0 + maxf(0.0, 0.25 - t) * 4.0
 	_text(Vector2(0, h * 0.5 + 24), "VS", int(88 * vs_scale), Color(1.0, 0.92, 0.5, a), HORIZONTAL_ALIGNMENT_CENTER, w, true, 12)
 
@@ -584,16 +621,63 @@ func _draw_clock(w: float) -> void:
 	var box := Rect2(w * 0.5 - 46.0, 10, 92, 62)
 	_canvas.draw_rect(box, PANEL)
 	_canvas.draw_rect(box, FRAME, false, 3.0)
-	var label: String = "∞"
+	var label: String = "--" # font pixel không có "∞"
 	if director.mode != &"tutorial":
 		label = "%02d" % int(ceil(float(maxi(director.clock_ticks, 0)) / 60.0))
 	if director.rounds_to_win > 1:
-		_text(Vector2(box.position.x, box.end.y + 16), "HIỆP %d" % director.round_index, 14, FRAME,
-			HORIZONTAL_ALIGNMENT_CENTER, box.size.x, true, 4)
+		_text(Vector2(box.position.x - 40.0, box.end.y + 28), "HIỆP %d" % director.round_index, UISkin.FS_BODY, FRAME,
+			HORIZONTAL_ALIGNMENT_CENTER, box.size.x + 80.0, true, 5)
 	var color: Color = Color(1.0, 0.95, 0.7)
 	if director.overtime or (director.clock_ticks < 600 and director.mode != &"tutorial"):
 		color = Color(1.0, 0.45, 0.3)
-	_text(Vector2(box.position.x, box.position.y + 50), label, 46, color, HORIZONTAL_ALIGNMENT_CENTER, box.size.x, true, 6)
+	_text(Vector2(box.position.x, box.position.y + 50), label, UISkin.FS_HUGE, color, HORIZONTAL_ALIGNMENT_CENTER, box.size.x, true, 6)
+
+
+## Báo công an: dòng đếm ngược dưới đồng hồ + đèn đỏ/xanh hai mép màn hình mạnh dần ở 10 giây cuối.
+## Hell Mode: nhãn đỏ dưới đồng hồ.
+func _draw_police(w: float, h: float) -> void:
+	if director.hell_mode and director.mode != &"police":
+		_text(Vector2(0, 124), "HELL MODE", UISkin.FS_SMALL, Color(1.0, 0.35, 0.2, 0.75 + 0.25 * sin(_time * 5.0)),
+			HORIZONTAL_ALIGNMENT_CENTER, w, true, 4)
+	if director.mode != &"police" or director.raid:
+		return
+	var secs: int = int(ceil(float(maxi(director.clock_ticks, 0)) / 60.0))
+	var urgent: float = clampf(1.0 - float(director.clock_ticks) / 600.0, 0.0, 1.0)
+	var pulse: float = 0.5 + 0.5 * sin(_time * (4.0 + 10.0 * urgent))
+	_text(Vector2(0, 132), "Công an tới trong %d…" % secs, UISkin.FS_BODY, Color(0.7, 0.85, 1.0).lerp(Color(1.0, 0.4, 0.35), urgent * pulse),
+		HORIZONTAL_ALIGNMENT_CENTER, w, true, 6)
+	if director.phase != BattleDirector.Phase.FIGHT:
+		return
+	var level: float = 0.12 + 0.55 * urgent
+	var swap: bool = int(_time * (3.0 + 6.0 * urgent)) % 2 == 0
+	for k in range(6):
+		var a: float = level * float(6 - k) / 6.0 * (0.4 + 0.6 * pulse)
+		var e: float = float(k) * 12.0
+		var left := Color(0.95, 0.1, 0.1, a) if swap else Color(0.15, 0.35, 1.0, a)
+		var right := Color(0.15, 0.35, 1.0, a) if swap else Color(0.95, 0.1, 0.1, a)
+		_canvas.draw_rect(Rect2(e, 0, 12, h), left)
+		_canvas.draw_rect(Rect2(w - e - 12.0, 0, 12, h), right)
+
+
+func _draw_raid(w: float, h: float) -> void:
+	var t: float = _raid
+	var k: float = clampf(t / 0.15, 0.0, 1.0)
+	var swap: bool = int(t * 8.0) % 2 == 0
+	_canvas.draw_rect(Rect2(0, 0, w, h), (Color(0.9, 0.1, 0.1, 0.18) if swap else Color(0.15, 0.3, 1.0, 0.18)))
+	var band_h: float = 150.0 * k
+	var y: float = h * 0.42
+	_canvas.draw_rect(Rect2(0, y - band_h * 0.5, w, band_h), Color(0.03, 0.04, 0.1, 0.9))
+	for i in range(16):
+		var x: float = fmod(float(i) * 140.0 + t * 900.0, w + 140.0) - 140.0
+		var c := Color(0.95, 0.15, 0.15, 0.85) if (i + int(t * 8.0)) % 2 == 0 else Color(0.2, 0.4, 1.0, 0.85)
+		_canvas.draw_rect(Rect2(x, y - band_h * 0.5, 70, 8), c)
+		_canvas.draw_rect(Rect2(w - x - 70.0, y + band_h * 0.5 - 8.0, 70, 8), c)
+	if band_h > 60.0:
+		var shake := Vector2(sin(t * 50.0) * 4.0, cos(t * 43.0) * 2.0) * maxf(0.0, 1.0 - t)
+		_text(Vector2(0, y + 18) + shake, "CÔNG AN TỚI!", int(76 * (1.0 + maxf(0.0, 0.25 - t) * 2.0)),
+			Color(1.0, 0.95, 0.9), HORIZONTAL_ALIGNMENT_CENTER, w, true, 12)
+		_text(Vector2(0, y + 56), "Tuýt tuýt! Giải tán! Bà con chạy tán loạn…", UISkin.FS_BODY, Color(0.75, 0.85, 1.0),
+			HORIZONTAL_ALIGNMENT_CENTER, w, true, 6)
 
 
 func _draw_cards(f: BattleDirector.Fighter, w: float, h: float) -> void:
@@ -620,7 +704,7 @@ func _draw_cards(f: BattleDirector.Fighter, w: float, h: float) -> void:
 
 	if f.cards.is_shuffling():
 		_text(Vector2(0, y + 40), "Đang xáo bài… %.1fs" % (float(f.cards.get_shuffle_remaining_ticks()) / 60.0),
-			18, CARD_COLOR, HORIZONTAL_ALIGNMENT_CENTER, w)
+			UISkin.FS_BODY, CARD_COLOR, HORIZONTAL_ALIGNMENT_CENTER, w, false, 4)
 		return
 	for i in range(hand.size()):
 		var info: Dictionary = GameState.CARD_INFO.get(hand[i], {"name": String(hand[i]), "cost": 0, "color": Color.GRAY})
@@ -629,13 +713,14 @@ func _draw_cards(f: BattleDirector.Fighter, w: float, h: float) -> void:
 		var affordable: bool = gauge >= int(info["cost"])
 		var base: Color = (info["color"] as Color).darkened(0.25 if affordable else 0.6)
 		_canvas.draw_rect(rect, base)
-		_canvas.draw_rect(Rect2(rect.position, Vector2(rect.size.x, 18)), base.lightened(0.2))
+		_canvas.draw_rect(Rect2(rect.position, Vector2(rect.size.x, 28)), base.lightened(0.2))
 		_canvas.draw_rect(rect, FRAME if i == selected else Color(0.15, 0.1, 0.08), false, 3.0 if i == selected else 2.0)
-		_text(rect.position + Vector2(6, 15), String(info["name"]), 14, Color.WHITE, HORIZONTAL_ALIGNMENT_LEFT, -1, true, 4)
+		_text(rect.position + Vector2(0, 22), String(info["name"]), UISkin.FS_BODY, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER,
+			rect.size.x, false, 4)
 		for c in range(int(info["cost"])):
-			_canvas.draw_circle(rect.position + Vector2(rect.size.x - 10.0 - float(c) * 14.0, 34), 5.0, CARD_COLOR)
+			_canvas.draw_circle(rect.position + Vector2(rect.size.x - 10.0 - float(c) * 14.0, 40), 5.0, CARD_COLOR)
 		if i == selected:
-			_text(rect.position + Vector2(6, 58), "[O] tung", 12, CARD_COLOR, HORIZONTAL_ALIGNMENT_LEFT, -1, false, 3)
+			_text(rect.position + Vector2(6, 60), "[O] tung", UISkin.FS_SMALL, CARD_COLOR, HORIZONTAL_ALIGNMENT_LEFT, -1, true, 3)
 
 	var effects: Array[StringName] = f.cards.get_active_effect_ids()
 	var ey: float = y - 44.0
@@ -643,23 +728,23 @@ func _draw_cards(f: BattleDirector.Fighter, w: float, h: float) -> void:
 		var remain: float = float(f.cards.get_active_effect_remaining_ticks(effect_id)) / 60.0
 		var label: String = {&"attack_power_bonus": "Cuồng Nộ +30% ATK", &"incoming_damage_reduction": "Mai Rùa −25% sát thương",
 			&"heavy_knockback_bonus": "Gió Sông: Heavy đẩy xa"}.get(effect_id, String(effect_id))
-		_text(Vector2(0, ey), "%s  %.1fs" % [label, remain], 15, CARD_COLOR, HORIZONTAL_ALIGNMENT_CENTER, w, true, 4)
-		ey -= 18.0
+		_text(Vector2(0, ey), "%s  %.1fs" % [label, remain], UISkin.FS_BODY, CARD_COLOR, HORIZONTAL_ALIGNMENT_CENTER, w, false, 5)
+		ey -= 30.0
 
 
 func _draw_objectives() -> void:
 	if director.objectives.is_empty():
 		return
-	var y: float = 170.0
-	var panel_h: float = 26.0 + 24.0 * float(director.objectives.size())
-	_canvas.draw_rect(Rect2(14, y - 22, 420, panel_h), Color(0, 0, 0, 0.45))
-	_text(Vector2(24, y - 4), "NHIỆM VỤ", 14, FRAME, HORIZONTAL_ALIGNMENT_LEFT, -1, true, 4)
+	var y: float = 214.0
+	var panel_h: float = 36.0 + 30.0 * float(director.objectives.size())
+	_canvas.draw_rect(Rect2(14, y - 30, 620, panel_h), Color(0, 0, 0, 0.5))
+	_text(Vector2(24, y - 12), "NHIỆM VỤ", UISkin.FS_SMALL, FRAME, HORIZONTAL_ALIGNMENT_LEFT, -1, true, 4)
 	for objective in director.objectives:
-		y += 22.0
+		y += 30.0
 		var done: bool = int(objective["value"]) >= int(objective["goal"])
 		var mark: String = "✔" if done else "□"
 		_text(Vector2(24, y), "%s %s  %d/%d" % [mark, String(objective["text"]), int(objective["value"]), int(objective["goal"])],
-			16, Color(0.6, 1.0, 0.6) if done else Color.WHITE, HORIZONTAL_ALIGNMENT_LEFT, -1, false, 4)
+			UISkin.FS_BODY, Color(0.6, 1.0, 0.6) if done else Color.WHITE, HORIZONTAL_ALIGNMENT_LEFT, 600, false, 4)
 
 
 func _draw_cut_in(w: float, h: float) -> void:
@@ -678,5 +763,5 @@ func _draw_cut_in(w: float, h: float) -> void:
 	if band_h > 40.0:
 		var right: bool = int(_cut_in["index"]) == 1
 		var slide: float = (1.0 - k) * 300.0 * (1.0 if right else -1.0)
-		_text(Vector2(slide, y + 18), String(_cut_in["text"]), 52, Color(1.0, 0.9, 0.35, out),
+		_text(Vector2(slide, y + 18), String(_cut_in["text"]), 55, Color(1.0, 0.9, 0.35, out),
 			HORIZONTAL_ALIGNMENT_CENTER, w, true, 10)

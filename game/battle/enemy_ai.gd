@@ -2,7 +2,9 @@ class_name EnemyAI
 extends RefCounted
 
 ## Enemy AI theo GDD 4.10 (Approach / Poke / Punish / Defend / Space / Zone), mở rộng thành AI đối kháng
-## theo Tier 1–3. AI CHỈ xuất bitmask input logic (InputBits) mỗi tick; trận xử lý y như phím người chơi.
+## theo Tier 1–4 (T4 – Olympic/Hell Mode: phản xạ ~180–250 ms, đỡ ≥ 65%, trừng phạt tối ưu, xoay thẻ đúng lúc, học
+## thói quen nhanh gấp đôi). Biết dùng vũ khí: Quạt lông (Heavy K bắn gió giữ khoảng cách), Nón bảo hiểm (Húc Nón có giáp
+## xuyên đòn), Dao chân (chuỗi L-L-L-M); Cánh Tiến Hóa (nhảy lần hai). Chế độ báo công an: `relentless` dồn ép liên tục. AI CHỈ xuất bitmask input logic (InputBits) mỗi tick; trận xử lý y như phím người chơi.
 ## Nút: LIGHT = J (L), HEAVY = K (M), SPECIAL = L (H), ACTION_H = H (S).
 ##
 ## Nhận thức có độ trễ: mọi thông tin về hành động của đối thủ lấy từ ảnh chụp `view` cách đây
@@ -53,10 +55,12 @@ const ROUTES: Dictionary = {
 		[["jab", "jab", "mid", "heavy"], 0, 2], [["jab", "mid", "heavy"], 0, 1], [["jab", "mid", "rush"], 1, 2],
 		[["jab", "mid", "super"], 2, 2], [["mid", "heavy"], 0, 1], [["low", "jab", "mid"], 0, 2],
 		[["mid", "rush"], 1, 1], [["jab", "jab"], 0, 1], [["low", "sweep"], 0, 2],
+		[["jab", "jab", "jab", "mid"], 0, 2, "dao"],
 	],
 	&"dongtao": [
 		[["jab", "mid", "heavy"], 0, 1], [["jab", "mid", "super"], 2, 2], [["mid", "quake"], 0, 2],
 		[["jab", "heavy"], 0, 1], [["mid", "heavy"], 0, 1], [["jab", "jab", "mid", "heavy"], 0, 3],
+		[["jab", "jab", "jab", "mid"], 0, 2, "dao"],
 	],
 }
 
@@ -69,6 +73,12 @@ var jumpiness: float = 0.0
 var uses_mai_rua: bool = false
 var script_mode: int = Mode.NONE
 var kit: StringName = &"rooster"
+## Báo công an: dồn ép, không lùi giữ khoảng cách.
+var relentless: bool = false
+## Vũ khí (từ cờ hành vi của bên đấu).
+var gust_weapon: bool = false
+var armor_rush: bool = false
+var extra_light: int = 0
 
 var state: int = State.APPROACH
 ## Thói quen đối thủ đã ghi nhận (giảm dần theo thời gian) – AI đổi lựa chọn theo đó.
@@ -108,11 +118,19 @@ var _whiff_punish: float = 0.1
 var _combo_skill: float = 0.2
 var _hesitate: float = 0.3
 var _meter_smart: float = 0.2
+var _habit_k: float = 3.0         # ngưỡng "đã thấy thói quen" (T4 học nhanh hơn)
+var _habit_decay: float = 0.5
+var _card_tick: int = -1000
 
 
 func configure(config: Dictionary, rng_seed: int) -> void:
-	tier = clampi(int(config.get("tier", 1)), 1, 3)
-	skill = clampf(float(config.get("skill", [0.0, 0.2, 0.6, 0.9][tier])), 0.0, 1.0)
+	tier = clampi(int(config.get("tier", 1)), 1, 4)
+	skill = clampf(float(config.get("skill", [0.0, 0.2, 0.6, 0.9, 1.0][tier])), 0.0, 1.0)
+	var flags: Dictionary = config.get("flags", {})
+	gust_weapon = bool(flags.get("heavy_gust", false))
+	armor_rush = bool(flags.get("heavy_rush", false))
+	extra_light = int(flags.get("light_combo_extra", 0))
+	relentless = bool(config.get("relentless", false))
 	kit = StringName(config.get("kit", Moves.kit_for_side(config)))
 	if not ROLES.has(kit):
 		kit = &"rooster"
@@ -129,12 +147,35 @@ func configure(config: Dictionary, rng_seed: int) -> void:
 	_combo_skill = skill
 	_hesitate = 0.35 * (1.0 - skill) + 0.04
 	_meter_smart = skill
+	if tier >= 4:
+		# T4 (GDD 4.10: phản xạ 180 ms, đỡ 65%, đầy đủ, đọc nhảy, thẻ + Special tối ưu) – vẫn chỉ xuất bit input.
+		reaction_ticks = int(round(10.0 + 4.0 * (1.0 - skill)))
+		block_rate = maxf(block_rate, 0.65)
+		_block_skill = maxf(_block_skill, 0.85)
+		_height_skill = maxf(_height_skill, 0.92)
+		_anti_air = maxf(_anti_air, 0.85)
+		_punish = maxf(_punish, 0.95)
+		_whiff_punish = maxf(_whiff_punish, 0.8)
+		_combo_skill = 1.0
+		_hesitate = 0.03
+		_meter_smart = 1.0
+		_habit_k = 1.5
+		_habit_decay = 0.75
+		_anti_air = maxf(_anti_air, 0.95)
+		_punish = 1.0
+		_whiff_punish = maxf(_whiff_punish, 0.95)
+		jumpiness *= 0.5 # không nhảy bừa vào đòn chống nhảy
+	if relentless:
+		aggression = 1.0
+		_hesitate *= 0.3
 	_rng.seed = rng_seed
 	for role in ROLE_MOVES[kit].keys():
-		_info[role] = Moves.get_move(ROLE_MOVES[kit][role], kit)
-	# Chỉ giữ các combo mà mọi bước nối đều có trong danh sách cancel của bảng chiêu.
+		_info[role] = Moves.weapon_move(ROLE_MOVES[kit][role], kit, flags)
+	# Chỉ giữ các combo mà mọi bước nối đều có trong danh sách cancel của bảng chiêu (đã áp vũ khí).
 	_routes = []
 	for route in ROUTES[kit]:
+		if route.size() > 3 and String(route[3]) == "dao" and extra_light <= 0:
+			continue
 		if _route_valid(route[0]):
 			_routes.append(route)
 
@@ -191,6 +232,11 @@ func think(view: Dictionary) -> int:
 	if bool(view["my_locked"]):
 		_route = []
 		return 0
+	# Cánh Tiến Hóa: nhảy lần hai ở gần đỉnh (né đòn chống nhảy / thoát góc).
+	if bool(view["my_airborne"]) and bool(view.get("my_can_air_jump", false)) and tier >= 2 and not bool(view["my_busy"]) \
+			and absf(float(view.get("my_vy", 999.0))) < 140.0 and _rng.randf() < 0.1 + 0.25 * skill:
+		_note("air_jump")
+		return _bit(UP) | (_bit(away) if bool(view["my_at_wall"]) else _bit(toward))
 
 	# Thẻ: Mai Rùa khi HP < 50% (Bảng 4.9), Cuồng Nộ khi sắp ép đòn.
 	var card_out: int = _cards(view, distance)
@@ -243,10 +289,13 @@ func think(view: Dictionary) -> int:
 			elif distance < 200.0:
 				held |= _start_route(view, distance)
 		State.ZONE:
-			if _cooldown == 0 and _info.has("projectile") and not bool(view["my_projectile"]):
+			if _cooldown == 0 and gust_weapon and not bool(view.get("my_gust_out", false)) and distance > 150.0:
+				held |= _press("mid", toward, away) # Quạt lông: tát cánh hụt → bắn luồng gió
+				_note("gust")
+			elif _cooldown == 0 and _info.has("projectile") and not bool(view["my_projectile"]):
 				held |= _press("projectile", toward, away)
 				_note("zone")
-			state = State.SPACE
+			state = State.SPACE if not relentless else State.APPROACH
 		State.DEFEND:
 			held |= _bit(away)
 			if _guard_low and bool(Moves.kit(kit)["can_crouch"]):
@@ -271,7 +320,7 @@ func think(view: Dictionary) -> int:
 				held |= _bit(toward)
 			elif _cooldown == 0:
 				held |= _start_route(view, distance)
-				_pause_ticks = int(_rng.randf_range(10.0, 40.0) * (1.5 - aggression) * (1.3 - skill * 0.6))
+				_pause_ticks = int(_rng.randf_range(10.0, 40.0) * (1.5 - aggression) * (1.3 - skill * 0.6) * (0.5 if tier >= 4 else 1.0))
 	return held
 
 
@@ -303,14 +352,19 @@ func _react(view: Dictionary, seen: Dictionary, distance: float, toward: int, aw
 			and not bool(seen["opp_unblockable"]):
 		_reacted_serial = serial
 		var p_block: float = clampf(block_rate * 0.6 + _block_skill * 0.7 + (0.15 if lead > 0.2 else 0.0)
-			+ (0.1 if float(habits["specials"]) > 3.0 and String(seen["opp_move_cat"]) in ["SP", "SUPER"] else 0.0), 0.05, 0.95)
+			+ (0.1 if float(habits["specials"]) > _habit_k and String(seen["opp_move_cat"]) in ["SP", "SUPER"] else 0.0), 0.05, 0.95)
 		if _info.has("counter") and est_active >= 2 and est_active <= 7 and _rng.randf() < 0.15 + 0.35 * skill:
 			_note("counter")
 			return _press("counter", toward, away)
+		# Nón bảo hiểm: húc xuyên đòn bằng giáp (giáp có từ frame đầu) khi đòn đối thủ còn chưa ra.
+		if armor_rush and est_active >= 3 and distance < reach("mid") + 90.0 and not _repetitive("helmet") \
+				and _rng.randf() < 0.15 + 0.35 * skill:
+			_note("helmet")
+			return _press("mid", toward, away)
 		if _rng.randf() < p_block:
 			var low: bool = int(seen["opp_level"]) == Moves.Level.LOW
 			_guard_low = low if _rng.randf() < _height_skill else not low
-			if habits["lows"] > 3.0 and skill > 0.4:
+			if habits["lows"] > _habit_k and skill > 0.4:
 				_guard_low = low or _rng.randf() < 0.3
 			_defend_ticks = maxi(10, int(seen["opp_ticks_left"]) - reaction_ticks + 4)
 			state = State.DEFEND
@@ -341,7 +395,7 @@ func _react(view: Dictionary, seen: Dictionary, distance: float, toward: int, aw
 		var approaching: bool = float(seen["opp_vx_toward"]) > 20.0 or distance < 140.0
 		if approaching and distance < 190.0:
 			_aa_serial = int(seen["opp_jump_serial"])
-			if _rng.randf() < _anti_air + (0.15 if habits["jumps"] > 3.0 else 0.0):
+			if _rng.randf() < _anti_air + (0.15 if habits["jumps"] > _habit_k else 0.0):
 				_note("anti_air")
 				if _info.has("counter") and _rng.randf() < 0.45:
 					return _press("counter", toward, away)
@@ -396,8 +450,19 @@ func _decide(view: Dictionary, seen: Dictionary, distance: float, lead: float, d
 	elif distance > 330.0 and _info.has("projectile") and _rng.randf() < 0.15 + 0.35 * skill * (1.0 - aggr * 0.5) \
 			and not _repetitive("zone"):
 		state = State.ZONE
+	elif gust_weapon and distance > 170.0 and distance < 560.0 and not bool(view.get("my_gust_out", false)) \
+			and _rng.randf() < (0.25 + 0.35 * skill) * (0.6 if relentless else 1.0) and not _repetitive("gust"):
+		state = State.ZONE # Quạt lông giữ khoảng cách, đẩy đối thủ vào góc
+	elif armor_rush and distance > 120.0 and distance < 260.0 and _cooldown == 0 \
+			and _rng.randf() < (0.1 + 0.15 * aggr) * (0.5 if _repetitive("helmet") else 1.0):
+		state = State.POKE # Nón bảo hiểm: lao có giáp từ tầm trung
+		_route = []
+		var hdx: float = float(view["dx"])
+		_queue.append(_press("mid", RIGHT if hdx > 0.0 else LEFT, LEFT if hdx > 0.0 else RIGHT))
+		_note("helmet")
+		_passive_ticks = 0
 	elif distance > reach("jab") + 10.0:
-		var footsie: float = 0.2 + 0.4 * skill
+		var footsie: float = 0.2 + 0.4 * skill + (0.25 if tier >= 4 else 0.0) # T4: đứng ngoài tầm, chờ đối thủ hụt
 		if kit == &"dongtao" and distance < 340.0 and distance > 150.0 and _cooldown == 0 \
 				and _rng.randf() < (0.08 + 0.12 * aggr) * (0.5 if _repetitive("rush") else 1.0):
 			state = State.POKE # Húc Trâu xuyên đòn từ tầm trung
@@ -422,6 +487,8 @@ func _decide(view: Dictionary, seen: Dictionary, distance: float, lead: float, d
 		else:
 			state = State.SPACE
 			_note("space")
+	if relentless and state == State.SPACE:
+		state = State.APPROACH if distance > reach("jab") + 10.0 else State.POKE
 	if state in [State.SPACE, State.DEFEND]:
 		_passive_ticks += _think_timer
 	_finish_decide(previous)
@@ -494,7 +561,7 @@ func _start_route(view: Dictionary, distance: float, punish: bool = false) -> in
 		var best_score: float = -1.0
 		for route in candidates:
 			var score: float = float((route[0] as Array).size()) + float(route[1]) * (1.5 if float(view["opp_hp_ratio"]) < 0.4 else 0.4)
-			if habits["blocks"] > 3.0 and (route[0] as Array).has("low"):
+			if habits["blocks"] > _habit_k and (route[0] as Array).has("low"):
 				score += 1.5 # đối thủ đỡ nhiều: trộn đòn thấp
 			if _repetitive("route_%s" % str(route[0])):
 				score -= 2.0
@@ -561,6 +628,8 @@ func _cards(view: Dictionary, distance: float) -> int:
 		return 0
 	var selected: StringName = StringName(view.get("my_card_selected", &""))
 	var cost: int = int(view.get("my_card_cost", 9))
+	if tier >= 4:
+		return _smart_cards(view, distance, selected, cost)
 	if int(view["my_card_gauge"]) < cost:
 		return 0
 	match selected:
@@ -576,10 +645,38 @@ func _cards(view: Dictionary, distance: float) -> int:
 	return 0
 
 
+## T4: chọn thẻ theo tình huống rồi xoay tay bài tới thẻ đó – Mai Rùa khi bị dồn/máu thấp, Cuồng Nộ trước khi
+## ép đòn ở cự ly gần, Gió Sông khi đối thủ sát góc. Mỗi lần bấm cách nhau ≥ 10 tick.
+func _smart_cards(view: Dictionary, distance: float, selected: StringName, cost: int) -> int:
+	if _tick - _card_tick < 10:
+		return 0
+	var hand: Array = view.get("my_hand", [])
+	var gauge: int = int(view["my_card_gauge"])
+	var want: StringName = &""
+	if hand.has(&"mai_rua") and not bool(view["mai_rua_active"]) and float(view["my_hp_ratio"]) < 0.55 \
+			and (distance < 170.0 or bool(view["me_hit"])) and gauge >= 1:
+		want = &"mai_rua"
+	elif hand.has(&"cuong_no") and not bool(view.get("cuong_no_active", false)) and distance < 160.0 and gauge >= 2 \
+			and (bool(view["opp_recovering"]) or bool(view["opp_down"]) or float(view["opp_hp_ratio"]) < 0.5):
+		want = &"cuong_no"
+	elif hand.has(&"gio_song") and not bool(view.get("gio_song_active", false)) and bool(view.get("opp_at_wall", false)) \
+			and distance < 220.0 and gauge >= 2:
+		want = &"gio_song"
+	if want == &"":
+		return 0
+	_card_tick = _tick
+	if selected == want:
+		if gauge >= cost:
+			_note("card")
+			return _tap(InputBits.CARD_USE)
+		return 0
+	return _tap(InputBits.CARD_NEXT)
+
+
 func _learn(seen: Dictionary) -> void:
 	if _tick % 600 == 0:
 		for key in habits.keys():
-			habits[key] = float(habits[key]) * 0.5
+			habits[key] = float(habits[key]) * _habit_decay
 	if not _prev_seen.is_empty():
 		if bool(seen["opp_airborne"]) and not bool(_prev_seen["opp_airborne"]) and not bool(seen["opp_juggle"]):
 			habits["jumps"] = float(habits["jumps"]) + 1.0

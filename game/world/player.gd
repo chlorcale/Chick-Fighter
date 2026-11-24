@@ -3,10 +3,13 @@ extends Node2D
 
 ## Nhân vật chính ở chế độ khám phá (top-down).
 ## Chỉ đi 4 hướng lên/xuống/trái/phải, không đi chéo; bị chặn bởi World.is_blocked().
-## Sprite xuất từ truongcon.aseprite với layer viền trắng "Vien" đã tắt, thu nhỏ ×0,8 để cao ngang NPC
-## trên bản đồ (~42 px). Có thể chạy xe máy (nhanh hơn).
+## Sprite bản mới xuất từ truongcon_stardew.aseprite (tools/art/build_player.py → player_sheet_v2.png): đã vẽ đúng cỡ
+## NPC bản đồ (~43 px) và có viền sẵn nên vẽ ×1,0, không dùng shader viền; bóng đổ (layer "Bong") là sprite riêng
+## nằm dưới. Có thể chạy xe máy (nhanh hơn).
 
-const SHEET: Texture2D = preload("res://game/art/player_sheet.png")
+const SHEET: Texture2D = preload("res://game/art/player_sheet_v2.png")
+## Bóng đổ (layer "Bong"), cùng lưới khung với SHEET.
+const SHADOW_SHEET: Texture2D = preload("res://game/art/player_sheet_v2_shadow.png")
 const BIKE_SIDE: Texture2D = preload("res://game/art/bike_side.png")
 const BIKE_SIDE_B: Texture2D = preload("res://game/art/bike_side_b.png") # khung nan hoa thứ hai
 const BIKE_FRONT: Texture2D = preload("res://game/art/bike_front.png")
@@ -19,23 +22,30 @@ const RIDE_SIDE_B: Texture2D = preload("res://game/art/bike_ride_side_b.png")
 const RIDE_FRONT: Texture2D = preload("res://game/art/bike_ride_front.png")
 const RIDE_BACK: Texture2D = preload("res://game/art/bike_ride_back.png")
 const RIDE_HEIGHT: int = 60
-const OUTLINE_SHADER: Shader = preload("res://game/world/outline.gdshader")
 const Audio := preload("res://game/audio/audio_director.gd")
 const FRAME_SIZE: int = 64
-const SPRITE_SCALE: float = 0.8
+## Art mới đã cùng cỡ NPC bản đồ → vẽ ×1,0 (sheet cũ cần ×0,8).
+const SPRITE_SCALE: float = 1.0
+## Gốc toạ độ (giữa hai bàn chân, ngay dưới hàng viền chân thấp nhất) trong ô 64×64.
+const FOOT_IN_FRAME: Vector2 = Vector2(32, 58)
 const WALK_SPEED: float = 80.0 # px/s
 const BIKE_SPEED: float = 210.0
 const FOOT_HALF_WIDTH: int = 5
 const FOOT_HEIGHT: int = 5
 
-## [khung đầu, số khung, thời lượng mỗi khung (s)] theo tag trong file Aseprite.
+## [khung đầu, số khung, thời lượng mỗi khung (s)] theo tag + thời lượng khung trong file Aseprite
+## (player_sheet_v2.json; idle có nhịp thở + chớp mắt ở khung thứ 3). Test so khớp với JSON.
 const ANIMS: Dictionary = {
-	"idle": [0, 6, [0.3, 0.25, 0.3, 0.25, 0.4, 0.1]],
-	"walk_down": [6, 4, [0.14, 0.12, 0.14, 0.12]],
-	"walk_up": [10, 4, [0.14, 0.12, 0.14, 0.12]],
-	"walk_left": [14, 4, [0.14, 0.12, 0.14, 0.12]],
-	"walk_right": [18, 4, [0.14, 0.12, 0.14, 0.12]],
+	"idle": [0, 4, [0.45, 0.3, 0.11, 0.45]],
+	"walk_down": [4, 4, [0.14, 0.14, 0.14, 0.14]],
+	"walk_up": [8, 4, [0.14, 0.14, 0.14, 0.14]],
+	"walk_left": [12, 4, [0.14, 0.14, 0.14, 0.14]],
+	"walk_right": [16, 4, [0.14, 0.14, 0.14, 0.14]],
 }
+## Khung chạm đất trong chu kỳ đi (khung 1 và 3 của tag – hai chân dang rộng) → phát tiếng bước chân.
+const STEP_FRAMES: Array[int] = [0, 2]
+## Đứng yên quay lưng/quay ngang: art chỉ có idle nhìn thẳng → giữ khung chụm chân của tag đi theo hướng đó.
+const IDLE_HOLD: Dictionary = {Vector2i(0, -1): 9, Vector2i(-1, 0): 13, Vector2i(1, 0): 17}
 const DIRECTIONS: Array = [
 	[Vector2i(0, -1), "walk_up", [&"p1_jump", &"p2_jump"]],
 	[Vector2i(0, 1), "walk_down", [&"p1_crouch", &"p2_crouch"]],
@@ -49,6 +59,7 @@ var riding: bool = false
 var facing: Vector2i = Vector2i(0, 1)
 
 var _sprite: Sprite2D
+var _shadow: Sprite2D
 var _bike: Sprite2D
 var _anim: String = "idle"
 var _anim_frame: int = 0
@@ -58,16 +69,26 @@ var _remainder: float = 0.0
 var _smoke: ExhaustSmoke
 var _smoke_timer: float = 0.0
 var _wheel_time: float = 0.0
-var _outline_mat: ShaderMaterial
+## Lắc lư trên cầu khỉ / cầu ván hẹp (World.set_wobble mỗi frame) và cúi đầu khi vỏ lãi chui dưới cầu – chỉ đổi hình.
+var _wobble_amp: float = 0.0
+var _wobble_phase: float = 0.0
+var _duck: bool = false
+var _base_sprite_pos: Vector2 = Vector2.ZERO
+var _base_bike_pos: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
 	_smoke = ExhaustSmoke.new() # con đầu tiên: khói vẽ dưới xe
 	add_child(_smoke)
-	_outline_mat = ShaderMaterial.new()
-	_outline_mat.shader = OUTLINE_SHADER
+	_shadow = Sprite2D.new() # bóng đổ dưới chân (ẩn khi chạy xe – ảnh xe có bóng riêng)
+	_shadow.name = "Shadow"
+	_shadow.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_shadow.texture = SHADOW_SHEET
+	_shadow.centered = false
+	_shadow.region_enabled = true
+	add_child(_shadow)
 	_sprite = Sprite2D.new()
-	_sprite.material = _outline_mat
+	_sprite.name = "Body"
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_sprite.texture = SHEET
 	_sprite.centered = false
@@ -235,7 +256,7 @@ func _advance_anim(delta: float) -> void:
 		_anim_time -= duration
 		_anim_frame = (_anim_frame + 1) % int(data[1])
 		_apply_frame()
-		if _anim != "idle" and _anim_frame % 2 == 0:
+		if _anim != "idle" and STEP_FRAMES.has(_anim_frame):
 			# Tiếng bước chân: ván gỗ trên cầu, còn lại là đường đất.
 			var wood: bool = world != null and world.has_method("is_wood") and world.is_wood(position)
 			Audio.sfx(&"step_wood" if wood else &"step_dirt", -9.0, randf_range(0.92, 1.08))
@@ -244,13 +265,18 @@ func _advance_anim(delta: float) -> void:
 func _apply_frame() -> void:
 	if _sprite == null:
 		return
-	var data: Array = ANIMS[_anim]
-	var index: int = int(data[0]) + _anim_frame
+	var index: int = frame_index()
 	_sprite.visible = not riding
+	_shadow.visible = not riding
 	if not riding:
 		_sprite.region_rect = Rect2(index * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE)
-		_set_outline_region()
-		_sprite.position = Vector2(-32, -60) * SPRITE_SCALE # chân nhân vật nằm ở gốc toạ độ
+		_sprite.position = -FOOT_IN_FRAME * SPRITE_SCALE # chân nhân vật nằm ở gốc toạ độ
+		_shadow.region_rect = _sprite.region_rect
+		_shadow.position = _sprite.position
+		_shadow.scale = Vector2(SPRITE_SCALE, SPRITE_SCALE)
+		_base_sprite_pos = _sprite.position
+		if _wobble_amp > 0.0 or _duck:
+			_apply_pose()
 		return
 	# Trên xe: chỉ vẽ ảnh ghép người ngồi + xe theo hướng (sprite đi bộ ẩn).
 	match _anim:
@@ -267,11 +293,72 @@ func _apply_frame() -> void:
 			_bike.texture = RIDE_FRONT
 			_bike.flip_h = false
 			_bike.position = Vector2(-15, -RIDE_HEIGHT)
+	_base_bike_pos = _bike.position
+	if _wobble_amp > 0.0 or _duck:
+		_apply_pose()
 
 
-## Báo cho shader viền biết vùng đang vẽ để không lấy mẫu sang khung bên cạnh/phần bị cắt.
-func _set_outline_region() -> void:
-	var r: Rect2 = _sprite.region_rect
-	var size: Vector2 = SHEET.get_size()
-	_outline_mat.set_shader_parameter("region_min", r.position / size)
-	_outline_mat.set_shader_parameter("region_max", r.end / size)
+## Lắc lư (amp 0 = tắt, ~1 = cầu khỉ) theo đồng hồ t (s) – World gọi mỗi frame.
+func set_wobble(amp: float, t: float) -> void:
+	if amp == 0.0 and _wobble_amp == 0.0:
+		return
+	_wobble_amp = amp
+	_wobble_phase = t
+	_apply_pose()
+
+
+## Cúi người (thấp xuống ~20%) khi vỏ lãi đang chui dưới mặt cầu.
+func set_ducking(on: bool) -> void:
+	if on == _duck:
+		return
+	_duck = on
+	_apply_pose()
+
+
+func is_ducking() -> bool:
+	return _duck
+
+
+## Góc nghiêng hiện tại (rad) của hình nhân vật – test đọc.
+func pose_rotation() -> float:
+	return _sprite.rotation if not riding else _bike.rotation
+
+
+## Áp lắc lư/cúi lên sprite người và ảnh xe (xoay quanh chân = gốc node).
+func _apply_pose() -> void:
+	if _sprite == null:
+		return
+	var rot: float = 0.0
+	var dx: float = 0.0
+	if _wobble_amp > 0.0:
+		rot = sin(_wobble_phase * 7.0) * 0.07 * _wobble_amp
+		dx = roundf(sin(_wobble_phase * 3.5) * _wobble_amp)
+	var sy: float = 0.8 if _duck else 1.0
+	_sprite.rotation = rot
+	_sprite.scale = Vector2(SPRITE_SCALE, SPRITE_SCALE * sy)
+	_sprite.position = Vector2(dx, 0.0) + (_base_sprite_pos * Vector2(1.0, sy)).rotated(rot)
+	_bike.rotation = rot
+	_bike.scale = Vector2(1.0, sy)
+	_bike.position = Vector2(dx, 0.0) + (_base_bike_pos * Vector2(1.0, sy)).rotated(rot)
+
+
+## Quay mặt về hướng dir khi đứng yên (vd. quay sang người đang nói chuyện).
+func face(dir: Vector2i) -> void:
+	if dir == Vector2i.ZERO:
+		return
+	facing = dir
+	if not riding:
+		_set_anim("idle")
+	_apply_frame()
+
+
+## Tên hoạt ảnh + chỉ số khung trong tag đang vẽ (test đọc).
+func anim_state() -> Array:
+	return [_anim, _anim_frame]
+
+
+## Ô khung đang vẽ trong SHEET (test đọc).
+func frame_index() -> int:
+	if _anim == "idle" and IDLE_HOLD.has(facing):
+		return int(IDLE_HOLD[facing])
+	return int(ANIMS[_anim][0]) + _anim_frame

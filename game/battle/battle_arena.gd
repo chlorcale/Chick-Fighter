@@ -18,8 +18,14 @@ const STAGE_RIGHT: float = 1000.0
 const PX: float = 2.0
 const ART: String = "res://game/art/arena/"
 
-## Biến thể: &"chieu" (chiều tà, mặc định) hoặc &"toi" (chập tối, lồng đèn sáng – trận cuối).
-const VARIANTS: Array[StringName] = [&"chieu", &"toi"]
+## Biến thể: &"chieu" (chiều tà, mặc định) hoặc &"toi" (chập tối, lồng đèn sáng – trận cuối) – sới Ao Làng;
+## &"lien_tinh" (sới tỉnh: khán đài mái tôn, băng rôn) và &"olympic" (nhà thi đấu trong nhà, đèn pha, huy hiệu gà
+## vàng) – ảnh từ tools/art/build_arena_venues.py (arena_<biến thể>_<lớp>.png, thiếu lớp nào thì dùng lớp Ao Làng).
+## Biên sân mô phỏng KHÔNG đổi (GDD: sàn Olympic 1.400 px – OPEN).
+const VARIANTS: Array[StringName] = [&"chieu", &"toi", &"lien_tinh", &"olympic"]
+const VENUES: Array[StringName] = [&"lien_tinh", &"olympic"]
+const OLY_TOP: Color = Color8(10, 12, 26)
+const OLY_LOW: Color = Color8(26, 26, 44)
 
 ## Độ lệch dọc tối đa của một khán giả so với chỗ đứng (px thế giới).
 const HOP_MAX: float = 8.0
@@ -126,6 +132,11 @@ const NPC_TEO: int = 11
 const CROWD_SEQ: Array[int] = [0, 3, 6, 1, 8, 4, 2, 7, 5]
 
 var excitement: float = 0.0
+## Báo công an: 0..1 – khán giả nhấp nhổm, ngó nghiêng (nhún nhanh hơn, nhảy lẻ tẻ). Vẫn chỉ dịch dọc ≤ HOP_MAX.
+var nervous: float = 0.0
+## Công an ập vào (scatter()): mọi người bỏ chạy ra hai bên – NGOẠI LỆ duy nhất cho phép dịch ngang.
+var scattering: bool = false
+var _scatter_t0: float = 0.0
 ## Đặt trước khi add_child (hoặc qua configure()).
 var variant: StringName = &"chieu"
 var opponent_owner: String = ""
@@ -209,8 +220,11 @@ func configure(config: Dictionary) -> void:
 	var opponent: Dictionary = config.get("opponent", {})
 	opponent_owner = String(opponent.get("owner", ""))
 	var wanted: StringName = StringName(config.get("arena_variant", ""))
+	var league: StringName = StringName(opponent.get("league", config.get("tournament", "")))
 	if wanted in VARIANTS:
 		variant = wanted
+	elif league in VENUES:
+		variant = league
 	elif int(opponent.get("tier", 0)) >= 3:
 		variant = &"toi"
 	else:
@@ -233,6 +247,7 @@ func _ready() -> void:
 	_build_crowd()
 	_build_dust(evening)
 	_apply_variant_tints(evening)
+	_build_venue()
 	_build_walls()
 	follow_camera(Vector2(500, -150))
 	_update_crowd(0.0)
@@ -248,6 +263,10 @@ func _make_layer(key: StringName) -> Node2D:
 	var file: String = String(def[0])
 	if key == &"sky" and variant == &"toi":
 		file = "arena_sky_toi.png"
+	if variant in VENUES:
+		var venue_file: String = "arena_%s_%s.png" % [variant, key]
+		if ResourceLoader.exists(ART + venue_file):
+			file = venue_file
 	sprite.texture = load(ART + file)
 	sprite.centered = false
 	sprite.scale = Vector2(PX, PX)
@@ -264,14 +283,14 @@ func _make_layer(key: StringName) -> Node2D:
 func _build_backstops(evening: bool) -> void:
 	var sky: Node2D = _layers[&"sky"]["node"]
 	var top := ColorRect.new()
-	top.color = TOI_TOP if evening else SKY_TOP
+	top.color = OLY_TOP if variant == &"olympic" else (TOI_TOP if evening else SKY_TOP)
 	top.position = Vector2(-3000, -6000)
 	top.size = Vector2(7000, 4900 + 2)
 	top.z_index = -1 # dưới ảnh của lớp
 	top.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sky.add_child(top)
 	var low := ColorRect.new()
-	low.color = TOI_LOW if evening else SKY_LOW
+	low.color = OLY_LOW if variant == &"olympic" else (TOI_LOW if evening else SKY_LOW)
 	low.position = Vector2(-3000, -62)
 	low.size = Vector2(7000, 3062)
 	low.z_index = -1 # dưới ảnh của lớp
@@ -295,6 +314,10 @@ func _build_dynamic(evening: bool) -> void:
 		var kind: StringName = item[5]
 		if kind == &"cloud" and evening:
 			key = key.replace("may_", "may_toi_")
+		# Sân tỉnh / Olympic không có cây dừa, đình, lồng đèn làng: chỉ giữ mây trôi (Liên tỉnh dùng trời Ao Làng).
+		if variant in VENUES and not (kind == &"cloud" and variant == &"lien_tinh"):
+			index += 1
+			continue
 		var def: Array = PROPS[key]
 		var sprite := Sprite2D.new()
 		sprite.texture = _props_tex
@@ -362,7 +385,7 @@ func _build_rays(evening: bool) -> void:
 	var mat := CanvasItemMaterial.new()
 	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
 	_rays.material = mat
-	_rays.visible = not evening
+	_rays.visible = not evening and not variant in VENUES
 	_rays.z_index = 1
 	mid.add_child(_rays)
 	if evening:
@@ -372,6 +395,59 @@ func _build_rays(evening: bool) -> void:
 		pool.modulate = Color(1, 1, 1, 0.55)
 		pool.z_index = 1
 		_layers[&"floor"]["node"].add_child(pool)
+
+
+## Phần riêng của sân tỉnh / Olympic (chỉ hình ảnh): Olympic có cột sáng đèn pha (cộng sáng), vũng sáng trên sàn,
+## đèn flash máy ảnh lấp lánh trên khán đài tầng trên; khán đài tầng dưới tối hơn để gà nổi bật.
+func _build_venue() -> void:
+	if variant != &"olympic":
+		return
+	var sky: Node2D = _layers[&"sky"]["node"]
+	var mat := CanvasItemMaterial.new()
+	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	for x in [-280.0, 20.0, 320.0, 620.0, 920.0, 1220.0]:
+		var pts := PackedVector2Array([Vector2(x, -680), Vector2(x + 110.0, -680), Vector2(x + 340.0, 0), Vector2(x - 180.0, 0)])
+		var beam := Polygon2D.new()
+		beam.polygon = pts
+		beam.color = Color(0.6, 0.65, 0.8, 0.07)
+		beam.material = mat
+		beam.z_index = 3
+		sky.add_child(beam)
+	var pool := _make_glow(Vector2(500, -20), 1.0)
+	pool.scale = Vector2(PX * 10.0, PX * 1.8)
+	pool.modulate = Color(0.8, 0.85, 1.0, 0.5)
+	pool.z_index = 1
+	_layers[&"floor"]["node"].add_child(pool)
+	_layers[&"stands"]["node"].modulate = Color(0.78, 0.78, 0.9)
+	_layers[&"far"]["node"].add_child(_make_flashes())
+
+
+func _make_flashes() -> Node2D:
+	var f := FlashBulbs.new()
+	f.name = "Flashes"
+	f.z_index = 2
+	for i in range(28):
+		f.seeds.append(Vector3(_rng.randf_range(-400.0, 1400.0), _rng.randf_range(-330.0, -60.0), _rng.randf() * 10.0))
+	return f
+
+
+## Đèn flash máy ảnh trên khán đài Olympic: chớp ngẫu nhiên tất định theo đồng hồ hình ảnh.
+class FlashBulbs:
+	extends Node2D
+	var time: float = 0.0
+	var seeds: PackedVector3Array = PackedVector3Array()
+
+	func _process(delta: float) -> void:
+		time += delta
+		queue_redraw()
+
+	func _draw() -> void:
+		for s in seeds:
+			var phase: float = fposmod(time * 0.7 + s.z, 3.3)
+			if phase < 0.09:
+				var a: float = 1.0 - phase / 0.09
+				draw_rect(Rect2(s.x - 2.0, s.y - 2.0, 4.0, 4.0), Color(1, 1, 1, a))
+				draw_rect(Rect2(s.x - 5.0, s.y - 0.5, 10.0, 1.0), Color(1, 1, 0.9, a * 0.7))
 
 
 func _apply_variant_tints(evening: bool) -> void:
@@ -495,6 +571,13 @@ func crowd_members() -> Array[Dictionary]:
 	return out
 
 
+## Công an tới: khán giả chạy tán loạn (từ giữa ra hai bên, vừa chạy vừa nhảy, giơ tay).
+func scatter() -> void:
+	scattering = true
+	_scatter_t0 = _time
+	excitement = 1.0
+
+
 func cheer(amount: float) -> void:
 	excitement = minf(1.0, excitement + amount)
 
@@ -535,16 +618,25 @@ func _process(delta: float) -> void:
 
 
 func _update_crowd(delta: float) -> void:
+	if scattering:
+		for m in _crowd:
+			var dir: float = -1.0 if m.spot.position.x < 500.0 else 1.0
+			var delay: float = fposmod(m.phase, 1.0) * 0.4
+			var run: float = maxf(0.0, _time - _scatter_t0 - delay)
+			var hop: float = absf(sin(run * 14.0 + m.phase)) * HOP_MAX
+			m.sprite.position = Vector2(m.rest.x + dir * run * (220.0 + 60.0 * m.rate), m.rest.y - roundf(hop))
+			_set_pose(m, 1)
+		return
 	for m in _crowd:
 		# Pha tích luỹ (không nhân thời gian tuyệt đối với tần số thay đổi) → tốc độ nhún luôn mượt.
-		m.phase = fposmod(m.phase + delta * m.rate * (1.0 + 0.8 * excitement), TAU)
-		var bob: float = (0.5 - 0.5 * cos(m.phase)) * (BOB_IDLE + excitement)
+		m.phase = fposmod(m.phase + delta * m.rate * (1.0 + 0.8 * excitement + 2.0 * nervous), TAU)
+		var bob: float = (0.5 - 0.5 * cos(m.phase)) * (BOB_IDLE + excitement + 2.0 * nervous)
 		var hop: float = 0.0
 		var u: float = (_time - m.hop_t0) / m.hop_len
 		if u >= 0.0 and u < 1.0:
 			hop = m.hop_h * 4.0 * u * (1.0 - u)
 			bob = 0.0
-		elif u >= 1.0 and excitement > 0.35 and _rng.randf() < delta * excitement * 0.8:
+		elif u >= 1.0 and (excitement > 0.35 or nervous > 0.3) and _rng.randf() < delta * (excitement * 0.8 + nervous * 1.2):
 			# Đang hào hứng: thỉnh thoảng nhảy nhỏ lẻ tẻ.
 			_schedule_hop(m, _time + _rng.randf() * 0.2, _rng.randf_range(3.0, 6.0), 0.36)
 			if m.arms_on_hop:

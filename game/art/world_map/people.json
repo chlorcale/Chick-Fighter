@@ -1,0 +1,7341 @@
+{
+ "version": 1,
+ "atlas": "people_atlas.png",
+ "frame_ms": 80,
+ "people": [
+  {
+   "id": "NV_xam_tay_nhay_o_quan",
+   "pos": [
+    471,
+    193
+   ],
+   "topleft": [
+    459,
+    149
+   ],
+   "size": [
+    24,
+    45
+   ],
+   "regions": [
+    [
+     981,
+     51,
+     24,
+     45
+    ],
+    [
+     519,
+     99,
+     25,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "NV_ao_ngua_o_san_dinh",
+   "pos": [
+    838,
+    177
+   ],
+   "topleft": [
+    829,
+    137
+   ],
+   "size": [
+    19,
+    41
+   ],
+   "regions": [
+    [
+     814,
+     234,
+     19,
+     41
+    ],
+    [
+     974,
+     234,
+     18,
+     41
+    ],
+    [
+     651,
+     190,
+     18,
+     42
+    ],
+    [
+     670,
+     190,
+     18,
+     42
+    ],
+    [
+     993,
+     234,
+     18,
+     41
+    ],
+    [
+     689,
+     190,
+     18,
+     42
+    ],
+    [
+     708,
+     190,
+     18,
+     42
+    ]
+   ],
+   "frame_count": 7,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": true,
+   "walk_frames": "yes (đi qua lại trong tranh, 7 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "NV_dam_trang_o_nha_vuon",
+   "pos": [
+    1150,
+    151
+   ],
+   "topleft": [
+    1141,
+    107
+   ],
+   "size": [
+    19,
+    45
+   ],
+   "regions": [
+    [
+     63,
+     99,
+     19,
+     45
+    ],
+    [
+     255,
+     99,
+     17,
+     45
+    ],
+    [
+     273,
+     99,
+     17,
+     45
+    ],
+    [
+     103,
+     99,
+     18,
+     45
+    ],
+    [
+     291,
+     99,
+     17,
+     45
+    ],
+    [
+     309,
+     99,
+     17,
+     45
+    ],
+    [
+     122,
+     99,
+     18,
+     45
+    ]
+   ],
+   "frame_count": 7,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": true,
+   "walk_frames": "yes (đi qua lại trong tranh, 7 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "NV_non_den_jean_goi_dien",
+   "pos": [
+    313,
+    251
+   ],
+   "topleft": [
+    302,
+    209
+   ],
+   "size": [
+    23,
+    43
+   ],
+   "regions": [
+    [
+     366,
+     145,
+     23,
+     43
+    ],
+    [
+     545,
+     99,
+     23,
+     44
+    ],
+    [
+     569,
+     99,
+     23,
+     44
+    ],
+    [
+     390,
+     145,
+     23,
+     43
+    ],
+    [
+     593,
+     99,
+     23,
+     44
+    ],
+    [
+     414,
+     145,
+     23,
+     43
+    ],
+    [
+     617,
+     99,
+     23,
+     44
+    ]
+   ],
+   "frame_count": 7,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": true,
+   "walk_frames": "yes (đi qua lại trong tranh, 7 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "NV_ba_lo_canh_cong_dau_truong",
+   "pos": [
+    966,
+    277
+   ],
+   "topleft": [
+    957,
+    238
+   ],
+   "size": [
+    19,
+    40
+   ],
+   "regions": [
+    [
+     321,
+     319,
+     19,
+     40
+    ],
+    [
+     834,
+     234,
+     19,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "elder",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "NV_rapper_mc_dau_truong",
+   "pos": [
+    1065,
+    301
+   ],
+   "topleft": [
+    1054,
+    260
+   ],
+   "size": [
+    23,
+    42
+   ],
+   "regions": [
+    [
+     191,
+     190,
+     23,
+     42
+    ],
+    [
+     438,
+     145,
+     23,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "arena_staff",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "NV_ong_cau_ca",
+   "pos": [
+    237,
+    272
+   ],
+   "topleft": [
+    211,
+    231
+   ],
+   "size": [
+    53,
+    42
+   ],
+   "regions": [
+    [
+     111,
+     190,
+     53,
+     42
+    ],
+    [
+     221,
+     145,
+     53,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "elder",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "NV_khan_gia_1",
+   "pos": [
+    936,
+    352
+   ],
+   "topleft": [
+    927,
+    312
+   ],
+   "size": [
+    19,
+    41
+   ],
+   "regions": [
+    [
+     854,
+     234,
+     19,
+     41
+    ],
+    [
+     165,
+     190,
+     25,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "NV_khan_gia_2",
+   "pos": [
+    966,
+    352
+   ],
+   "topleft": [
+    955,
+    312
+   ],
+   "size": [
+    22,
+    41
+   ],
+   "regions": [
+    [
+     327,
+     234,
+     22,
+     41
+    ],
+    [
+     341,
+     319,
+     19,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "NV_khan_gia_3",
+   "pos": [
+    1082,
+    352
+   ],
+   "topleft": [
+    1069,
+    308
+   ],
+   "size": [
+    27,
+    45
+   ],
+   "regions": [
+    [
+     729,
+     51,
+     27,
+     45
+    ],
+    [
+     757,
+     51,
+     27,
+     45
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "NV_khan_gia_4",
+   "pos": [
+    1108,
+    352
+   ],
+   "topleft": [
+    1097,
+    312
+   ],
+   "size": [
+    22,
+    41
+   ],
+   "regions": [
+    [
+     350,
+     234,
+     22,
+     41
+    ],
+    [
+     361,
+     319,
+     19,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "NV_co_ban_ve_so",
+   "pos": [
+    70,
+    585
+   ],
+   "topleft": [
+    57,
+    541
+   ],
+   "size": [
+    27,
+    45
+   ],
+   "regions": [
+    [
+     785,
+     51,
+     27,
+     45
+    ],
+    [
+     813,
+     51,
+     27,
+     45
+    ],
+    [
+     841,
+     51,
+     27,
+     45
+    ],
+    [
+     869,
+     51,
+     27,
+     45
+    ],
+    [
+     897,
+     51,
+     27,
+     45
+    ],
+    [
+     925,
+     51,
+     27,
+     45
+    ],
+    [
+     953,
+     51,
+     27,
+     45
+    ]
+   ],
+   "frame_count": 7,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": true,
+   "walk_frames": "yes (đi qua lại trong tranh, 7 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "NV_vest_ca_vat_do_o_san_den",
+   "pos": [
+    792,
+    1072
+   ],
+   "topleft": [
+    783,
+    1030
+   ],
+   "size": [
+    19,
+    43
+   ],
+   "regions": [
+    [
+     651,
+     145,
+     19,
+     43
+    ],
+    [
+     725,
+     99,
+     19,
+     44
+    ],
+    [
+     745,
+     99,
+     19,
+     44
+    ],
+    [
+     671,
+     145,
+     19,
+     43
+    ],
+    [
+     691,
+     145,
+     19,
+     43
+    ],
+    [
+     765,
+     99,
+     19,
+     44
+    ],
+    [
+     785,
+     99,
+     19,
+     44
+    ]
+   ],
+   "frame_count": 7,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": true,
+   "walk_frames": "yes (đi qua lại trong tranh, 7 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_bac_02",
+   "pos": [
+    2215,
+    197
+   ],
+   "topleft": [
+    2202,
+    150
+   ],
+   "size": [
+    26,
+    48
+   ],
+   "regions": [
+    [
+     331,
+     0,
+     26,
+     48
+    ],
+    [
+     877,
+     0,
+     26,
+     47
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_bac",
+   "pos": [
+    2037,
+    198
+   ],
+   "topleft": [
+    2029,
+    165
+   ],
+   "size": [
+    17,
+    34
+   ],
+   "regions": [
+    [
+     554,
+     360,
+     17,
+     34
+    ],
+    [
+     278,
+     360,
+     17,
+     35
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_bac_03",
+   "pos": [
+    2346,
+    197
+   ],
+   "topleft": [
+    2337,
+    158
+   ],
+   "size": [
+    18,
+    40
+   ],
+   "regions": [
+    [
+     401,
+     319,
+     18,
+     40
+    ],
+    [
+     0,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_bac_04",
+   "pos": [
+    2483,
+    201
+   ],
+   "topleft": [
+    2474,
+    160
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     727,
+     190,
+     18,
+     42
+    ],
+    [
+     751,
+     145,
+     18,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_bac_09",
+   "pos": [
+    3242,
+    202
+   ],
+   "topleft": [
+    3233,
+    161
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     746,
+     190,
+     18,
+     42
+    ],
+    [
+     19,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_bac_10",
+   "pos": [
+    3423,
+    205
+   ],
+   "topleft": [
+    3413,
+    166
+   ],
+   "size": [
+    20,
+    40
+   ],
+   "regions": [
+    [
+     27,
+     319,
+     20,
+     40
+    ],
+    [
+     373,
+     234,
+     20,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_bac_07",
+   "pos": [
+    2911,
+    206
+   ],
+   "topleft": [
+    2902,
+    166
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     38,
+     277,
+     18,
+     41
+    ],
+    [
+     420,
+     319,
+     18,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_bac_05",
+   "pos": [
+    2624,
+    208
+   ],
+   "topleft": [
+    2611,
+    162
+   ],
+   "size": [
+    26,
+    47
+   ],
+   "regions": [
+    [
+     904,
+     0,
+     26,
+     47
+    ],
+    [
+     358,
+     0,
+     26,
+     48
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_bac_08",
+   "pos": [
+    3110,
+    208
+   ],
+   "topleft": [
+    3102,
+    174
+   ],
+   "size": [
+    16,
+    35
+   ],
+   "regions": [
+    [
+     314,
+     360,
+     16,
+     35
+    ],
+    [
+     590,
+     360,
+     16,
+     34
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_bac_06",
+   "pos": [
+    2792,
+    210
+   ],
+   "topleft": [
+    2782,
+    170
+   ],
+   "size": [
+    20,
+    41
+   ],
+   "regions": [
+    [
+     394,
+     234,
+     20,
+     41
+    ],
+    [
+     215,
+     190,
+     20,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_hoc_sinh_THPT_12",
+   "pos": [
+    4610,
+    210
+   ],
+   "topleft": [
+    4601,
+    171
+   ],
+   "size": [
+    18,
+    40
+   ],
+   "regions": [
+    [
+     439,
+     319,
+     18,
+     40
+    ],
+    [
+     57,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "student",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_bac_11",
+   "pos": [
+    3563,
+    214
+   ],
+   "topleft": [
+    3550,
+    174
+   ],
+   "size": [
+    26,
+    41
+   ],
+   "regions": [
+    [
+     300,
+     234,
+     26,
+     41
+    ],
+    [
+     0,
+     319,
+     26,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_hoc_sinh_THPT_11",
+   "pos": [
+    4960,
+    214
+   ],
+   "topleft": [
+    4950,
+    175
+   ],
+   "size": [
+    20,
+    40
+   ],
+   "regions": [
+    [
+     48,
+     319,
+     20,
+     40
+    ],
+    [
+     980,
+     319,
+     20,
+     39
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "student",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_giao_vien_THPT",
+   "pos": [
+    4544,
+    215
+   ],
+   "topleft": [
+    4535,
+    175
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     76,
+     277,
+     18,
+     41
+    ],
+    [
+     765,
+     190,
+     18,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "teacher",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_hoc_sinh_THPT_06",
+   "pos": [
+    4440,
+    218
+   ],
+   "topleft": [
+    4430,
+    178
+   ],
+   "size": [
+    20,
+    41
+   ],
+   "regions": [
+    [
+     415,
+     234,
+     20,
+     41
+    ],
+    [
+     69,
+     319,
+     20,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "student",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_hoc_sinh_THPT_07",
+   "pos": [
+    4640,
+    222
+   ],
+   "topleft": [
+    4631,
+    182
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     95,
+     277,
+     18,
+     41
+    ],
+    [
+     784,
+     190,
+     18,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "student",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_bac_12",
+   "pos": [
+    3696,
+    227
+   ],
+   "topleft": [
+    3686,
+    188
+   ],
+   "size": [
+    20,
+    40
+   ],
+   "regions": [
+    [
+     90,
+     319,
+     20,
+     40
+    ],
+    [
+     436,
+     234,
+     20,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ganh_hang_rong",
+   "pos": [
+    2700,
+    233
+   ],
+   "topleft": [
+    2672,
+    187
+   ],
+   "size": [
+    56,
+    47
+   ],
+   "regions": [
+    [
+     763,
+     0,
+     56,
+     47
+    ],
+    [
+     432,
+     51,
+     56,
+     46
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_cao_lua",
+   "pos": [
+    1469,
+    236
+   ],
+   "topleft": [
+    1450,
+    193
+   ],
+   "size": [
+    39,
+    44
+   ],
+   "regions": [
+    [
+     479,
+     99,
+     39,
+     44
+    ],
+    [
+     321,
+     145,
+     44,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "worker",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_hoc_sinh_THPT_09",
+   "pos": [
+    4120,
+    248
+   ],
+   "topleft": [
+    4111,
+    209
+   ],
+   "size": [
+    18,
+    40
+   ],
+   "regions": [
+    [
+     458,
+     319,
+     18,
+     40
+    ],
+    [
+     114,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "student",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_hoc_sinh_THPT_10",
+   "pos": [
+    4080,
+    258
+   ],
+   "topleft": [
+    4071,
+    219
+   ],
+   "size": [
+    18,
+    40
+   ],
+   "regions": [
+    [
+     477,
+     319,
+     18,
+     40
+    ],
+    [
+     133,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "student",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_hoc_sinh_THPT_08",
+   "pos": [
+    4730,
+    264
+   ],
+   "topleft": [
+    4721,
+    224
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     152,
+     277,
+     18,
+     41
+    ],
+    [
+     496,
+     319,
+     18,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "student",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_hoc_sinh_THPT_04",
+   "pos": [
+    4300,
+    268
+   ],
+   "topleft": [
+    4291,
+    228
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     171,
+     277,
+     18,
+     41
+    ],
+    [
+     515,
+     319,
+     18,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "student",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_hoc_sinh_THPT_05",
+   "pos": [
+    4330,
+    272
+   ],
+   "topleft": [
+    4320,
+    232
+   ],
+   "size": [
+    20,
+    41
+   ],
+   "regions": [
+    [
+     457,
+     234,
+     20,
+     41
+    ],
+    [
+     111,
+     319,
+     20,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "student",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_bac_13",
+   "pos": [
+    3868,
+    276
+   ],
+   "topleft": [
+    3860,
+    236
+   ],
+   "size": [
+    17,
+    41
+   ],
+   "regions": [
+    [
+     779,
+     277,
+     17,
+     41
+    ],
+    [
+     800,
+     319,
+     17,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_hoc_sinh_THPT_02",
+   "pos": [
+    4570,
+    280
+   ],
+   "topleft": [
+    4560,
+    241
+   ],
+   "size": [
+    20,
+    40
+   ],
+   "regions": [
+    [
+     132,
+     319,
+     20,
+     40
+    ],
+    [
+     478,
+     234,
+     20,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "student",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_hoc_sinh_THPT",
+   "pos": [
+    4500,
+    286
+   ],
+   "topleft": [
+    4490,
+    246
+   ],
+   "size": [
+    20,
+    41
+   ],
+   "regions": [
+    [
+     499,
+     234,
+     20,
+     41
+    ],
+    [
+     153,
+     319,
+     20,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "student",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_hoc_sinh_THPT_03",
+   "pos": [
+    4596,
+    288
+   ],
+   "topleft": [
+    4586,
+    249
+   ],
+   "size": [
+    20,
+    40
+   ],
+   "regions": [
+    [
+     174,
+     319,
+     20,
+     40
+    ],
+    [
+     520,
+     234,
+     20,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "student",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_bao_ve_THPT",
+   "pos": [
+    4464,
+    296
+   ],
+   "topleft": [
+    4454,
+    254
+   ],
+   "size": [
+    20,
+    43
+   ],
+   "regions": [
+    [
+     462,
+     145,
+     20,
+     43
+    ],
+    [
+     641,
+     99,
+     20,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "guard",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ban_nuoc",
+   "pos": [
+    2234,
+    298
+   ],
+   "topleft": [
+    2225,
+    259
+   ],
+   "size": [
+    18,
+    40
+   ],
+   "regions": [
+    [
+     534,
+     319,
+     18,
+     40
+    ],
+    [
+     190,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ban_nuoc_mia",
+   "pos": [
+    2372,
+    306
+   ],
+   "topleft": [
+    2363,
+    265
+   ],
+   "size": [
+    19,
+    42
+   ],
+   "regions": [
+    [
+     551,
+     190,
+     19,
+     42
+    ],
+    [
+     874,
+     234,
+     19,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ban_nuoc_02",
+   "pos": [
+    2678,
+    308
+   ],
+   "topleft": [
+    2668,
+    269
+   ],
+   "size": [
+    20,
+    40
+   ],
+   "regions": [
+    [
+     195,
+     319,
+     20,
+     40
+    ],
+    [
+     541,
+     234,
+     20,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ban_nuoc_mia_02",
+   "pos": [
+    2890,
+    312
+   ],
+   "topleft": [
+    2881,
+    268
+   ],
+   "size": [
+    18,
+    45
+   ],
+   "regions": [
+    [
+     141,
+     99,
+     18,
+     45
+    ],
+    [
+     845,
+     99,
+     18,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ban_nuoc_03",
+   "pos": [
+    2974,
+    314
+   ],
+   "topleft": [
+    2966,
+    273
+   ],
+   "size": [
+    17,
+    42
+   ],
+   "regions": [
+    [
+     228,
+     234,
+     17,
+     42
+    ],
+    [
+     797,
+     277,
+     17,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_chu_quan_vong",
+   "pos": [
+    1672,
+    340
+   ],
+   "topleft": [
+    1663,
+    299
+   ],
+   "size": [
+    19,
+    42
+   ],
+   "regions": [
+    [
+     571,
+     190,
+     19,
+     42
+    ],
+    [
+     711,
+     145,
+     19,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_qua_cau_go",
+   "pos": [
+    1403,
+    414
+   ],
+   "topleft": [
+    1394,
+    375
+   ],
+   "size": [
+    18,
+    40
+   ],
+   "regions": [
+    [
+     553,
+     319,
+     18,
+     40
+    ],
+    [
+     209,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khach_qua_do",
+   "pos": [
+    1726,
+    593
+   ],
+   "topleft": [
+    1717,
+    552
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     803,
+     190,
+     18,
+     42
+    ],
+    [
+     228,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ben_cho",
+   "pos": [
+    2555,
+    730
+   ],
+   "topleft": [
+    2547,
+    688
+   ],
+   "size": [
+    17,
+    43
+   ],
+   "regions": [
+    [
+     979,
+     145,
+     17,
+     43
+    ],
+    [
+     38,
+     145,
+     17,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_tho_hot_toc",
+   "pos": [
+    3720,
+    743
+   ],
+   "topleft": [
+    3710,
+    700
+   ],
+   "size": [
+    20,
+    44
+   ],
+   "regions": [
+    [
+     662,
+     99,
+     20,
+     44
+    ],
+    [
+     0,
+     99,
+     20,
+     45
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ba_Lan_ban_com",
+   "pos": [
+    3737,
+    748
+   ],
+   "topleft": [
+    3727,
+    703
+   ],
+   "size": [
+    20,
+    46
+   ],
+   "regions": [
+    [
+     651,
+     51,
+     20,
+     46
+    ],
+    [
+     21,
+     99,
+     20,
+     45
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_dich_vu",
+   "pos": [
+    3704,
+    753
+   ],
+   "topleft": [
+    3696,
+    710
+   ],
+   "size": [
+    17,
+    44
+   ],
+   "regions": [
+    [
+     56,
+     145,
+     17,
+     44
+    ],
+    [
+     997,
+     145,
+     17,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ban_nuoc_mia_03",
+   "pos": [
+    3660,
+    756
+   ],
+   "topleft": [
+    3647,
+    709
+   ],
+   "size": [
+    26,
+    48
+   ],
+   "regions": [
+    [
+     385,
+     0,
+     26,
+     48
+    ],
+    [
+     931,
+     0,
+     26,
+     47
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_dich_vu_02",
+   "pos": [
+    3788,
+    761
+   ],
+   "topleft": [
+    3779,
+    718
+   ],
+   "size": [
+    18,
+    44
+   ],
+   "regions": [
+    [
+     864,
+     99,
+     18,
+     44
+    ],
+    [
+     160,
+     99,
+     18,
+     45
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_dich_vu_03",
+   "pos": [
+    3913,
+    768
+   ],
+   "topleft": [
+    3900,
+    722
+   ],
+   "size": [
+    26,
+    47
+   ],
+   "regions": [
+    [
+     958,
+     0,
+     26,
+     47
+    ],
+    [
+     412,
+     0,
+     26,
+     48
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_dich_vu_04",
+   "pos": [
+    3996,
+    775
+   ],
+   "topleft": [
+    3987,
+    732
+   ],
+   "size": [
+    18,
+    44
+   ],
+   "regions": [
+    [
+     883,
+     99,
+     18,
+     44
+    ],
+    [
+     770,
+     145,
+     18,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_dich_vu_06",
+   "pos": [
+    4209,
+    778
+   ],
+   "topleft": [
+    4201,
+    739
+   ],
+   "size": [
+    17,
+    40
+   ],
+   "regions": [
+    [
+     818,
+     319,
+     17,
+     40
+    ],
+    [
+     815,
+     277,
+     17,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_pho_dich_vu_05",
+   "pos": [
+    4140,
+    781
+   ],
+   "topleft": [
+    4132,
+    748
+   ],
+   "size": [
+    16,
+    34
+   ],
+   "regions": [
+    [
+     607,
+     360,
+     16,
+     34
+    ],
+    [
+     331,
+     360,
+     16,
+     35
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ganh_hang_rong_03",
+   "pos": [
+    3900,
+    796
+   ],
+   "topleft": [
+    3872,
+    752
+   ],
+   "size": [
+    56,
+    45
+   ],
+   "regions": [
+    [
+     672,
+     51,
+     56,
+     45
+    ],
+    [
+     381,
+     99,
+     56,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_18",
+   "pos": [
+    2440,
+    856
+   ],
+   "topleft": [
+    2431,
+    813
+   ],
+   "size": [
+    18,
+    44
+   ],
+   "regions": [
+    [
+     902,
+     99,
+     18,
+     44
+    ],
+    [
+     789,
+     145,
+     18,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ban_banh_mi",
+   "pos": [
+    3074,
+    862
+   ],
+   "topleft": [
+    3064,
+    820
+   ],
+   "size": [
+    20,
+    43
+   ],
+   "regions": [
+    [
+     483,
+     145,
+     20,
+     43
+    ],
+    [
+     236,
+     190,
+     20,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_an_sang",
+   "pos": [
+    2856,
+    903
+   ],
+   "topleft": [
+    2846,
+    861
+   ],
+   "size": [
+    20,
+    43
+   ],
+   "regions": [
+    [
+     504,
+     145,
+     20,
+     43
+    ],
+    [
+     683,
+     99,
+     20,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_an_sang_02",
+   "pos": [
+    2916,
+    902
+   ],
+   "topleft": [
+    2907,
+    862
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     247,
+     277,
+     18,
+     41
+    ],
+    [
+     572,
+     319,
+     18,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_17",
+   "pos": [
+    3120,
+    917
+   ],
+   "topleft": [
+    3107,
+    870
+   ],
+   "size": [
+    26,
+    48
+   ],
+   "regions": [
+    [
+     439,
+     0,
+     26,
+     48
+    ],
+    [
+     985,
+     0,
+     26,
+     47
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_10",
+   "pos": [
+    2600,
+    924
+   ],
+   "topleft": [
+    2592,
+    885
+   ],
+   "size": [
+    17,
+    40
+   ],
+   "regions": [
+    [
+     836,
+     319,
+     17,
+     40
+    ],
+    [
+     833,
+     277,
+     17,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_11",
+   "pos": [
+    2690,
+    929
+   ],
+   "topleft": [
+    2681,
+    888
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     822,
+     190,
+     18,
+     42
+    ],
+    [
+     266,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_20",
+   "pos": [
+    4495,
+    931
+   ],
+   "topleft": [
+    4485,
+    890
+   ],
+   "size": [
+    20,
+    42
+   ],
+   "regions": [
+    [
+     257,
+     190,
+     20,
+     42
+    ],
+    [
+     562,
+     234,
+     20,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_19",
+   "pos": [
+    4462,
+    933
+   ],
+   "topleft": [
+    4449,
+    885
+   ],
+   "size": [
+    26,
+    49
+   ],
+   "regions": [
+    [
+     121,
+     0,
+     26,
+     49
+    ],
+    [
+     466,
+     0,
+     26,
+     48
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_21",
+   "pos": [
+    4521,
+    937
+   ],
+   "topleft": [
+    4513,
+    896
+   ],
+   "size": [
+    17,
+    42
+   ],
+   "regions": [
+    [
+     246,
+     234,
+     17,
+     42
+    ],
+    [
+     851,
+     277,
+     17,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_cao_lua_03",
+   "pos": [
+    1509,
+    937
+   ],
+   "topleft": [
+    1487,
+    895
+   ],
+   "size": [
+    45,
+    43
+   ],
+   "regions": [
+    [
+     275,
+     145,
+     45,
+     43
+    ],
+    [
+     438,
+     99,
+     40,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "worker",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_22",
+   "pos": [
+    4542,
+    940
+   ],
+   "topleft": [
+    4534,
+    901
+   ],
+   "size": [
+    17,
+    40
+   ],
+   "regions": [
+    [
+     854,
+     319,
+     17,
+     40
+    ],
+    [
+     869,
+     277,
+     17,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_18",
+   "pos": [
+    4445,
+    942
+   ],
+   "topleft": [
+    4436,
+    902
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     285,
+     277,
+     18,
+     41
+    ],
+    [
+     591,
+     319,
+     18,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_23",
+   "pos": [
+    4565,
+    946
+   ],
+   "topleft": [
+    4556,
+    906
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     304,
+     277,
+     18,
+     41
+    ],
+    [
+     841,
+     190,
+     18,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_17",
+   "pos": [
+    4410,
+    950
+   ],
+   "topleft": [
+    4400,
+    908
+   ],
+   "size": [
+    20,
+    43
+   ],
+   "regions": [
+    [
+     525,
+     145,
+     20,
+     43
+    ],
+    [
+     278,
+     190,
+     20,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_24",
+   "pos": [
+    4581,
+    952
+   ],
+   "topleft": [
+    4568,
+    906
+   ],
+   "size": [
+    26,
+    47
+   ],
+   "regions": [
+    [
+     0,
+     51,
+     26,
+     47
+    ],
+    [
+     493,
+     0,
+     26,
+     48
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho",
+   "pos": [
+    2100,
+    953
+   ],
+   "topleft": [
+    2092,
+    911
+   ],
+   "size": [
+    17,
+    43
+   ],
+   "regions": [
+    [
+     0,
+     190,
+     17,
+     43
+    ],
+    [
+     74,
+     145,
+     17,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_03",
+   "pos": [
+    2380,
+    954
+   ],
+   "topleft": [
+    2371,
+    910
+   ],
+   "size": [
+    18,
+    45
+   ],
+   "regions": [
+    [
+     179,
+     99,
+     18,
+     45
+    ],
+    [
+     921,
+     99,
+     18,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_16",
+   "pos": [
+    4402,
+    957
+   ],
+   "topleft": [
+    4393,
+    914
+   ],
+   "size": [
+    19,
+    44
+   ],
+   "regions": [
+    [
+     805,
+     99,
+     19,
+     44
+    ],
+    [
+     731,
+     145,
+     19,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_02",
+   "pos": [
+    2230,
+    959
+   ],
+   "topleft": [
+    2220,
+    920
+   ],
+   "size": [
+    20,
+    40
+   ],
+   "regions": [
+    [
+     216,
+     319,
+     20,
+     40
+    ],
+    [
+     1001,
+     319,
+     20,
+     39
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": true
+  },
+  {
+   "id": "N_npc_trong_tai_lien_tinh",
+   "pos": [
+    4489,
+    965
+   ],
+   "topleft": [
+    4479,
+    924
+   ],
+   "size": [
+    20,
+    42
+   ],
+   "regions": [
+    [
+     299,
+     190,
+     20,
+     42
+    ],
+    [
+     583,
+     234,
+     20,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "arena_staff",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_25",
+   "pos": [
+    4598,
+    967
+   ],
+   "topleft": [
+    4588,
+    927
+   ],
+   "size": [
+    20,
+    41
+   ],
+   "regions": [
+    [
+     604,
+     234,
+     20,
+     41
+    ],
+    [
+     237,
+     319,
+     20,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_15",
+   "pos": [
+    4396,
+    970
+   ],
+   "topleft": [
+    4387,
+    931
+   ],
+   "size": [
+    18,
+    40
+   ],
+   "regions": [
+    [
+     610,
+     319,
+     18,
+     40
+    ],
+    [
+     323,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_26",
+   "pos": [
+    4604,
+    977
+   ],
+   "topleft": [
+    4591,
+    931
+   ],
+   "size": [
+    26,
+    47
+   ],
+   "regions": [
+    [
+     27,
+     51,
+     26,
+     47
+    ],
+    [
+     520,
+     0,
+     26,
+     48
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_14",
+   "pos": [
+    4395,
+    981
+   ],
+   "topleft": [
+    4387,
+    938
+   ],
+   "size": [
+    17,
+    44
+   ],
+   "regions": [
+    [
+     92,
+     145,
+     17,
+     44
+    ],
+    [
+     327,
+     99,
+     17,
+     45
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_su_ke_ga_vang",
+   "pos": [
+    4549,
+    984
+   ],
+   "topleft": [
+    4539,
+    945
+   ],
+   "size": [
+    20,
+    40
+   ],
+   "regions": [
+    [
+     258,
+     319,
+     20,
+     40
+    ],
+    [
+     625,
+     234,
+     20,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "arena_staff",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_su_ke_ga_do",
+   "pos": [
+    4437,
+    987
+   ],
+   "topleft": [
+    4428,
+    945
+   ],
+   "size": [
+    18,
+    43
+   ],
+   "regions": [
+    [
+     808,
+     145,
+     18,
+     43
+    ],
+    [
+     860,
+     190,
+     18,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "arena_staff",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh",
+   "pos": [
+    4596,
+    988
+   ],
+   "topleft": [
+    4587,
+    947
+   ],
+   "size": [
+    19,
+    42
+   ],
+   "regions": [
+    [
+     591,
+     190,
+     19,
+     42
+    ],
+    [
+     894,
+     234,
+     19,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_nong_dan",
+   "pos": [
+    1420,
+    991
+   ],
+   "topleft": [
+    1407,
+    943
+   ],
+   "size": [
+    26,
+    49
+   ],
+   "regions": [
+    [
+     148,
+     0,
+     26,
+     49
+    ],
+    [
+     0,
+     0,
+     26,
+     50
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "worker",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_13",
+   "pos": [
+    4389,
+    997
+   ],
+   "topleft": [
+    4380,
+    956
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     879,
+     190,
+     18,
+     42
+    ],
+    [
+     342,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_02",
+   "pos": [
+    4600,
+    1002
+   ],
+   "topleft": [
+    4591,
+    961
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     898,
+     190,
+     18,
+     42
+    ],
+    [
+     827,
+     145,
+     18,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_12",
+   "pos": [
+    4388,
+    1003
+   ],
+   "topleft": [
+    4375,
+    956
+   ],
+   "size": [
+    26,
+    48
+   ],
+   "regions": [
+    [
+     547,
+     0,
+     26,
+     48
+    ],
+    [
+     54,
+     51,
+     26,
+     47
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_03",
+   "pos": [
+    4587,
+    1015
+   ],
+   "topleft": [
+    4577,
+    975
+   ],
+   "size": [
+    20,
+    41
+   ],
+   "regions": [
+    [
+     646,
+     234,
+     20,
+     41
+    ],
+    [
+     320,
+     190,
+     20,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_11",
+   "pos": [
+    4405,
+    1015
+   ],
+   "topleft": [
+    4395,
+    973
+   ],
+   "size": [
+    20,
+    43
+   ],
+   "regions": [
+    [
+     546,
+     145,
+     20,
+     43
+    ],
+    [
+     341,
+     190,
+     20,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khach_mua_kho_ga",
+   "pos": [
+    2904,
+    1019
+   ],
+   "topleft": [
+    2896,
+    986
+   ],
+   "size": [
+    16,
+    34
+   ],
+   "regions": [
+    [
+     624,
+     360,
+     16,
+     34
+    ],
+    [
+     811,
+     360,
+     16,
+     33
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_12",
+   "pos": [
+    2760,
+    1023
+   ],
+   "topleft": [
+    2751,
+    979
+   ],
+   "size": [
+    18,
+    45
+   ],
+   "regions": [
+    [
+     198,
+     99,
+     18,
+     45
+    ],
+    [
+     940,
+     99,
+     18,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": true
+  },
+  {
+   "id": "N_npc_khach_mua_kho_ga_03",
+   "pos": [
+    3064,
+    1022
+   ],
+   "topleft": [
+    3054,
+    982
+   ],
+   "size": [
+    20,
+    41
+   ],
+   "regions": [
+    [
+     667,
+     234,
+     20,
+     41
+    ],
+    [
+     279,
+     319,
+     20,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_04",
+   "pos": [
+    4567,
+    1022
+   ],
+   "topleft": [
+    4558,
+    983
+   ],
+   "size": [
+    18,
+    40
+   ],
+   "regions": [
+    [
+     629,
+     319,
+     18,
+     40
+    ],
+    [
+     361,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khach_mua_kho_ga_02",
+   "pos": [
+    2926,
+    1027
+   ],
+   "topleft": [
+    2916,
+    985
+   ],
+   "size": [
+    20,
+    43
+   ],
+   "regions": [
+    [
+     567,
+     145,
+     20,
+     43
+    ],
+    [
+     362,
+     190,
+     20,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_10",
+   "pos": [
+    4421,
+    1027
+   ],
+   "topleft": [
+    4413,
+    987
+   ],
+   "size": [
+    17,
+    41
+   ],
+   "regions": [
+    [
+     887,
+     277,
+     17,
+     41
+    ],
+    [
+     872,
+     319,
+     17,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khach_mua_kho_ga_04",
+   "pos": [
+    3042,
+    1028
+   ],
+   "topleft": [
+    3034,
+    996
+   ],
+   "size": [
+    16,
+    33
+   ],
+   "regions": [
+    [
+     828,
+     360,
+     16,
+     33
+    ],
+    [
+     641,
+     360,
+     16,
+     34
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_04",
+   "pos": [
+    2066,
+    1029
+   ],
+   "topleft": [
+    2058,
+    994
+   ],
+   "size": [
+    16,
+    36
+   ],
+   "regions": [
+    [
+     70,
+     360,
+     16,
+     36
+    ],
+    [
+     17,
+     360,
+     16,
+     37
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_05",
+   "pos": [
+    4545,
+    1031
+   ],
+   "topleft": [
+    4535,
+    991
+   ],
+   "size": [
+    20,
+    41
+   ],
+   "regions": [
+    [
+     688,
+     234,
+     20,
+     41
+    ],
+    [
+     383,
+     190,
+     20,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_09",
+   "pos": [
+    4450,
+    1031
+   ],
+   "topleft": [
+    4437,
+    984
+   ],
+   "size": [
+    26,
+    48
+   ],
+   "regions": [
+    [
+     574,
+     0,
+     26,
+     48
+    ],
+    [
+     81,
+     51,
+     26,
+     47
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_06",
+   "pos": [
+    4524,
+    1034
+   ],
+   "topleft": [
+    4516,
+    993
+   ],
+   "size": [
+    17,
+    42
+   ],
+   "regions": [
+    [
+     264,
+     234,
+     17,
+     42
+    ],
+    [
+     905,
+     277,
+     17,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_05",
+   "pos": [
+    2150,
+    1037
+   ],
+   "topleft": [
+    2142,
+    998
+   ],
+   "size": [
+    17,
+    40
+   ],
+   "regions": [
+    [
+     890,
+     319,
+     17,
+     40
+    ],
+    [
+     923,
+     277,
+     17,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_07",
+   "pos": [
+    4493,
+    1039
+   ],
+   "topleft": [
+    4480,
+    992
+   ],
+   "size": [
+    26,
+    48
+   ],
+   "regions": [
+    [
+     601,
+     0,
+     26,
+     48
+    ],
+    [
+     108,
+     51,
+     26,
+     47
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_cong_nhan_xay_lua",
+   "pos": [
+    3399,
+    1039
+   ],
+   "topleft": [
+    3386,
+    993
+   ],
+   "size": [
+    26,
+    47
+   ],
+   "regions": [
+    [
+     135,
+     51,
+     26,
+     47
+    ],
+    [
+     628,
+     0,
+     26,
+     48
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "worker",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_lien_tinh_08",
+   "pos": [
+    4475,
+    1041
+   ],
+   "topleft": [
+    4466,
+    1000
+   ],
+   "size": [
+    19,
+    42
+   ],
+   "regions": [
+    [
+     611,
+     190,
+     19,
+     42
+    ],
+    [
+     914,
+     234,
+     19,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_chu_ga_lien_tinh",
+   "pos": [
+    4358,
+    1078
+   ],
+   "topleft": [
+    4349,
+    1035
+   ],
+   "size": [
+    18,
+    44
+   ],
+   "regions": [
+    [
+     959,
+     99,
+     18,
+     44
+    ],
+    [
+     846,
+     145,
+     18,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "arena_staff",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_chu_ga_lien_tinh_02",
+   "pos": [
+    4620,
+    1079
+   ],
+   "topleft": [
+    4611,
+    1036
+   ],
+   "size": [
+    19,
+    44
+   ],
+   "regions": [
+    [
+     825,
+     99,
+     19,
+     44
+    ],
+    [
+     83,
+     99,
+     19,
+     45
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "arena_staff",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_cu_moi_04",
+   "pos": [
+    4248,
+    1086
+   ],
+   "topleft": [
+    4239,
+    1046
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     380,
+     277,
+     18,
+     41
+    ],
+    [
+     648,
+     319,
+     18,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_cu_moi_05",
+   "pos": [
+    4406,
+    1091
+   ],
+   "topleft": [
+    4397,
+    1051
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     399,
+     277,
+     18,
+     41
+    ],
+    [
+     667,
+     319,
+     18,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ban_nuoc_mia_san_ga",
+   "pos": [
+    4624,
+    1094
+   ],
+   "topleft": [
+    4614,
+    1053
+   ],
+   "size": [
+    20,
+    42
+   ],
+   "regions": [
+    [
+     404,
+     190,
+     20,
+     42
+    ],
+    [
+     709,
+     234,
+     20,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_cu_moi",
+   "pos": [
+    3712,
+    1098
+   ],
+   "topleft": [
+    3704,
+    1065
+   ],
+   "size": [
+    16,
+    34
+   ],
+   "regions": [
+    [
+     658,
+     360,
+     16,
+     34
+    ],
+    [
+     348,
+     360,
+     16,
+     35
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_cu_moi_03",
+   "pos": [
+    4063,
+    1102
+   ],
+   "topleft": [
+    4055,
+    1069
+   ],
+   "size": [
+    16,
+    34
+   ],
+   "regions": [
+    [
+     675,
+     360,
+     16,
+     34
+    ],
+    [
+     365,
+     360,
+     16,
+     35
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_cu_moi_02",
+   "pos": [
+    3875,
+    1103
+   ],
+   "topleft": [
+    3866,
+    1062
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     917,
+     190,
+     18,
+     42
+    ],
+    [
+     418,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ganh_hang_rong_02",
+   "pos": [
+    2460,
+    1103
+   ],
+   "topleft": [
+    2432,
+    1061
+   ],
+   "size": [
+    56,
+    43
+   ],
+   "regions": [
+    [
+     164,
+     145,
+     56,
+     43
+    ],
+    [
+     54,
+     190,
+     56,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khach_vao_san",
+   "pos": [
+    4410,
+    1104
+   ],
+   "topleft": [
+    4401,
+    1063
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     936,
+     190,
+     18,
+     42
+    ],
+    [
+     865,
+     145,
+     18,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khach_vao_san_03",
+   "pos": [
+    4486,
+    1103
+   ],
+   "topleft": [
+    4473,
+    1058
+   ],
+   "size": [
+    26,
+    46
+   ],
+   "regions": [
+    [
+     489,
+     51,
+     26,
+     46
+    ],
+    [
+     162,
+     51,
+     26,
+     47
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_cu_moi_06",
+   "pos": [
+    4571,
+    1106
+   ],
+   "topleft": [
+    4563,
+    1073
+   ],
+   "size": [
+    16,
+    34
+   ],
+   "regions": [
+    [
+     692,
+     360,
+     16,
+     34
+    ],
+    [
+     382,
+     360,
+     16,
+     35
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_cu_moi_08",
+   "pos": [
+    4916,
+    1106
+   ],
+   "topleft": [
+    4908,
+    1072
+   ],
+   "size": [
+    17,
+    35
+   ],
+   "regions": [
+    [
+     296,
+     360,
+     17,
+     35
+    ],
+    [
+     572,
+     360,
+     17,
+     34
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_da_bong_03",
+   "pos": [
+    1770,
+    1109
+   ],
+   "topleft": [
+    1762,
+    1075
+   ],
+   "size": [
+    16,
+    35
+   ],
+   "regions": [
+    [
+     399,
+     360,
+     16,
+     35
+    ],
+    [
+     709,
+     360,
+     16,
+     34
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "kid",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khach_vao_san_02",
+   "pos": [
+    4448,
+    1109
+   ],
+   "topleft": [
+    4435,
+    1064
+   ],
+   "size": [
+    26,
+    46
+   ],
+   "regions": [
+    [
+     516,
+     51,
+     26,
+     46
+    ],
+    [
+     189,
+     51,
+     26,
+     47
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khach_vao_san_04",
+   "pos": [
+    4524,
+    1110
+   ],
+   "topleft": [
+    4515,
+    1069
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     955,
+     190,
+     18,
+     42
+    ],
+    [
+     437,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_cu_moi_07",
+   "pos": [
+    4775,
+    1111
+   ],
+   "topleft": [
+    4762,
+    1066
+   ],
+   "size": [
+    26,
+    46
+   ],
+   "regions": [
+    [
+     543,
+     51,
+     26,
+     46
+    ],
+    [
+     216,
+     51,
+     26,
+     47
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_da_bong",
+   "pos": [
+    1680,
+    1118
+   ],
+   "topleft": [
+    1671,
+    1078
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     456,
+     277,
+     18,
+     41
+    ],
+    [
+     686,
+     319,
+     18,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "kid",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_06",
+   "pos": [
+    2310,
+    1120
+   ],
+   "topleft": [
+    2300,
+    1080
+   ],
+   "size": [
+    20,
+    41
+   ],
+   "regions": [
+    [
+     730,
+     234,
+     20,
+     41
+    ],
+    [
+     425,
+     190,
+     20,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_14",
+   "pos": [
+    2800,
+    1127
+   ],
+   "topleft": [
+    2792,
+    1095
+   ],
+   "size": [
+    16,
+    33
+   ],
+   "regions": [
+    [
+     845,
+     360,
+     16,
+     33
+    ],
+    [
+     726,
+     360,
+     16,
+     34
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_16",
+   "pos": [
+    3070,
+    1127
+   ],
+   "topleft": [
+    3061,
+    1086
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     974,
+     190,
+     18,
+     42
+    ],
+    [
+     475,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_da_bong_06",
+   "pos": [
+    1850,
+    1129
+   ],
+   "topleft": [
+    1842,
+    1096
+   ],
+   "size": [
+    16,
+    34
+   ],
+   "regions": [
+    [
+     743,
+     360,
+     16,
+     34
+    ],
+    [
+     416,
+     360,
+     16,
+     35
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "kid",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_da_bong_02",
+   "pos": [
+    1740,
+    1159
+   ],
+   "topleft": [
+    1732,
+    1123
+   ],
+   "size": [
+    16,
+    37
+   ],
+   "regions": [
+    [
+     34,
+     360,
+     16,
+     37
+    ],
+    [
+     0,
+     360,
+     16,
+     38
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "kid",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_da_bong_04",
+   "pos": [
+    1820,
+    1168
+   ],
+   "topleft": [
+    1811,
+    1127
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     993,
+     190,
+     18,
+     42
+    ],
+    [
+     884,
+     145,
+     18,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "kid",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_da_bong_05",
+   "pos": [
+    1710,
+    1189
+   ],
+   "topleft": [
+    1702,
+    1156
+   ],
+   "size": [
+    16,
+    34
+   ],
+   "regions": [
+    [
+     760,
+     360,
+     16,
+     34
+    ],
+    [
+     433,
+     360,
+     16,
+     35
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "kid",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_08",
+   "pos": [
+    2404,
+    1205
+   ],
+   "topleft": [
+    2391,
+    1159
+   ],
+   "size": [
+    26,
+    47
+   ],
+   "regions": [
+    [
+     243,
+     51,
+     26,
+     47
+    ],
+    [
+     570,
+     51,
+     26,
+     46
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_07",
+   "pos": [
+    2226,
+    1210
+   ],
+   "topleft": [
+    2213,
+    1163
+   ],
+   "size": [
+    26,
+    48
+   ],
+   "regions": [
+    [
+     655,
+     0,
+     26,
+     48
+    ],
+    [
+     270,
+     51,
+     26,
+     47
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_09",
+   "pos": [
+    2125,
+    1214
+   ],
+   "topleft": [
+    2116,
+    1181
+   ],
+   "size": [
+    18,
+    34
+   ],
+   "regions": [
+    [
+     535,
+     360,
+     18,
+     34
+    ],
+    [
+     240,
+     360,
+     18,
+     35
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_13",
+   "pos": [
+    2612,
+    1215
+   ],
+   "topleft": [
+    2603,
+    1174
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     0,
+     234,
+     18,
+     42
+    ],
+    [
+     494,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_19",
+   "pos": [
+    2340,
+    1221
+   ],
+   "topleft": [
+    2332,
+    1187
+   ],
+   "size": [
+    16,
+    35
+   ],
+   "regions": [
+    [
+     450,
+     360,
+     16,
+     35
+    ],
+    [
+     777,
+     360,
+     16,
+     34
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_15",
+   "pos": [
+    2960,
+    1222
+   ],
+   "topleft": [
+    2951,
+    1182
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     513,
+     277,
+     18,
+     41
+    ],
+    [
+     705,
+     319,
+     18,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_di_cho_20",
+   "pos": [
+    2060,
+    1224
+   ],
+   "topleft": [
+    2051,
+    1185
+   ],
+   "size": [
+    18,
+    40
+   ],
+   "regions": [
+    [
+     724,
+     319,
+     18,
+     40
+    ],
+    [
+     532,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "shopper",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_16",
+   "pos": [
+    4974,
+    1240
+   ],
+   "topleft": [
+    4966,
+    1198
+   ],
+   "size": [
+    17,
+    43
+   ],
+   "regions": [
+    [
+     18,
+     190,
+     17,
+     43
+    ],
+    [
+     282,
+     234,
+     17,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_15",
+   "pos": [
+    4951,
+    1242
+   ],
+   "topleft": [
+    4942,
+    1200
+   ],
+   "size": [
+    18,
+    43
+   ],
+   "regions": [
+    [
+     903,
+     145,
+     18,
+     43
+    ],
+    [
+     19,
+     234,
+     18,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_14",
+   "pos": [
+    4911,
+    1244
+   ],
+   "topleft": [
+    4902,
+    1204
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     551,
+     277,
+     18,
+     41
+    ],
+    [
+     38,
+     234,
+     18,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_13",
+   "pos": [
+    4879,
+    1247
+   ],
+   "topleft": [
+    4870,
+    1206
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     57,
+     234,
+     18,
+     42
+    ],
+    [
+     570,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_12",
+   "pos": [
+    4863,
+    1255
+   ],
+   "topleft": [
+    4853,
+    1215
+   ],
+   "size": [
+    20,
+    41
+   ],
+   "regions": [
+    [
+     751,
+     234,
+     20,
+     41
+    ],
+    [
+     446,
+     190,
+     20,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_trong_tai_olympia",
+   "pos": [
+    4933,
+    1267
+   ],
+   "topleft": [
+    4925,
+    1228
+   ],
+   "size": [
+    17,
+    40
+   ],
+   "regions": [
+    [
+     908,
+     319,
+     17,
+     40
+    ],
+    [
+     941,
+     277,
+     17,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "arena_staff",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_11",
+   "pos": [
+    4846,
+    1270
+   ],
+   "topleft": [
+    4837,
+    1231
+   ],
+   "size": [
+    18,
+    40
+   ],
+   "regions": [
+    [
+     743,
+     319,
+     18,
+     40
+    ],
+    [
+     589,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_10",
+   "pos": [
+    4835,
+    1283
+   ],
+   "topleft": [
+    4826,
+    1243
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     608,
+     277,
+     18,
+     41
+    ],
+    [
+     762,
+     319,
+     18,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_mc_olympia",
+   "pos": [
+    4814,
+    1292
+   ],
+   "topleft": [
+    4803,
+    1251
+   ],
+   "size": [
+    23,
+    42
+   ],
+   "regions": [
+    [
+     191,
+     190,
+     23,
+     42
+    ],
+    [
+     438,
+     145,
+     23,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "arena_staff",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_goc_do",
+   "pos": [
+    4872,
+    1297
+   ],
+   "topleft": [
+    4863,
+    1256
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     76,
+     234,
+     18,
+     42
+    ],
+    [
+     627,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "arena_staff",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_goc_xanh",
+   "pos": [
+    5006,
+    1297
+   ],
+   "topleft": [
+    4997,
+    1257
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     646,
+     277,
+     18,
+     41
+    ],
+    [
+     95,
+     234,
+     18,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "arena_staff",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_09",
+   "pos": [
+    4835,
+    1299
+   ],
+   "topleft": [
+    4822,
+    1253
+   ],
+   "size": [
+    26,
+    47
+   ],
+   "regions": [
+    [
+     297,
+     51,
+     26,
+     47
+    ],
+    [
+     597,
+     51,
+     26,
+     46
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia",
+   "pos": [
+    5041,
+    1301
+   ],
+   "topleft": [
+    5032,
+    1261
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     665,
+     277,
+     18,
+     41
+    ],
+    [
+     114,
+     234,
+     18,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_08",
+   "pos": [
+    4849,
+    1312
+   ],
+   "topleft": [
+    4836,
+    1265
+   ],
+   "size": [
+    26,
+    48
+   ],
+   "regions": [
+    [
+     682,
+     0,
+     26,
+     48
+    ],
+    [
+     324,
+     51,
+     26,
+     47
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_02",
+   "pos": [
+    5012,
+    1321
+   ],
+   "topleft": [
+    5004,
+    1282
+   ],
+   "size": [
+    17,
+    40
+   ],
+   "regions": [
+    [
+     926,
+     319,
+     17,
+     40
+    ],
+    [
+     959,
+     277,
+     17,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_07",
+   "pos": [
+    4876,
+    1324
+   ],
+   "topleft": [
+    4866,
+    1284
+   ],
+   "size": [
+    20,
+    41
+   ],
+   "regions": [
+    [
+     772,
+     234,
+     20,
+     41
+    ],
+    [
+     300,
+     319,
+     20,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_03",
+   "pos": [
+    4986,
+    1326
+   ],
+   "topleft": [
+    4973,
+    1280
+   ],
+   "size": [
+    26,
+    47
+   ],
+   "regions": [
+    [
+     351,
+     51,
+     26,
+     47
+    ],
+    [
+     709,
+     0,
+     26,
+     48
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_06",
+   "pos": [
+    4900,
+    1331
+   ],
+   "topleft": [
+    4891,
+    1291
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     684,
+     277,
+     18,
+     41
+    ],
+    [
+     133,
+     234,
+     18,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_04",
+   "pos": [
+    4954,
+    1336
+   ],
+   "topleft": [
+    4945,
+    1295
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     152,
+     234,
+     18,
+     42
+    ],
+    [
+     703,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khan_gia_olympia_05",
+   "pos": [
+    4922,
+    1336
+   ],
+   "topleft": [
+    4912,
+    1294
+   ],
+   "size": [
+    20,
+    43
+   ],
+   "regions": [
+    [
+     588,
+     145,
+     20,
+     43
+    ],
+    [
+     467,
+     190,
+     20,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "spectator",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ban_nuoc_mia_04",
+   "pos": [
+    2572,
+    1387
+   ],
+   "topleft": [
+    2559,
+    1338
+   ],
+   "size": [
+    26,
+    50
+   ],
+   "regions": [
+    [
+     27,
+     0,
+     26,
+     50
+    ],
+    [
+     175,
+     0,
+     26,
+     49
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khach_olympia",
+   "pos": [
+    4890,
+    1395
+   ],
+   "topleft": [
+    4881,
+    1353
+   ],
+   "size": [
+    18,
+    43
+   ],
+   "regions": [
+    [
+     922,
+     145,
+     18,
+     43
+    ],
+    [
+     171,
+     234,
+     18,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khach_olympia_03",
+   "pos": [
+    4938,
+    1395
+   ],
+   "topleft": [
+    4929,
+    1352
+   ],
+   "size": [
+    18,
+    44
+   ],
+   "regions": [
+    [
+     978,
+     99,
+     18,
+     44
+    ],
+    [
+     217,
+     99,
+     18,
+     45
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khach_olympia_05",
+   "pos": [
+    4986,
+    1394
+   ],
+   "topleft": [
+    4978,
+    1354
+   ],
+   "size": [
+    17,
+    41
+   ],
+   "regions": [
+    [
+     977,
+     277,
+     17,
+     41
+    ],
+    [
+     944,
+     319,
+     17,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khach_olympia_02",
+   "pos": [
+    4914,
+    1400
+   ],
+   "topleft": [
+    4904,
+    1359
+   ],
+   "size": [
+    20,
+    42
+   ],
+   "regions": [
+    [
+     488,
+     190,
+     20,
+     42
+    ],
+    [
+     793,
+     234,
+     20,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_khach_olympia_04",
+   "pos": [
+    4962,
+    1400
+   ],
+   "topleft": [
+    4954,
+    1357
+   ],
+   "size": [
+    17,
+    44
+   ],
+   "regions": [
+    [
+     110,
+     145,
+     17,
+     44
+    ],
+    [
+     345,
+     99,
+     17,
+     45
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "customer",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ganh_hang_rong_04",
+   "pos": [
+    1500,
+    1400
+   ],
+   "topleft": [
+    1472,
+    1353
+   ],
+   "size": [
+    56,
+    48
+   ],
+   "regions": [
+    [
+     229,
+     0,
+     56,
+     48
+    ],
+    [
+     820,
+     0,
+     56,
+     47
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_cao_lua_02",
+   "pos": [
+    3299,
+    1408
+   ],
+   "topleft": [
+    3280,
+    1360
+   ],
+   "size": [
+    39,
+    49
+   ],
+   "regions": [
+    [
+     81,
+     0,
+     39,
+     49
+    ],
+    [
+     286,
+     0,
+     44,
+     48
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "worker",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_tho_lot_dua",
+   "pos": [
+    310,
+    1542
+   ],
+   "topleft": [
+    302,
+    1502
+   ],
+   "size": [
+    17,
+    41
+   ],
+   "regions": [
+    [
+     995,
+     277,
+     17,
+     41
+    ],
+    [
+     962,
+     319,
+     17,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_hem_05",
+   "pos": [
+    1769,
+    1622
+   ],
+   "topleft": [
+    1760,
+    1580
+   ],
+   "size": [
+    18,
+    43
+   ],
+   "regions": [
+    [
+     941,
+     145,
+     18,
+     43
+    ],
+    [
+     997,
+     99,
+     18,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_san_vuon_02",
+   "pos": [
+    4010,
+    1624
+   ],
+   "topleft": [
+    4002,
+    1590
+   ],
+   "size": [
+    16,
+    35
+   ],
+   "regions": [
+    [
+     467,
+     360,
+     16,
+     35
+    ],
+    [
+     87,
+     360,
+     16,
+     36
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_hem_06",
+   "pos": [
+    1938,
+    1631
+   ],
+   "topleft": [
+    1930,
+    1596
+   ],
+   "size": [
+    16,
+    36
+   ],
+   "regions": [
+    [
+     104,
+     360,
+     16,
+     36
+    ],
+    [
+     484,
+     360,
+     16,
+     35
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_hem_11",
+   "pos": [
+    2640,
+    1630
+   ],
+   "topleft": [
+    2631,
+    1590
+   ],
+   "size": [
+    19,
+    41
+   ],
+   "regions": [
+    [
+     934,
+     234,
+     19,
+     41
+    ],
+    [
+     381,
+     319,
+     19,
+     40
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_hem_10",
+   "pos": [
+    2500,
+    1633
+   ],
+   "topleft": [
+    2492,
+    1591
+   ],
+   "size": [
+    17,
+    43
+   ],
+   "regions": [
+    [
+     36,
+     190,
+     17,
+     43
+    ],
+    [
+     128,
+     145,
+     17,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_san_vuon",
+   "pos": [
+    3700,
+    1635
+   ],
+   "topleft": [
+    3687,
+    1589
+   ],
+   "size": [
+    26,
+    47
+   ],
+   "regions": [
+    [
+     378,
+     51,
+     26,
+     47
+    ],
+    [
+     736,
+     0,
+     26,
+     48
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_san_vuon_04",
+   "pos": [
+    4950,
+    1634
+   ],
+   "topleft": [
+    4941,
+    1591
+   ],
+   "size": [
+    18,
+    44
+   ],
+   "regions": [
+    [
+     0,
+     145,
+     18,
+     44
+    ],
+    [
+     960,
+     145,
+     18,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_hem_09",
+   "pos": [
+    2392,
+    1636
+   ],
+   "topleft": [
+    2384,
+    1592
+   ],
+   "size": [
+    17,
+    45
+   ],
+   "regions": [
+    [
+     363,
+     99,
+     17,
+     45
+    ],
+    [
+     146,
+     145,
+     17,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_hem_12",
+   "pos": [
+    2796,
+    1636
+   ],
+   "topleft": [
+    2788,
+    1601
+   ],
+   "size": [
+    16,
+    36
+   ],
+   "regions": [
+    [
+     121,
+     360,
+     16,
+     36
+    ],
+    [
+     501,
+     360,
+     16,
+     35
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_hem_04",
+   "pos": [
+    1665,
+    1637
+   ],
+   "topleft": [
+    1656,
+    1596
+   ],
+   "size": [
+    18,
+    42
+   ],
+   "regions": [
+    [
+     190,
+     234,
+     18,
+     42
+    ],
+    [
+     722,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_hem",
+   "pos": [
+    1172,
+    1646
+   ],
+   "topleft": [
+    1163,
+    1606
+   ],
+   "size": [
+    18,
+    41
+   ],
+   "regions": [
+    [
+     741,
+     277,
+     18,
+     41
+    ],
+    [
+     209,
+     234,
+     18,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_hem_07",
+   "pos": [
+    2067,
+    1647
+   ],
+   "topleft": [
+    2054,
+    1598
+   ],
+   "size": [
+    26,
+    50
+   ],
+   "regions": [
+    [
+     54,
+     0,
+     26,
+     50
+    ],
+    [
+     202,
+     0,
+     26,
+     49
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_hem_02",
+   "pos": [
+    1339,
+    1649
+   ],
+   "topleft": [
+    1330,
+    1614
+   ],
+   "size": [
+    18,
+    36
+   ],
+   "regions": [
+    [
+     51,
+     360,
+     18,
+     36
+    ],
+    [
+     259,
+     360,
+     18,
+     35
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_ong_cau_ca_ao_sen",
+   "pos": [
+    4076,
+    1647
+   ],
+   "topleft": [
+    4050,
+    1606
+   ],
+   "size": [
+    53,
+    42
+   ],
+   "regions": [
+    [
+     111,
+     190,
+     53,
+     42
+    ],
+    [
+     221,
+     145,
+     53,
+     43
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "elder",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_san_vuon_03",
+   "pos": [
+    4500,
+    1649
+   ],
+   "topleft": [
+    4491,
+    1605
+   ],
+   "size": [
+    18,
+    45
+   ],
+   "regions": [
+    [
+     236,
+     99,
+     18,
+     45
+    ],
+    [
+     19,
+     145,
+     18,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_hem_03",
+   "pos": [
+    1446,
+    1650
+   ],
+   "topleft": [
+    1437,
+    1611
+   ],
+   "size": [
+    18,
+    40
+   ],
+   "regions": [
+    [
+     781,
+     319,
+     18,
+     40
+    ],
+    [
+     760,
+     277,
+     18,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_dan_hem_08",
+   "pos": [
+    2230,
+    1652
+   ],
+   "topleft": [
+    2222,
+    1619
+   ],
+   "size": [
+    16,
+    34
+   ],
+   "regions": [
+    [
+     794,
+     360,
+     16,
+     34
+    ],
+    [
+     518,
+     360,
+     16,
+     35
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "resident",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_danh_co_tuong",
+   "pos": [
+    2180,
+    1677
+   ],
+   "topleft": [
+    2155,
+    1643
+   ],
+   "size": [
+    50,
+    35
+   ],
+   "regions": [
+    [
+     138,
+     360,
+     50,
+     35
+    ],
+    [
+     189,
+     360,
+     50,
+     35
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "elder",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_chu_vuon_kieng",
+   "pos": [
+    4426,
+    1793
+   ],
+   "topleft": [
+    4416,
+    1751
+   ],
+   "size": [
+    20,
+    43
+   ],
+   "regions": [
+    [
+     609,
+     145,
+     20,
+     43
+    ],
+    [
+     509,
+     190,
+     20,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "vendor",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": true,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_cho_do_song_nam",
+   "pos": [
+    1117,
+    1922
+   ],
+   "topleft": [
+    1107,
+    1878
+   ],
+   "size": [
+    20,
+    45
+   ],
+   "regions": [
+    [
+     42,
+     99,
+     20,
+     45
+    ],
+    [
+     704,
+     99,
+     20,
+     44
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "elder",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_qua_cau_khi",
+   "pos": [
+    2985,
+    1928
+   ],
+   "topleft": [
+    2972,
+    1883
+   ],
+   "size": [
+    26,
+    46
+   ],
+   "regions": [
+    [
+     624,
+     51,
+     26,
+     46
+    ],
+    [
+     405,
+     51,
+     26,
+     47
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "passerby",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": true,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_tho_dong_ghe",
+   "pos": [
+    3526,
+    2114
+   ],
+   "topleft": [
+    3517,
+    2073
+   ],
+   "size": [
+    19,
+    42
+   ],
+   "regions": [
+    [
+     631,
+     190,
+     19,
+     42
+    ],
+    [
+     954,
+     234,
+     19,
+     41
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "worker",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  },
+  {
+   "id": "N_npc_tho_lo_gach",
+   "pos": [
+    1846,
+    2130
+   ],
+   "topleft": [
+    1836,
+    2088
+   ],
+   "size": [
+    20,
+    43
+   ],
+   "regions": [
+    [
+     630,
+     145,
+     20,
+     43
+    ],
+    [
+     530,
+     190,
+     20,
+     42
+    ]
+   ],
+   "frame_count": 2,
+   "facing": "down",
+   "role": "worker",
+   "source_walks": false,
+   "walk_frames": "no (đứng nhún 2 khung)",
+   "walker_candidate": false,
+   "keep_static": false,
+   "hidden_in_map": false
+  }
+ ],
+ "notes": [
+  "pos = điểm chân (giữa mép dưới) ở frame 0; topleft/size = khung ảnh ở frame 0.",
+  "facing chỉ là đoán (đa số vẽ nhìn thẳng xuống) – role đoán theo tên layer.",
+  "keep_static: người bán, khán giả, nhân viên sới, khách đứng mua, NPC cốt truyện – để yên trên bản đồ.",
+  "walker_candidate: người đi chợ/đi đường/dân xóm/học sinh có thể thành người đi bộ (cần ẩn node bản đồ cùng tên khi thay bằng người chạy lúc chơi)."
+ ]
+}

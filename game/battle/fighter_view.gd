@@ -15,12 +15,21 @@ const SCALE: float = 2.0
 ## Các tag ngã/văng/nằm/đứng dậy vẽ gà lùi 12 px trong ảnh (xem movelist) – bù lại bằng X_COMP_TAGS.
 const X_COMP_TAGS: Array[String] = ["TE_NgaNgua", "VANG_RaXa", "NAM_Dat", "DUNG_Day"]
 
+## Lớp trang bị dựng sẵn (tools/art/build_gear.py): game/art/gear/<kit>_<item id>.png, cùng bố cục ô với sheet.
+const GEAR_DIR: String = "res://game/art/gear/"
+## Ô → tên uniform trong rooster.gdshader (thứ tự vẽ do shader quyết: Cựa, Đầu, Mào, Giáp, Cánh, Vũ khí).
+const GEAR_UNIFORMS: Dictionary = {&"spur": "spur", &"head": "head", &"comb": "comb", &"armor": "armor",
+	&"wing": "wing", &"weapon": "weapon"}
+static var _gear_textures: Dictionary = {}
+
 var kit: StringName = &"rooster"
 var hue: float = 0.0
 var saturation: float = 1.0
 ## Đổi màu theo bộ phận: {"body"|"neck"|"tail"|"legs"|"comb": [lệch hue, ×sat, ×value]}.
 var colors: Dictionary = {}
 var body_scale: float = 1.0
+## Món đang gắn (item id của GameState.ITEMS: vũ khí + 5 ô) – đặt trước add_child; xem gear_items().
+var gear: Array[StringName] = []
 var fx_parent: Node2D
 var ground_y: float = 0.0
 var facing: int = 1
@@ -45,7 +54,8 @@ var _foot: Vector2 = FOOT
 
 
 ## p_kit rỗng: shader đổi màu toàn bộ hình (cách cũ). Có kit: dùng mặt nạ bộ phận của kit.
-static func make_material(p_hue: float, p_sat: float, p_kit: StringName = &"", p_colors: Dictionary = {}) -> ShaderMaterial:
+static func make_material(p_hue: float, p_sat: float, p_kit: StringName = &"", p_colors: Dictionary = {},
+		p_gear: Array = []) -> ShaderMaterial:
 	var material := ShaderMaterial.new()
 	material.shader = preload("res://game/battle/rooster.gdshader")
 	material.set_shader_parameter("hue_shift", p_hue)
@@ -56,13 +66,138 @@ static func make_material(p_hue: float, p_sat: float, p_kit: StringName = &"", p
 		for part in ["body", "neck", "tail", "legs", "comb"]:
 			var v: Array = p_colors.get(part, [0.0, 1.0, 1.0])
 			material.set_shader_parameter(part + "_hsv", Vector3(float(v[0]), float(v[1]), float(v[2])))
+		apply_gear(material, p_kit, p_gear)
 	return material
 
 
-## Vật liệu cho một bên đấu (kit + màu trong dữ liệu đối thủ).
+## Vật liệu cho một bên đấu (kit + màu trong dữ liệu đối thủ + lớp trang bị).
 static func material_for_side(side: Dictionary) -> ShaderMaterial:
 	return make_material(float(side.get("hue", 0.0)), float(side.get("sat", 1.0)), Moves.kit_for_side(side),
-		side.get("colors", {}))
+		side.get("colors", {}), gear_items(side))
+
+
+## Món đang gắn của một bên đấu: "weapon" + "gear" {ô: id} (bản dựng v2); side cũ: dao_chan / mao_sat (bool).
+static func gear_items(side: Dictionary) -> Array[StringName]:
+	var out: Array[StringName] = []
+	var weapon: StringName = StringName(side.get("weapon", &""))
+	if weapon == &"" and bool(side.get("dao_chan", false)):
+		weapon = &"dao_chan"
+	if weapon != &"":
+		out.append(weapon)
+	var gear_dict: Dictionary = side.get("gear", {})
+	for slot in GEAR_UNIFORMS.keys():
+		var id: StringName = StringName(gear_dict.get(slot, &""))
+		if id != &"" and not out.has(id):
+			out.append(id)
+	if bool(side.get("mao_sat", false)) and not out.has(&"mao_sat"):
+		out.append(&"mao_sat")
+	return out
+
+
+## Texture lớp trang bị của một món cho một kit (null nếu món không có hình – đồ ăn, trứng… hoặc chưa dựng).
+static func gear_texture(p_kit: StringName, item: StringName) -> Texture2D:
+	var key: String = "%s_%s" % [p_kit, item]
+	if not _gear_textures.has(key):
+		var path: String = GEAR_DIR + key + ".png"
+		var tex: Texture2D = load(path) if ResourceLoader.exists(path) else null
+		if tex == null and FileAccess.file_exists(path):
+			# Ảnh chưa import xong (editor đang mở / .import hỏng): đọc thẳng PNG.
+			var img := Image.load_from_file(path)
+			if img != null and not img.is_empty():
+				tex = ImageTexture.create_from_image(img)
+		_gear_textures[key] = tex
+	return _gear_textures[key]
+
+
+## Gắn các lớp trang bị vào vật liệu rooster.gdshader. Mỗi ô một lớp (món sau cùng của ô thắng).
+static func apply_gear(material: ShaderMaterial, p_kit: StringName, items: Array) -> void:
+	var any: bool = false
+	for slot in GEAR_UNIFORMS.keys():
+		material.set_shader_parameter("has_" + String(GEAR_UNIFORMS[slot]), false)
+	for item in items:
+		var slot: StringName = StringName(GameState.ITEMS.get(StringName(item), {}).get("slot", &""))
+		if not GEAR_UNIFORMS.has(slot):
+			continue
+		var tex: Texture2D = gear_texture(p_kit, StringName(item))
+		if tex == null:
+			continue
+		var u: String = String(GEAR_UNIFORMS[slot])
+		material.set_shader_parameter("gear_" + u, tex)
+		material.set_shader_parameter("has_" + u, true)
+		any = true
+	material.set_shader_parameter("use_gear", any)
+
+
+## Hình chiến kê có đủ lớp trang bị, dùng NGOÀI trận (Pre-battle, màn kết quả, chuồng gà…).
+## HỢP ĐỒNG: trả về FighterView.Portrait (Node2D). Gốc node = điểm chân chạm đất; nhìn sang PHẢI; 1 pixel art = 1 đơn vị
+## (trong trận vẽ ×2 – người gọi tự đặt scale). Gà tre đã thu 0,9 như trong trận. `tag`: tên trạng thái của kit
+## ("idle", "taunt", "walk_f", "guard", "nhe", "nang", "te", "nam", "vang", "dung") hoặc tên tag Aseprite; lặp vòng.
+## Đổi sau: set_tag(tag, loop), set_facing(±1), modulate (tô tối/mờ), speed. side cùng dạng bên đấu của trận.
+static func make_portrait(side: Dictionary, tag: String = "idle") -> Node2D:
+	var p := Portrait.new()
+	p.setup(side, tag)
+	return p
+
+
+class Portrait:
+	extends Node2D
+	var kit: StringName = &"rooster"
+	var tag: String = "idle"
+	var loop: bool = true
+	var facing: int = 1
+	var speed: float = 1.0
+	var body_scale: float = 1.0
+	var sprite: Sprite2D
+	var shader_material: ShaderMaterial
+	var _time: float = 0.0
+	var _x_comp: float = 0.0
+
+	func setup(side: Dictionary, p_tag: String) -> void:
+		kit = Moves.kit_for_side(side)
+		body_scale = 0.9 if int(side.get("breed", 0)) == MovementConfig.Breed.GA_TRE else 1.0
+		texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		sprite = Sprite2D.new()
+		sprite.name = "Sprite"
+		sprite.texture = FighterView.sheet_for(kit)
+		sprite.region_enabled = true
+		sprite.centered = false
+		sprite.offset = -FighterView.foot_for(kit)
+		shader_material = FighterView.material_for_side(side)
+		sprite.material = shader_material
+		add_child(sprite)
+		set_tag(p_tag)
+
+	## Đổi hoạt ảnh (tên trạng thái của kit hoặc tag Aseprite); loop = false giữ frame cuối.
+	func set_tag(p_tag: String, p_loop: bool = true) -> void:
+		var anims: Dictionary = Moves.kit(kit)["anims"]
+		tag = String(anims.get(p_tag, p_tag))
+		if not (Moves.meta(kit)["tags"] as Dictionary).has(tag):
+			tag = String(anims["idle"])
+		loop = p_loop
+		_time = 0.0
+		var lying: Array = [anims["te"], anims["vang"], anims["nam"], anims["dung"]]
+		_x_comp = float(Moves.kit(kit)["x_comp"]) if lying.has(tag) else 0.0
+		_refresh()
+
+	func set_facing(dir: int) -> void:
+		facing = -1 if dir < 0 else 1
+		_refresh()
+
+	## Khung bao gần đúng của con gà (toạ độ cục bộ) – để căn chỉnh UI.
+	func visual_rect() -> Rect2:
+		return Rect2(Vector2(-44, -76) * body_scale, Vector2(88, 78) * body_scale)
+
+	func _process(delta: float) -> void:
+		_time += delta * speed
+		_refresh()
+
+	func _refresh() -> void:
+		if sprite == null:
+			return
+		sprite.region_rect = FighterView.frame_region(FighterView.tag_frame_at(tag, int(_time * 60.0), loop, kit))
+		sprite.scale = Vector2(body_scale * float(facing), body_scale)
+		sprite.position = Vector2(_x_comp * body_scale * float(facing), 0)
+		shader_material.set_shader_parameter("glint_phase", _time * 0.6)
 
 
 static func sheet_for(p_kit: StringName) -> Texture2D:
@@ -105,7 +240,7 @@ func _ready() -> void:
 	_sprite.region_enabled = true
 	_sprite.centered = false
 	_sprite.offset = -_foot
-	_material = make_material(hue, saturation, kit, colors)
+	_material = make_material(hue, saturation, kit, colors, gear)
 	_sprite.material = _material
 	add_child(_sprite)
 	play_tag("idle", 0)
@@ -191,7 +326,7 @@ func spawn_afterimage(color: Color, life: float = 0.25) -> void:
 	ghost.offset = -_foot
 	ghost.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	ghost.global_transform = _sprite.global_transform
-	var material := make_material(hue, saturation, kit, colors)
+	var material := make_material(hue, saturation, kit, colors, gear)
 	material.set_shader_parameter("flash_color", color)
 	material.set_shader_parameter("flash", 0.7)
 	ghost.material = material
@@ -222,6 +357,7 @@ func _process(delta: float) -> void:
 	_flash = maxf(0.0, _flash - delta * 6.0)
 	_material.set_shader_parameter("flash", _flash)
 	_material.set_shader_parameter("flash_color", _flash_color)
+	_material.set_shader_parameter("glint_phase", _time * 0.6)
 
 	_shadow.global_position = Vector2(global_position.x, ground_y)
 	_shadow.queue_redraw()

@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://5vb055mdrsfd"
+path="res://.godot/imported/collision.png-ab8b59694799da92d6a0896e306edd56.image"
+
+[deps]
+
+source_file="res://game/art/world_map/collision.png"
+dest_files=["res://.godot/imported/collision.png-ab8b59694799da92d6a0896e306edd56.image"]
+
+[params]
+

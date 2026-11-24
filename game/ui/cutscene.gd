@@ -1,7 +1,7 @@
 class_name Cutscene
 extends CanvasLayer
 
-## Cắt cảnh tối giản (GDD 9.5): màn hình tối, tiếng côn trùng đêm, chữ hiện dần.
+## Cắt cảnh tối giản (GDD 9.5): màn hình tối, tiếng côn trùng đêm, chữ pixel ×3 hiện dần (font game, UISkin).
 ## Mỗi dòng: [người nói, lời] — người nói rỗng là lời dẫn.
 
 signal _next
@@ -16,19 +16,20 @@ var crickets: bool = true
 
 
 func _ready() -> void:
-	layer = 60
+	layer = 92 # trên lớp màn đen chuyển cảnh của main (90): cắt cảnh có nền tối riêng
 	_bg = ColorRect.new()
 	_bg.color = Color(0.02, 0.02, 0.05)
 	_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_bg)
-	_speaker = _make_label(22, Color(1.0, 0.85, 0.5), true)
-	_speaker.offset_top = -80.0
-	_label = _make_label(28, Color(0.95, 0.93, 0.85), false)
-	_label.offset_top = -30.0
-	_hint = _make_label(14, Color(0.55, 0.55, 0.55), false)
+	_speaker = _make_label(UISkin.FS_BODY, UISkin.GOLD, true)
+	_speaker.offset_top = -84.0
+	_label = _make_label(UISkin.FS_BIG, Color(0.95, 0.93, 0.85), false)
+	_label.offset_top = -34.0
+	_label.add_theme_constant_override("line_spacing", 4)
+	_hint = _make_label(UISkin.FS_SMALL, Color(0.62, 0.58, 0.5), true)
 	_hint.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	_hint.offset_top = -40.0
-	_hint.text = "[E] tiếp"
+	_hint.text = "[E] tiếp ▼"
 	_sfx = Sfx.new()
 	add_child(_sfx)
 
@@ -42,6 +43,7 @@ func _make_label(font_size: int, color: Color, bold: bool) -> Label:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.add_theme_font_override("font", DialogBox.make_font(bold))
+	label.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	add_child(label)

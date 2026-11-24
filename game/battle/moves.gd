@@ -283,6 +283,123 @@ static func get_move(move_id: StringName, kit_id: StringName = KIT_ROOSTER) -> D
 	return move
 
 
+# =================================================================== vũ khí đổi lối đánh (GDD 5.2)
+
+## Đòn "Heavy" của GDD (nút K, nhóm M đứng) theo kit – đòn mà Quạt lông / Nón bảo hiểm biến đổi.
+const HEAVY_K: Dictionary = {&"rooster": &"tat_canh", &"dongtao": &"dam_chan"}
+## Startup Light gốc của GDD (Bảng 4.3) – Dao chân giảm startup đi (5 − light_startup) tick so với art.
+const GDD_LIGHT_STARTUP: int = 5
+## Luồng gió Quạt lông (GDD 4.11 lớp 7: 400 px/s, tồn tại 1,2 s). PLACEHOLDER: sát thương, đẩy lùi.
+const GUST: Dictionary = {"speed": 400.0 / 60.0, "life": 72, "dmg": 3, "kb": 110.0, "react": &"nhe", "hitstop": 5,
+	"half": Vector2(30, 40), "y": -62.0}
+## Cú lao có giáp của Nón bảo hiểm (thay Heavy K). PLACEHOLDER: tốc độ lao, sát thương, hộp.
+const HELMET_RUSH: Dictionary = {
+	&"rooster": {"tag": "L_MoNhanh", "active": [2, 3], "dmg": 9, "kb": 70.0, "box": Rect2(30, -112, 104, 74), "speed": 6.0},
+	&"dongtao": {"tag": "L_HucDau", "active": [2, 3], "dmg": 10, "kb": 60.0, "box": Rect2(34, -124, 100, 70), "speed": 5.0},
+}
+static var _variant_cache: Dictionary = {}
+
+
+## Đòn của một bên đấu sau khi áp vũ khí (cờ hành vi trong side["flags"]). Không cờ liên quan → đúng get_move().
+##  light_startup: Light đứng/cúi ra nhanh hơn (5 − light_startup) tick (art 6 → 4 tick với Dao chân).
+##  heavy_gust: Heavy K đánh hụt thì bắn luồng gió ở đầu pha hồi ("gust_spawn"); một luồng trên sân.
+##  heavy_rush + heavy_armor_hits + heavy_startup_add: Heavy K thành "Húc Nón" – lao tới, giáp chịu N đòn, startup +6.
+static func weapon_move(move_id: StringName, kit_id: StringName, flags: Dictionary) -> Dictionary:
+	var base: Dictionary = get_move(move_id, kit_id)
+	var light_cut: int = 0
+	if flags.has("light_startup") and String(base["cat"]) == "L" and not base.has("air"):
+		light_cut = maxi(0, GDD_LIGHT_STARTUP - int(flags["light_startup"]))
+	var heavy: bool = HEAVY_K.get(kit_id, &"") == move_id
+	var gust: bool = heavy and bool(flags.get("heavy_gust", false))
+	var rush: bool = heavy and bool(flags.get("heavy_rush", false))
+	if light_cut == 0 and not gust and not rush:
+		return base
+	var key: String = "%s:%s:%d:%s:%s:%d:%d" % [kit_id, move_id, light_cut, gust, rush,
+		int(flags.get("heavy_armor_hits", 1)), int(flags.get("heavy_startup_add", 0))]
+	if _variant_cache.has(key):
+		return _variant_cache[key]
+	var move: Dictionary
+	if rush:
+		move = _helmet_rush(kit_id, base, int(flags.get("heavy_armor_hits", 1)), int(flags.get("heavy_startup_add", 0)))
+	else:
+		move = base.duplicate(true)
+		if light_cut > 0:
+			_cut_startup(move, light_cut)
+			move["weapon_fx"] = &"dao_chan"
+		if gust:
+			var last_active: int = -1
+			for hit in move["hits"]:
+				last_active = maxi(last_active, int(hit["frames"][-1]))
+			move["gust_spawn"] = mini(last_active + 1, (move["frames"] as Array).size() - 1)
+			move["weapon_fx"] = &"quat_long"
+	_variant_cache[key] = move
+	return move
+
+
+## Bớt `cut` tick khởi động: lấy dần từ frame trước nhịp đánh dài nhất (mỗi frame ≥ 1 tick).
+static func _cut_startup(move: Dictionary, cut: int) -> void:
+	var ticks: Array[int] = (move["ticks"] as Array[int]).duplicate()
+	var first: int = int(move["hits"][0]["frames"][0])
+	for _i in range(cut):
+		var best: int = -1
+		for i in range(first):
+			if ticks[i] > 1 and (best < 0 or ticks[i] > ticks[best]):
+				best = i
+		if best < 0:
+			break
+		ticks[best] -= 1
+	_retime(move, ticks)
+
+
+static func _retime(move: Dictionary, ticks: Array[int]) -> void:
+	move["ticks"] = ticks
+	var first: int = 999
+	var last: int = -1
+	for hit in move["hits"]:
+		first = mini(first, int(hit["frames"][0]))
+		last = maxi(last, int(hit["frames"][-1]))
+	var startup: int = 0
+	for i in range(mini(first, ticks.size())):
+		startup += ticks[i]
+	var total: int = 0
+	for t in ticks:
+		total += t
+	var recovery: int = 0
+	for i in range(last + 1, ticks.size()):
+		recovery += ticks[i]
+	move["startup"] = startup
+	move["total"] = total
+	move["recovery"] = recovery
+
+
+## "Húc Nón": cú lao đầu đội nón bảo hiểm (dùng frame mổ/húc đầu của kit), có giáp từ lúc khởi động tới hết nhịp đánh.
+static func _helmet_rush(kit_id: StringName, base: Dictionary, armor_hits: int, startup_add: int) -> Dictionary:
+	var spec: Dictionary = HELMET_RUSH[kit_id]
+	var active: Array = spec["active"]
+	var move: Dictionary = {"name": "Húc Nón", "tag": spec["tag"], "cat": "M", "id": &"huc_non", "kit": kit_id,
+		"armor": [0, int(active[-1])], "armor_hits": maxi(1, armor_hits), "weapon_fx": &"non_bao_hiem",
+		"run": {"frames": [0, int(active[0]) - 1], "speed": float(spec["speed"]), "max_loops": 1, "stop_dist": 0.0},
+		"hits": [{"frames": active.duplicate(), "dmg": int(spec["dmg"]), "react": &"nang", "level": Level.MID,
+			"kb": float(spec["kb"]), "hitstop": 8, "box": spec["box"]}],
+		"cancel": ["SP", "SUPER"]}
+	move["frames"] = tag_frames(String(spec["tag"]), kit_id)
+	var ticks: Array[int] = []
+	for f in move["frames"]:
+		ticks.append(frame_ticks(f, kit_id))
+	# Startup = startup Heavy K gốc + startup_add, chia đều cho các frame khởi động.
+	var target: int = int(base["startup"]) + startup_add
+	var pre: int = int(active[0])
+	for i in range(pre):
+		ticks[i] = target / pre + (1 if i < target % pre else 0)
+	var data: AttackData = AttackCatalog.get_attack(&"heavy")
+	data.base_knockback_px = float(spec["kb"])
+	data.hitstop_ticks = 8
+	move["hits"][0]["data"] = data
+	move["reach"] = (spec["box"] as Rect2).end.x
+	_retime(move, ticks)
+	return move
+
+
 static func world_rect(local: Rect2, origin: Vector2, facing: int) -> Rect2:
 	if facing >= 0:
 		return Rect2(origin + local.position, local.size)
